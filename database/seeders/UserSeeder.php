@@ -16,14 +16,14 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Initialize admin passowrd
-        $adminPass = 'adminceouser';
+        $adminPass = 'admin123';
 
         // Initialize staff password and staff role
         $staffPassword = 'staffuser';
         $staffRole = 2;
 
         User::create([
-            'staff_id' => 'hashceo001',
+            'staff_id' => 'Admin',
             'name' => 'Leonardo Di Caprio Bin Pablo Escobar',
             'role' => 1,
             'email' => 'hashceo@gmail.com',

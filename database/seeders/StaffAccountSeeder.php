@@ -16,7 +16,7 @@ class StaffAccountSeeder extends Seeder
         // Make 20 Data
 
         // Initialize id for ceo
-        $ceoid = 'hashceo001';
+        $ceoid = 'Admin';
 
         // Initialize first part for staff id
         $staffid = 'hashstaff';
