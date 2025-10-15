@@ -85,41 +85,43 @@ class FoodMenuController extends Controller
     /*
     *  Function to store data into Food Menu table
     */
-    public function store(Request $request) : RedirectResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'food_name' => 'required|max:255',
-            'food_description' => 'required|max:9999',
-            'price' => 'required|numeric|decimal:2|min:0.01|max:9999.99',
-            'category_id' => 'required|exists:food_categories,id',
-            'image' => 'required|image|mimes:jpg,jpeg,png,svg|max:10480',
-        ]);
+  public function store(Request $request): RedirectResponse
+{
+    $validator = Validator::make($request->all(), [
+        'food_name' => 'required|max:255',
+        'food_description' => 'required|max:9999',
+        'price' => 'required|numeric|regex:/^\d+(\.\d{1,2})?$/|min:0.01|max:9999.99',
+        'category_id' => 'required|exists:food_categories,id',
+        'image' => 'required|image|mimes:jpg,jpeg,png,svg|max:10480',
+    ]);
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
-        // Get the original file name
-        $file = $request->file('image');
-
-        // Generate a unique name for the uploaded file
-        $fileName = $file->hashName();
-
-        // Store the file with the new name
-        $imagePath = $file->storeAs('images/food-menu', $fileName);
-        
-        $foodMenu = FoodMenu::create([
-            'name' => $request->food_name,
-            'description' => $request->food_description,
-            'price' => $request->price,
-            'category_id' => $request->category_id,
-            'image' => $imagePath,
-        ]);
-
-        Log::info([$foodMenu]);
-
-        return back()->with('success-message', 'Menu added successfully.');
+    if ($validator->fails()) {
+        return back()->withErrors($validator)->withInput();
     }
+
+    // ✅ Move file directly to public/images/food-menu
+    $file = $request->file('image');
+    $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+
+    $destinationPath = public_path('images/food-menu');
+    $file->move($destinationPath, $fileName);
+
+    // Store relative path (so it can be accessed by asset())
+    $imagePath = 'images/food-menu/' . $fileName;
+
+    // Save data
+    $foodMenu = FoodMenu::create([
+        'name' => $request->food_name,
+        'description' => $request->food_description,
+        'price' => $request->price,
+        'category_id' => $request->category_id,
+        'image' => $imagePath,
+    ]);
+
+    return back()->with('success-message', 'Menu added successfully.');
+}
+
+
 
 
 

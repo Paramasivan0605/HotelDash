@@ -70,15 +70,14 @@
                             </div>
 
                             <div class="low"><span class="star">Food Image</span></div>
-                            <div class="drag-area">
+                            <div class="drag-area" id="dragArea">
                                 <i class='bx bxs-cloud-upload'></i>
-                                <h2 class="drag-text">Drag and drop to upload image</h2>
-                                <input type="file" hidden class="select-image-input" name="image" accept="image/*" required>
+                                <input type="file" class="select-image-input" name="image" accept="image/*">
                             </div>
-                            @foreach ($errors->get('image') as $image)
-                                <div class="validation-error-message">{{ $image }}</div>
-                            @endforeach
-
+                            {{-- Validation error --}}
+                            @error('image')
+                                <div class="validation-error-message">{{ $message }}</div>
+                            @enderror
                             <div class="button-menu">
                                 <input type="submit" value="Add Menu">
                                 <a href="{{ route('food-menu') }}"><span>Cancel</span></a>

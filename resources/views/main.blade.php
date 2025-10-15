@@ -133,17 +133,10 @@
                     <a href="#"><i class='bx bxl-twitter'></i></a>
                     <a href="#"><i class='bx bxl-instagram-alt'></i></a>
                 </div>
-                <div class="project">
-                    <a href="https://github.com/HazmiHazim" target="_blank"><i class='bx bxl-github'></i></a>
-                    <a href="https://www.linkedin.com/in/hazmihazim/" target="_blank"><i
-                            class='bx bxl-linkedin-square'></i></a>
-                </div>
             </div>
         </div>
 
-        <div class="copyright">
-            <span>&copy; COPYRIGHT 2023 HAZMI HAZIM - ALL RIGHTS RESERVED</span>
-        </div>
+       
 
     </div>
 
