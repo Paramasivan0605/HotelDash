@@ -83,17 +83,13 @@ class PublicController extends Controller
         return view('public.about');
     }
 
-
-    /*
-    *  Function to view promotion file
-    */
     public function promotion() : View
     {
         // Get current date
         $currentMonth = Carbon::now();
 
         // Get month before now
-        $monthBefore = Carbon::now()->subMonth();
+        $monthBefore = Carbon::now()->subMonth(); 
 
         // Get event available if user is within the event month and one month after even
         // Other than that the promotion is unavailable
