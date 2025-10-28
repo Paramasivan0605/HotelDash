@@ -28,4 +28,10 @@ class FoodMenu extends Model
     {
         return $this->belongsTo(FoodCategory::class, 'category_id');
     }
+    
+    public function foodLocations(): HasMany
+    {
+        return $this->hasMany(FoodLocation::class, 'food_id');
+    }
+
 }

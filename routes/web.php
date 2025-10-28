@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\FoodMenu\FoodCategoryController;
+use App\Http\Controllers\Admin\FoodMenu\FoodLocationController;
 use App\Http\Controllers\Admin\FoodMenu\FoodMenuController;
 use App\Http\Controllers\Admin\Partnership\PartnershipController;
 use App\Http\Controllers\Admin\PromotionDiscount\PromotionDiscountController;
@@ -38,6 +39,8 @@ Route::get('/menu', [PublicController::class, 'menu'])->name('menu');
 Route::get('/about', [PublicController::class, 'about'])->name('about');
 Route::get('/promotion', [PublicController::class, 'promotion'])->name('promotion');
 Route::get('/reservation', [PublicController::class, 'reservation'])->name('reservation');
+Route::get('/location-menu/{categoryId}/{locationId}', [PublicController::class, 'getLocationMenu']);
+Route::get('/location-menu/{categoryId}', [PublicController::class, 'locationMenuPage'])->name('locationmenu');
 
 // Add to cart
 Route::post('/menu/create-order', [PublicController::class, 'createOrder'])->name('create-order');
@@ -84,6 +87,12 @@ Route::prefix('admin')->middleware('auth', 'isAdmin')->group(function () {
         'create' => 'food-menu-create',
         'show' => 'food-menu-show',
         'edit' => 'food-menu-edit',
+    ]);
+    Route::resource('/food-location', FoodLocationController::class)->names([
+        'index' => 'food-location',
+        'create' => 'food-location-create',
+        'show' => 'food-location-show',
+        'edit' => 'food-location-edit',
     ]);
 
     Route::post('/food-menu/create', [FoodCategoryController::class, 'store'])->name('food-category');

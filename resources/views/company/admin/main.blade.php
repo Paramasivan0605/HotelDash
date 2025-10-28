@@ -25,6 +25,9 @@
             <li class="{{ request()->routeIs(['food-menu', 'food-menu-create', 'food-menu-edit', 'food-menu-show', 'food-menu-search-index', 'food-menu-search-create']) ? 'active' : '' }}">
                 <a href="{{ route('food-menu') }}"><i class='bx bxs-food-menu'></i>Food Menus</a>
             </li>
+            <li class="{{ request()->routeIs(['food-location', 'food-location-create', 'food-location-edit', 'food-location-show']) ? 'active' : '' }}">
+                <a href="{{ route('food-location') }}"><i class='bx bxs-map-pin'></i>Food Location</a>
+            </li>
             <li class="{{ request()->routeIs(['restaurant', 'restaurant-create', 'restaurant-show', 'restaurant-edit']) ? 'active' : '' }}">
                 <a href="{{ route('restaurant') }}"><i class='bx bxs-store'></i>Restaurant</a>
             </li>

@@ -87,7 +87,7 @@
                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
                     </form>
 
-                    <form action="{{ route('food-category') }}" method="POST">
+                    <form action="{{ route('food-category') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <div class="form-category">
@@ -102,6 +102,13 @@
                             @foreach ($errors->get('new_category') as $category)
                                 <div class="error-message">{{ $category }}</div>
                             @endforeach
+
+                            <div class="low"><span>Food Image</span></div>
+                            <div class="drag-area" id="dragArea">
+                                <i class='bx bxs-cloud-upload'></i>
+                                <input type="file" class="select-image" name="category_image">
+                            </div>
+                            
                         </div>
 
                         <div class="button-category">

@@ -10,6 +10,7 @@ use App\Models\CustomerOrderDetail;
 use App\Models\DiningTable;
 use App\Models\FoodCategory;
 use App\Models\FoodMenu;
+use App\Models\Location;
 use App\Models\PromotionDiscount;
 use App\Models\PromotionEvent;
 use App\Models\Reservation;
@@ -42,10 +43,35 @@ class PublicController extends Controller
 
         $category = FoodCategory::all();
 
+
         return view('public.menu', compact('menu', 'category'));
     }
 
+    public function locationMenuPage($categoryId)
+    {
+        $category = FoodCategory::findOrFail($categoryId);
+        $locations = Location::all(); // get all locations
+        return view('public.locationmenu', compact('category', 'locations'));
+    }
 
+    public function getLocationMenu($categoryId, $locationId)
+    {
+        $menu = FoodMenu::where('category_id', $categoryId)
+            ->whereHas('foodLocations', function($q) use ($locationId) {
+                $q->where('location_id', $locationId);
+            })
+            ->get();
+
+        
+        // Map the price for the location
+        $menu = $menu->map(function($item) use ($locationId) {
+            $locationData = $item->foodLocations()->where('location_id', $locationId)->first();
+            $item->price = $locationData ? $locationData->price : $item->price;
+            return $item;
+        });
+
+        return response()->json($menu);
+    }
 
 
 
@@ -56,10 +82,6 @@ class PublicController extends Controller
     {
         return view('public.about');
     }
-
-
-
-
 
 
     /*

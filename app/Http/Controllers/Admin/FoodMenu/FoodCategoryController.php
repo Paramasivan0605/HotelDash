@@ -14,34 +14,49 @@ class FoodCategoryController extends Controller
     /*
     *  Function to store data category name into food category table
     */
-    public function store(Request $request) : RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
-        $validator = Validator::make($request->only('new_category'), [
+        $validator = Validator::make($request->all(), [
             'new_category' => 'required',
+            'category_image' => 'required',
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
+        $imagePath = null;
 
-        // Retrieve a submitted input of new_category
+        if ($request->hasFile('category_image')) {
+            $file = $request->file('category_image');
+            $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+            $destinationPath = public_path('images/food-category');
+
+            // ✅ Create folder if it doesn't exist
+            if (!is_dir($destinationPath)) {
+                mkdir($destinationPath, 0755, true); // 0755 permissions, true = recursive
+            }
+
+            $file->move($destinationPath, $fileName);
+            $imagePath = 'images/food-category/' . $fileName; // Save relative path
+        }
+
+
         $validated = $validator->safe()->only('new_category');
 
-        // Check if the category is exists
-        $exists = FoodCategory::where('name', $validated)->exists();
+        $exists = FoodCategory::where('name', $validated['new_category'])->exists();
 
         if ($exists) {
             return back()->withErrors([
                 'error-message' => 'Category already exists.'
             ]);
-        }
-        else {
+        } else {
             $category = FoodCategory::create([
                 'name' => $validated['new_category'],
+                'image' => $imagePath, 
             ]);
 
             Log::info([$category]);
-            
+
             return back()->with('success-message', 'Food Category added successfully.');
         }
     }
