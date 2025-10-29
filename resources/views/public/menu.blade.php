@@ -4,192 +4,87 @@
 
 @section('content')
 
-    <div class="menu-page">
-
-        <section>
-
-            <main>
-
-                <div class="page">
-
-                    @if ($menu->isEmpty())
-
-                        <div class="container-empty">
-                            <i class='bx bxs-error-alt'></i>
-                            <div class="text">
-                                <span class="top">Sorry, no menu available at the moment.</span>
-                                <span class="bottom">Please check back later!</span>
-                            </div>
-                        </div>
-                    @else
-                        <div class="category-banner">
-                            <h1>Our Signature Menu</h1>
-                        </div>
-
-                        <div class="signature-menu-section">
-                            <div class="menu-grid">
-                                @foreach($category as $index => $item)
-                                    <a href="{{ route('locationmenu', ['categoryId' => $item->id]) }}">
-                                        <div class="menu-item">
-                                            <img src="{{ asset($item->image ?? 'images/placeholder.jpg') }}" alt="{{ $item->name }}">
-                                            <div class="menu-overlay">
-                                                <div class="menu-badge">{{ strtoupper($item->category ?? 'SPECIAL') }}</div>
-                                                <h3>{{ $item->name }}</h3>
-                                                @if(isset($item->price))
-                                                <div class="price">RM {{ number_format($item->price, 2) }}</div>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </a>
-                                @endforeach
-                            </div>
-                        </div>
-
-                    @endif
-
+<div class="menu-page">
+    <section>
+        <main>
+            <div class="page">
+                    
+                {{-- Location Selection --}}
+                <div class="bg-gradient bg-primary text-white py-5 mt-5">
+                    <div class="container text-center">
+                        <h1 class="display-4 fw-bold mb-3">Select Your Location</h1>
+                        <p class="lead mb-0 fs-5">Choose your location to explore our delicious menu</p>
+                    </div>
                 </div>
 
-            </main>
+                <div class="container py-5">
+                    <div class="row g-4 justify-content-center">
+                        @foreach($locations as $location)
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <a href="{{ route('location.menu', ['id' => $location->location_id]) }}" class="text-decoration-none">
+                                    <div class="card border-0 shadow-lg h-100 overflow-hidden location-card">
+                                        <div class="position-relative" style="height: 320px;">
+                                            @if($location->location_name == 'Phuket')
+                                                <img src="https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=800&q=80" class="w-100 h-100 object-fit-cover" alt="Phuket">
+                                            @elseif($location->location_name == 'Bangkok')
+                                                <img src="https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80" class="w-100 h-100 object-fit-cover" alt="Bangkok">
+                                            @elseif($location->location_name == 'Pattaya')
+                                                <img src="https://images.unsplash.com/photo-1562602833-0f4ab2fc46e3?w=800&q=80" class="w-100 h-100 object-fit-cover" alt="Pattaya">
+                                            @elseif($location->location_name == 'Colombo')
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/6/62/Colombo_city_skyline_at_night.png" class="w-100 h-100 object-fit-cover" alt="Colombo">
+                                            @else
+                                                <img src="https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800&q=80" class="w-100 h-100 object-fit-cover" alt="{{ $location->location_name }}">
+                                            @endif
+                                            
+                                            <div class="position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0,0,0,0.4); backdrop-filter: blur(2px);"></div>
+                                            
+                                            <div class="position-absolute top-50 start-50 translate-middle text-center w-100 px-3">
+                                                <div class="bg-white bg-opacity-25 rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow" style="width: 70px; height: 70px;">
+                                                    <i class='bx bx-map text-white' style="font-size: 2rem;"></i>
+                                                </div>
+                                                <h3 class="text-white fw-bold fs-2 mb-3">{{ $location->location_name }}</h3>
+                                                <span class="badge bg-white bg-opacity-25 text-white px-4 py-2 fs-6 fw-semibold shadow-sm">{{ $location->currency }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
 
-            @include('public.modal.success-message')
+            </div>
+        </main>
 
-        </section>
+        @include('public.modal.success-message')
 
-    </div>
+    </section>
+</div>
 
-    <style>
-        .signature-menu-section {
-            padding: 20px 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+<style>
+    .location-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 20px;
+    }
 
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
-            padding: 20px 0;
-        }
+    .location-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 1.5rem 3rem rgba(0,0,0,0.3) !important;
+    }
 
-        .menu-item {
-            position: relative;
-            height: 300px;
-            border-radius: 12px;
-            overflow: hidden;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
+    .location-card img {
+        transition: transform 0.5s ease;
+    }
 
-        .menu-item:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-        }
+    .location-card:hover img {
+        transform: scale(1.1);
+    }
 
-        .menu-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-
-        .menu-item:hover img {
-            transform: scale(1.1);
-        }
-
-        .menu-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.7) 70%, transparent 100%);
-            padding: 30px 25px;
-            transform: translateY(60%);
-            transition: transform 0.3s ease;
-        }
-
-        .menu-item:hover .menu-overlay {
-            transform: translateY(0);
-        }
-
-        .menu-badge {
-            display: inline-block;
-            background: #ff6b6b;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-        }
-
-        .menu-overlay h3 {
-            color: white;
-            font-size: 22px;
-            font-weight: 600;
-            margin: 10px 0;
-            line-height: 1.3;
-        }
-
-        .menu-overlay p {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 14px;
-            line-height: 1.6;
-            margin: 10px 0;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.3s ease 0.1s;
-        }
-
-        .menu-item:hover .menu-overlay p {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .menu-overlay .price {
-            color: #ffd700;
-            font-size: 24px;
-            font-weight: 700;
-            margin-top: 12px;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.3s ease 0.15s;
-        }
-
-        .menu-item:hover .menu-overlay .price {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        @media (max-width: 768px) {
-            .menu-grid {
-                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-                gap: 20px;
-            }
-
-            .menu-item {
-                height: 250px;
-            }
-
-            .menu-overlay h3 {
-                font-size: 18px;
-            }
-
-            .menu-overlay .price {
-                font-size: 20px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .signature-menu-section {
-                padding: 40px 15px;
-            }
-
-            .menu-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    .object-fit-cover {
+        object-fit: cover;
+    }
+</style>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 @endsection

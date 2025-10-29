@@ -15,6 +15,7 @@ class CustomerOrder extends Model
 
     protected $fillable = [
         'dining_table_id',
+        'delivery_type',
         'order_total_price',
         'isPaid',
         'order_status',

@@ -7,6 +7,11 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
     <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
     <title>@yield('title', 'Home')</title>
 </head>
@@ -75,14 +80,16 @@
             </div>
         </div>
 
-        <div class="table-number">
+        {{-- Table Number (only for Restaurant Dine-in) --}}
+        <div class="table-number" style="display:none;">
             <span>Table No.</span>
-            <input type="text" name="table_number" placeholder="0" required>
+            <input type="text" name="table_number" placeholder="0">
             <div class="message"></div>
             <div id="success-response" class="success-message"></div>
             <div id="error-response" class="validation-error-message"></div>
         </div>
 
+        {{-- Order Summary --}}
         <div class="main-section-order">
             <span>Your Order</span>
             <div class="cart-total">
@@ -91,24 +98,36 @@
             </div>
         </div>
 
+        {{-- List of Cart Items --}}
         <div class="your-order">
             <ul class="cart-list">
-                <li>
-                    <span class="empty">No item in cart</span>
-                </li>
+                <li><span class="empty">No item in cart</span></li>
             </ul>
         </div>
 
-        <div class="customer-contact">
-            <span>Your Contact Number</span>
-            <input type="text" name="customer_contact" placeholder="0123456789">
+        {{-- Delivery Type Info --}}
+        <div class="delivery-type-info" style="display:none;">
+            <strong>Order Type:</strong> <span id="selected-delivery-type"></span>
         </div>
 
+        {{-- Contact Number --}}
+        <div class="customer-contact">
+            <span>Your Contact Number <span style="color:red;">*</span></span>
+            <input type="text" name="customer_contact" placeholder="0123456789" required>
+        </div>
+
+        {{-- Cash Note --}}
+        <div class="cash-note" style="font-size:13px; color:#ff9800; margin-top:10px;">
+            💵 <strong>Note:</strong> No online payment — Cash only.
+        </div>
+
+        {{-- Confirm Button --}}
         <div class="cart-button">
-            <span>Please make sure your purchase before confirm the order.</span>
+            <span>Please make sure your purchase before confirming the order.</span>
             <button type="button" class="confirm-order" disabled><span>Confirm Order</span></button>
         </div>
     </div>
+
 
     @yield('content')
 
@@ -139,8 +158,26 @@
        
 
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/public.js') }}"></script>
+    <!-- ✅ Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header bg-success text-white">
+            <h5 class="modal-title"><i class="bi bi-check-circle-fill"></i> Success!</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center">
+            <p id="successMessage" class="fs-5"></p>
+            <i class="bi bi-cart-check-fill fs-1 text-success"></i>
+        </div>
+        <div class="modal-footer justify-content-center">
+            <button type="button" class="btn btn-success" id="closeSuccessModal" data-bs-dismiss="modal">OK</button>
+        </div>
+        </div>
+    </div>
+    </div>
 
 </body>
 

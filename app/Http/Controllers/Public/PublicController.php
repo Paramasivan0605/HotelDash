@@ -10,6 +10,7 @@ use App\Models\CustomerOrderDetail;
 use App\Models\DiningTable;
 use App\Models\FoodCategory;
 use App\Models\FoodMenu;
+use App\Models\FoodLocation;
 use App\Models\Location;
 use App\Models\PromotionDiscount;
 use App\Models\PromotionEvent;
@@ -40,40 +41,28 @@ class PublicController extends Controller
     public function menu() : View
     {
         $menu = FoodMenu::all();
-
         $category = FoodCategory::all();
+        $locations = Location::all();
 
-
-        return view('public.menu', compact('menu', 'category'));
+        return view('public.menu', compact('menu', 'category','locations'));
     }
 
-    public function locationMenuPage($categoryId)
+    public function locationMenuPage($locationId)
     {
-        $category = FoodCategory::findOrFail($categoryId);
-        $locations = Location::all(); // get all locations
-        return view('public.locationmenu', compact('category', 'locations'));
-    }
-
-    public function getLocationMenu($categoryId, $locationId)
-    {
-        $menu = FoodMenu::where('category_id', $categoryId)
-            ->whereHas('foodLocations', function($q) use ($locationId) {
-                $q->where('location_id', $locationId);
-            })
-            ->get();
-
+        // Get the location
+        $location = Location::findOrFail($locationId);
         
-        // Map the price for the location
-        $menu = $menu->map(function($item) use ($locationId) {
-            $locationData = $item->foodLocations()->where('location_id', $locationId)->first();
-            $item->price = $locationData ? $locationData->price : $item->price;
-            return $item;
-        });
-
-        return response()->json($menu);
+        // Get all food_location records for this location
+        $foodLocations = FoodLocation::where('location_id', $locationId)->get();
+        
+        // Extract food IDs
+        $foodIds = $foodLocations->pluck('food_id');
+        
+        // Get all food items that match these IDs
+        $foodMenu = FoodMenu::whereIn('id', $foodIds)->get();
+        
+        return view('public.locationMenu', compact('foodMenu', 'location'));
     }
-
-
 
     /*
     *  Function to view about file
@@ -150,84 +139,64 @@ class PublicController extends Controller
         return view('public.menu', ['menu' => $search]);
     }
 
-
-
-
-
-
     /*
     *  Function for add to cart
     */
-    public function createOrder(Request $request) : JsonResponse
+    public function createOrder(Request $request): JsonResponse
     {
-        // Retrieve the JSON data from the request
         $cartItem = $request->input('cartData');
         $totalPrice = $request->input('totalAmount');
-
-        // Get table number input
         $tableNumber = $request->input('table_number');
+        $contact = $request->input('customer_contact');
 
-        // Initialize contact as null
-        $contact = null;
+        // Get deliveryType from the first item in cartData
+        $deliveryType = $cartItem[0]['deliveryType'] ?? null;
 
-        // Check if contact field is filled
-        if ($request->filled('customer_contact')) {
-            $contact = $request->input('customer_contact');
-            //dd($contact);
+        // For dine-in, check table logic
+        if ($deliveryType === 'Restaurant Dine-in') {
+            $table = DiningTable::where('table_name', $tableNumber)->first();
+
+            if (!$table) {
+                return response()->json([
+                    'validation-error-message' => 'Table does not exist. Please enter a correct table number.',
+                ], 422);
+            }
+
+            if ($table->isOccupied) {
+                return response()->json([
+                    'validation-error-message' => 'Table is taken. Please enter another table number.',
+                ], 422);
+            }
+
+            $table->update(['isOccupied' => true]);
+            $tableId = $table->id;
+        } else {
+            $tableId = null;
         }
 
-        // Get table record
-        $table = DiningTable::where('table_name', $tableNumber)->first();
-
-        // If table not exists
-        if (!$table) {
-            return response()->json([
-                'validation-error-message' => 'Table does not exists. Plese enter a correct table number.',
-            ], 422);
-        }
-
-        // If table is occupied
-        if ($table->isOccupied) {
-            return response()->json([
-                'validation-error-message' => 'Table is taken. Please enter another table number.',
-            ], 422);
-        }
-
-        // Table exists and table is not accupied then update isOccupied to true
-        $table->update(['isOccupied' => true]);
-
-        // Create order
         $order = CustomerOrder::create([
-            'dining_table_id' => $table->id,
+            'dining_table_id' => $tableId,
             'order_total_price' => $totalPrice,
+            'delivery_type' => $deliveryType,
             'isPaid' => false,
             'order_status' => OrderStatusEnum::Preparing,
             'customer_contact' => $contact,
         ]);
 
-        // Get order id
-        $orderId = $order->id;
-
         foreach ($cartItem as $item) {
-            // Create order details
-            $orderDetails = CustomerOrderDetail::create([
-                'order_id' => $orderId,
+            CustomerOrderDetail::create([
+                'order_id' => $order->id,
                 'food_id' => $item['id'],
                 'quantity' => $item['quantity'],
                 'total_price' => $item['eachTotalPrice'],
             ]);
         }
 
-        Log::info([$table, $order, $orderDetails]);
-
         return response()->json([
-            'success-message' => 'Your order is being processed. Please wait 15 - 30 minutes for us to prepare your food.',
+            'success-message' => 'Your order is being processed. Please wait 15–30 minutes. Cash only — no online payment.',
         ]);
     }
 
-
-
-    
 
     /*
     *  Function for reservation

@@ -39,9 +39,7 @@ Route::get('/menu', [PublicController::class, 'menu'])->name('menu');
 Route::get('/about', [PublicController::class, 'about'])->name('about');
 Route::get('/promotion', [PublicController::class, 'promotion'])->name('promotion');
 Route::get('/reservation', [PublicController::class, 'reservation'])->name('reservation');
-Route::get('/location-menu/{categoryId}/{locationId}', [PublicController::class, 'getLocationMenu']);
-Route::get('/location-menu/{categoryId}', [PublicController::class, 'locationMenuPage'])->name('locationmenu');
-
+Route::get('/location/{id}/menu', [PublicController::class, 'locationMenuPage'])->name('location.menu');
 // Add to cart
 Route::post('/menu/create-order', [PublicController::class, 'createOrder'])->name('create-order');
 
