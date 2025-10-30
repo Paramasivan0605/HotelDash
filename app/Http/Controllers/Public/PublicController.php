@@ -145,6 +145,14 @@ class PublicController extends Controller
         $totalPrice = $request->input('totalAmount');
         $tableNumber = $request->input('table_number');
         $contact = $request->input('customer_contact');
+        $paymentType = $request->input('payment_type'); // 'cash' or 'card'
+
+        // Validate payment type
+        if (!in_array($paymentType, ['cash', 'card'])) {
+            return response()->json([
+                'validation-error-message' => 'Invalid payment method selected.',
+            ], 422);
+        }
 
         // Get deliveryType from the first item in cartData
         $deliveryType = $cartItem[0]['deliveryType'] ?? null;
@@ -175,6 +183,7 @@ class PublicController extends Controller
             'dining_table_id' => $tableId,
             'order_total_price' => $totalPrice,
             'delivery_type' => $deliveryType,
+            'payment_type' => $paymentType, // Save payment type
             'isPaid' => false,
             'order_status' => OrderStatusEnum::Preparing,
             'customer_contact' => $contact,
@@ -190,7 +199,7 @@ class PublicController extends Controller
         }
 
         return response()->json([
-            'success-message' => 'Your order is being processed. Please wait 15–30 minutes. Cash only — no online payment.',
+            'success-message' => 'Your order is being processed. Please wait 15–30 minutes.',
         ]);
     }
 

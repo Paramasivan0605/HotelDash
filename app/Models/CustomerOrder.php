@@ -17,6 +17,7 @@ class CustomerOrder extends Model
         'dining_table_id',
         'delivery_type',
         'order_total_price',
+        'payment_type',
         'isPaid',
         'order_status',
         'customer_contact',

@@ -529,9 +529,6 @@ input::-webkit-inner-spin-button {
     color: var(--dark);
 }
 
-.cart-section .customer-contact span::after {
-    content: " (Optional)";
-}
 
 .cart-section .customer-contact input {
     outline: none;

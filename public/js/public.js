@@ -13,16 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-/*
-*  ---------------------- End of Scrolling Top Bar ---------------------
-*/
-
-
-
-
-
-
-
 
 /*
 *  -------------------- Function for Success Message ---------------------------
@@ -37,11 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     }
 });
-/*
-*  -------------------------- End of Function for Success Message -------------------
-*/
-
-
 
 /*
 *  ------------------------------ Search -------------------------------------------
@@ -63,12 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     body.addEventListener('click', () => {
         searchBox.classList.remove('active');
     });
-
 });
-/*
-*  ------------------------------ End of Search -------------------------------------
-*/
-
 
 /*
 *  -------------------------- Function to Click an Icon for Search ---------------------
@@ -81,10 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
         search.submit();
     });
 });
-/*
-*  ---------------------- End of Function to Click an Icon for Search -----------------------
-*/
-
 
 /*
 *  ---------------------------- choose delivery option ------------------------------
@@ -94,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const menuSection = document.getElementById('menuSection');
     let selectedOption = null;
     let selectedLocationId = null;
-    // Detect if this is a reload
+    
     const navEntries = performance.getEntriesByType("navigation");
     const isReload = navEntries.length > 0 && navEntries[0].type === "reload";
 
@@ -102,12 +78,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!isReload) {
         deliveryModal.show();
     } else {
-        // On reload, show menu directly
         if (menuSection) {
             menuSection.style.display = 'block';
         }
 
-        // Restore previous delivery type if exists
         selectedOption = sessionStorage.getItem('delivery_type');
         selectedLocationId = sessionStorage.getItem('location_id');
         
@@ -125,16 +99,14 @@ document.addEventListener('DOMContentLoaded', function() {
             selectedOption = this.dataset.option;
             selectedLocationId = this.dataset.locationId;
 
-            // Store in sessionStorage
             sessionStorage.setItem('delivery_type', selectedOption);
             sessionStorage.setItem('location_id', selectedLocationId);
-            // Hide modal and show menu
+            
             deliveryModal.hide();
             if (menuSection) {
                 menuSection.style.display = 'block';
             }
 
-            // Add delivery type to all add-to-cart buttons
             document.querySelectorAll('.add-to-cart').forEach(btn => {
                 btn.dataset.deliveryType = selectedOption;
                 btn.dataset.locationId = selectedLocationId;
@@ -142,11 +114,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-
-/*
-*  ---------------------------- end of delivery option ------------------------------
-*/
-
 
 /*
 *  ---------------------------- Add to Cart ------------------------------
@@ -159,7 +126,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const cartList = document.querySelector('.cart-list');
     const addProduct = document.querySelectorAll('.add-to-cart');
 
-    // ✅ Handle delivery type selection (Restaurant Dine-in / Doorstep Delivery)
+    // Handle delivery type selection
     document.querySelectorAll('.delivery-option-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const selectedType = btn.getAttribute('data-option');
@@ -168,7 +135,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             localStorage.setItem('selectedDeliveryType', selectedType);
             localStorage.setItem('location_id', locationId);
 
-            // Set this delivery type on all add-to-cart buttons
             document.querySelectorAll('.add-to-cart').forEach(addBtn => {
                 addBtn.setAttribute('data-delivery-type', selectedType);
                 addBtn.setAttribute('data-location-id', locationId);
@@ -196,7 +162,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         body.classList.remove('cart-active');
     });
 
-    // Click outside cart section will close the cart
     body.addEventListener('click', (event) => {
         if (!cartSection.contains(event.target) && !event.target.classList.contains(openCart)) {
             body.classList.remove('cart-active');
@@ -213,7 +178,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             const deliveryType = button.getAttribute('data-delivery-type') || localStorage.getItem('selectedDeliveryType') || '';
             const locationId = button.getAttribute('data-location-id') || localStorage.getItem('location_id') || '';
 
-            // ✅ Validate location ID and delivery type
+            // Validate location ID and delivery type
             if (!locationId) {
                 alert("⚠️ Location ID is missing. Please select a location first.");
                 return;
@@ -253,9 +218,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 }
             }
 
-            // Save cart
             localStorage.setItem('cart', JSON.stringify(cart));
-
             updateCart();
         });
     });
@@ -307,6 +270,36 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
+    // ✅ Delivery Type Change Functionality
+    document.getElementById('changeDeliveryType').addEventListener('click', () => {
+        const changeDeliveryModal = new bootstrap.Modal(document.getElementById('changeDeliveryModal'));
+        changeDeliveryModal.show();
+    });
+
+    // Handle delivery type change in modal
+    document.querySelectorAll('.btn-delivery-option').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const newDeliveryType = this.getAttribute('data-option');
+            const locationId = localStorage.getItem('location_id');
+            
+            // Update all items in cart with new delivery type
+            for (const foodId in cart) {
+                cart[foodId].deliveryType = newDeliveryType;
+            }
+            
+            localStorage.setItem('cart', JSON.stringify(cart));
+            localStorage.setItem('selectedDeliveryType', newDeliveryType);
+            
+            document.querySelectorAll('.add-to-cart').forEach(addBtn => {
+                addBtn.setAttribute('data-delivery-type', newDeliveryType);
+            });
+            
+            updateCart();
+            bootstrap.Modal.getInstance(document.getElementById('changeDeliveryModal')).hide();
+            showTempMessage(`Order type changed to ${newDeliveryType}`, 'success');
+        });
+    });
+
     // Update cart view
     function updateCart() {
         cartList.innerHTML = '';
@@ -314,36 +307,39 @@ document.addEventListener('DOMContentLoaded', (event) => {
         let totalAmount = 0;
         let totalItemCount = 0;
 
-        for (const foodId in cart) {
-            const product = cart[foodId];
-            const listItem = document.createElement('li');
-            const productTotalPrice = product.price * product.quantity;
+        if (Object.keys(cart).length === 0) {
+            cartList.innerHTML = '<li><span class="empty">No item in cart</span></li>';
+        } else {
+            for (const foodId in cart) {
+                const product = cart[foodId];
+                const listItem = document.createElement('li');
+                const productTotalPrice = product.price * product.quantity;
 
-            listItem.innerHTML = `
-                <div class="product">
-                    <img src="${product.image}" alt="food-image">
-                    <span>${product.name}</span>
-                </div>
-                <div class="quantity-price">
-                    <span>${product.quantity}</span>
-                    <span>RM ${(productTotalPrice).toFixed(2)}</span>
-                </div>
-                <div class="action">
-                    <button type="button" class="minus" data-food-id="${foodId}">-</button>
-                    <span>${product.quantity}</span>
-                    <button type="button" class="plus" data-food-id="${foodId}">+</button>
-                </div>
-                <div class="delete">
-                    <button type="button" class="cart-list-delete">
-                        <i class='bx bxs-trash' data-food-id="${foodId}"></i>
-                    </button>
-                </div>
-            `;
+                listItem.innerHTML = `
+                    <div class="product">
+                        <img src="${product.image}" alt="food-image">
+                        <span>${product.name}</span>
+                    </div>
+                    <div class="quantity-price">
+                        <span>${product.quantity}</span>
+                        <span>RM ${(productTotalPrice).toFixed(2)}</span>
+                    </div>
+                    <div class="action">
+                        <button type="button" class="minus" data-food-id="${foodId}">-</button>
+                        <span>${product.quantity}</span>
+                        <button type="button" class="plus" data-food-id="${foodId}">+</button>
+                    </div>
+                    <div class="delete">
+                        <button type="button" class="cart-list-delete">
+                            <i class='bx bxs-trash' data-food-id="${foodId}"></i>
+                        </button>
+                    </div>
+                `;
 
-            cartList.appendChild(listItem);
-
-            totalAmount += productTotalPrice;
-            totalItemCount += product.quantity;
+                cartList.appendChild(listItem);
+                totalAmount += productTotalPrice;
+                totalItemCount += product.quantity;
+            }
         }
 
         document.getElementById('cart-total-amount').textContent = `RM ${totalAmount.toFixed(2)}`;
@@ -362,6 +358,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             if (deliveryTypeSpan) deliveryTypeSpan.textContent = deliveryType;
             if (deliveryInfoDiv) deliveryInfoDiv.style.display = 'block';
 
+            // Show table number only for Restaurant Dine-in
             if (deliveryType === 'Restaurant Dine-in') {
                 tableNumberSection.style.display = 'block';
             } else {
@@ -389,6 +386,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             const firstItem = cart[Object.keys(cart)[0]];
             if (firstItem.deliveryType) {
                 hasDeliveryType = true;
+                // Only require table number for Restaurant Dine-in
                 requiresTable = firstItem.deliveryType === 'Restaurant Dine-in';
             }
         }
@@ -400,8 +398,94 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
-    // ✅ Send order data
+    // ✅ Helper function to show temporary messages
+    function showTempMessage(message, type) {
+        const tempDiv = document.createElement('div');
+        tempDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        tempDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.querySelector('.cart-section').insertBefore(tempDiv, document.querySelector('.cart-section').firstChild);
+        
+        setTimeout(() => {
+            if (tempDiv.parentNode) {
+                tempDiv.remove();
+            }
+        }, 3000);
+    }
+
+    // ✅ Payment and Order Confirmation Flow
+    let paymentModal, finalConfirmationModal;
+
+    function initializeModals() {
+        if (!paymentModal) {
+            paymentModal = new bootstrap.Modal(document.getElementById('paymentConfirmationModal'));
+        }
+        if (!finalConfirmationModal) {
+            finalConfirmationModal = new bootstrap.Modal(document.getElementById('finalConfirmationModal'));
+        }
+    }
+
+    function setupConfirmationFlow() {
+        const confirmPaymentBtn = document.getElementById('confirmPayment');
+        const finalConfirmOrderBtn = document.getElementById('finalConfirmOrder');
+        
+        const newConfirmPaymentBtn = confirmPaymentBtn.cloneNode(true);
+        const newFinalConfirmOrderBtn = finalConfirmOrderBtn.cloneNode(true);
+        
+        confirmPaymentBtn.parentNode.replaceChild(newConfirmPaymentBtn, confirmPaymentBtn);
+        finalConfirmOrderBtn.parentNode.replaceChild(newFinalConfirmOrderBtn, finalConfirmOrderBtn);
+
+        newConfirmPaymentBtn.addEventListener('click', handlePaymentConfirmation);
+        newFinalConfirmOrderBtn.addEventListener('click', handleFinalConfirmation);
+    }
+
+    function handlePaymentConfirmation() {
+        const selectedPayment = document.querySelector('input[name="paymentType"]:checked').value;
+        const paymentMethod = selectedPayment === 'cash' ? 'Cash' : 'Card';
+        const totalAmount = document.getElementById('cart-total-amount').textContent;
+        
+        const finalMessage = `Please confirm your order:\n\n• Order Type: ${document.getElementById('selected-delivery-type').textContent}\n• Payment Method: ${paymentMethod}\n• ${totalAmount}\n\nThis action cannot be undone.`;
+        document.getElementById('finalConfirmationMessage').textContent = finalMessage;
+        
+        paymentModal.hide();
+        finalConfirmationModal.show();
+    }
+
+    function handleFinalConfirmation() {
+        const selectedPayment = document.querySelector('input[name="paymentType"]:checked').value;
+        sendOrderData(selectedPayment);
+    }
+
     confirmOrderBtn.addEventListener('click', () => {
+        // First check if delivery type needs to be changed
+        const firstCartItemKey = Object.keys(cart)[0];
+        const currentDeliveryType = firstCartItemKey ? cart[firstCartItemKey].deliveryType : null;
+        const selectedDeliveryType = localStorage.getItem('selectedDeliveryType');
+        
+        if (currentDeliveryType && selectedDeliveryType && currentDeliveryType !== selectedDeliveryType) {
+            if (confirm(`You have items in your cart with "${currentDeliveryType}" order type, but currently selected is "${selectedDeliveryType}". Do you want to change the order type for all items?`)) {
+                for (const foodId in cart) {
+                    cart[foodId].deliveryType = selectedDeliveryType;
+                }
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCart();
+            }
+        }
+
+        initializeModals();
+        setupConfirmationFlow();
+        
+        const totalAmount = document.getElementById('cart-total-amount').textContent;
+        document.getElementById('paymentOrderSummary').textContent = `Total: ${totalAmount}`;
+        
+        paymentModal.show();
+    });
+
+    // ✅ Send order data function
+    function sendOrderData(paymentType) {
         const cartData = [];
         let totalAmount = 0;
 
@@ -418,6 +502,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 name: product.name,
                 price: product.price,
                 deliveryType: product.deliveryType,
+                locationId: product.locationId,
                 quantity: product.quantity,
                 eachTotalPrice: eachTotalPrice.toFixed(2),
             });
@@ -433,10 +518,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': csrfToken,
             },
-            body: JSON.stringify({ cartData, totalAmount, table_number, customer_contact }),
+            body: JSON.stringify({ 
+                cartData, 
+                totalAmount, 
+                table_number, 
+                customer_contact,
+                payment_type: paymentType 
+            }),
         })
         .then(res => res.json())
         .then(data => {
+            finalConfirmationModal.hide();
+            
             const successMessage = document.getElementById('successMessage');
             const successModalEl = document.getElementById('successModal');
             const closeModalBtn = document.getElementById('closeSuccessModal');
@@ -444,11 +537,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
             if (data['success-message'] && successModalEl && successMessage) {
                 successMessage.textContent = data['success-message'];
 
-                // Show modal using Bootstrap 5
                 const bsModal = new bootstrap.Modal(successModalEl);
                 bsModal.show();
 
-                closeModalBtn.addEventListener('click', () => {
+                const newCloseBtn = closeModalBtn.cloneNode(true);
+                closeModalBtn.parentNode.replaceChild(newCloseBtn, closeModalBtn);
+                
+                newCloseBtn.addEventListener('click', () => {
                     localStorage.clear();
                     updateCart();
                     location.reload();
@@ -460,8 +555,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 error.classList.add('error');
             }
         })
-    });
+        .catch(error => {
+            finalConfirmationModal.hide();
+            console.error('Error:', error);
+            alert('An error occurred while placing your order. Please try again.');
+        });
+    }
 });
-/*
-*  -------------------------- End of Add to Cart -----------------------
-*/

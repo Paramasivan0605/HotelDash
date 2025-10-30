@@ -14,6 +14,8 @@
 
     <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
     <title>@yield('title', 'Home')</title>
+    <link rel="stylesheet" href="{{ asset('css/style1.css') }}">
+
 </head>
 
 <body>
@@ -107,7 +109,13 @@
 
         {{-- Delivery Type Info --}}
         <div class="delivery-type-info" style="display:none;">
-            <strong>Order Type:</strong> <span id="selected-delivery-type"></span>
+            <div class="delivery-header">
+                <strong>Order Type:</strong> 
+                <span id="selected-delivery-type"></span>
+                <button type="button" class="btn-change-delivery" id="changeDeliveryType">
+                    <i class='bx bx-edit'></i> Change
+                </button>
+            </div>
         </div>
 
         {{-- Contact Number --}}
@@ -128,6 +136,101 @@
         </div>
     </div>
 
+   <!-- In your main blade file, update the delivery type change modal -->
+<div class="modal fade" id="changeDeliveryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="bi bi-truck"></i> Change Order Type</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="fs-5 mb-4">Select new order type:</p>
+                <div class="delivery-options-change">
+                    <button type="button" class="btn btn-outline-primary btn-delivery-option" data-option="Restaurant Dine-in">
+                        <i class="bi bi-cup-hot-fill"></i><br>
+                        Restaurant Dine-in
+                    </button>
+                    <button type="button" class="btn btn-outline-success btn-delivery-option" data-option="Doorstep Delivery">
+                        <i class="bi bi-house-door-fill"></i><br>
+                        Doorstep Delivery
+                    </button>
+                    <button type="button" class="btn btn-outline-warning btn-delivery-option" data-option="Counter Pickup">
+                        <i class="bi bi-shop"></i><br>
+                        Counter Pickup
+                    </button>
+                </div>
+                <div class="alert alert-warning mt-3" role="alert">
+                    <small>⚠️ Changing order type will update all items in your cart.</small>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- ✅ Payment Confirmation Modal -->
+    <div class="modal fade" id="paymentConfirmationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-credit-card"></i> Payment Method</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p class="fs-5 mb-4">How would you like to pay?</p>
+                    
+                    <div class="payment-options mb-4">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="paymentType" id="cashPayment" value="cash" checked>
+                            <label class="form-check-label" for="cashPayment">
+                                <i class="bi bi-cash fs-4 text-success"></i><br>
+                                Cash
+                            </label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="paymentType" id="cardPayment" value="card">
+                            <label class="form-check-label" for="cardPayment">
+                                <i class="bi bi-credit-card fs-4 text-primary"></i><br>
+                                Card
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="order-summary bg-light p-3 rounded">
+                        <h6>Order Summary</h6>
+                        <p id="paymentOrderSummary">Total: RM 0.00</p>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmPayment">Confirm Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ Final Order Confirmation Modal -->
+    <div class="modal fade" id="finalConfirmationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle"></i> Confirm Order</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p id="finalConfirmationMessage" class="fs-5"></p>
+                    <i class="bi bi-cart-check-fill fs-1 text-warning"></i>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" id="finalConfirmOrder">Yes, Confirm Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     @yield('content')
 
@@ -154,10 +257,8 @@
                 </div>
             </div>
         </div>
-
-       
-
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/public.js') }}"></script>
     <!-- ✅ Success Modal -->
@@ -178,7 +279,6 @@
         </div>
     </div>
     </div>
-
 </body>
 
 </html>
