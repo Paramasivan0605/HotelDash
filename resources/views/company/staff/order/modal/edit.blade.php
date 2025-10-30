@@ -20,7 +20,6 @@
 
                     <div class="input-data">
                         <span class="label">Table No.</span>
-                        <span class="data">{{ $order->diningTable->table_name }}</span>
                     </div>
 
                     <div class="order-status">

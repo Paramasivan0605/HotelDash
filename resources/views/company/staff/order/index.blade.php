@@ -62,7 +62,6 @@
                             <thead>
                                 <tr>
                                     <th><input type="checkbox"></th>
-                                    <th>Table Number</th>
                                     <th>Food Order</th>
                                     <th>Order Status</th>
                                     <th>Paid Status</th>
@@ -75,7 +74,6 @@
                                 @foreach ($customerOrder as $order)
                                     <tr>
                                         <td><input type="checkbox"></td>
-                                        <td>{{ $order->diningTable->table_name }}</td>
                                         <td>
                                             @foreach ($order->customerOrderDetail as $orderDetail)
                                                 {{ Str::limit($orderDetail->foodMenu->name, 10) }}
