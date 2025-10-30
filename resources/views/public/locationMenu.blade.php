@@ -11,13 +11,13 @@
       <h4 class="mb-3" id="deliveryOptionModalLabel">Choose Your Order Type</h4>
       <p class="text-muted mb-4">Please select one to continue</p>
       <div class="d-flex flex-column gap-3">
-        <button class="btn btn-outline-primary delivery-option-btn" data-option="Doorstep Delivery">
+        <button class="btn btn-outline-primary delivery-option-btn" data-option="Doorstep Delivery" data-location-id="{{ $location->location_id }}">
           🛵 Doorstep Delivery
         </button>
-        <button class="btn btn-outline-success delivery-option-btn" data-option="Restaurant Dine-in">
+        <button class="btn btn-outline-success delivery-option-btn" data-option="Restaurant Dine-in" data-location-id="{{ $location->location_id }}">
           🍽️ Restaurant Dine-in
         </button>
-        <button class="btn btn-outline-warning delivery-option-btn" data-option="Counter Pickup">
+        <button class="btn btn-outline-warning delivery-option-btn" data-option="Counter Pickup" data-location-id="{{ $location->location_id }}">
           🧾 Counter Pickup
         </button>
       </div>
@@ -120,6 +120,7 @@
                                                 data-food-name="{{ $item->name }}" 
                                                 data-food-price="{{ $item->price }}"
                                                 data-delivery-type=""
+                                                data-location-id=""
                                                 data-bs-dismiss="modal">
                                             <i class='bx bx-cart'></i>
                                             <span>Add to Cart</span>

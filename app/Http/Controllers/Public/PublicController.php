@@ -51,16 +51,13 @@ class PublicController extends Controller
     {
         // Get the location
         $location = Location::findOrFail($locationId);
-        
-        // Get all food_location records for this location
-        $foodLocations = FoodLocation::where('location_id', $locationId)->get();
-        
-        // Extract food IDs
-        $foodIds = $foodLocations->pluck('food_id');
-        
-        // Get all food items that match these IDs
-        $foodMenu = FoodMenu::whereIn('id', $foodIds)->get();
-        
+
+        // Join food_locations with food_menu to get food details and price for this location
+        $foodMenu = FoodMenu::select('food_menus.*', 'food_price.price')
+            ->join('food_price', 'food_price.food_id', '=', 'food_menus.id')
+            ->where('food_price.location_id', $locationId)
+            ->get();
+
         return view('public.locationMenu', compact('foodMenu', 'location'));
     }
 

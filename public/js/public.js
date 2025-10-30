@@ -93,18 +93,41 @@ document.addEventListener('DOMContentLoaded', function() {
     const deliveryModal = new bootstrap.Modal(document.getElementById('deliveryOptionModal'));
     const menuSection = document.getElementById('menuSection');
     let selectedOption = null;
+    let selectedLocationId = null;
+    // Detect if this is a reload
+    const navEntries = performance.getEntriesByType("navigation");
+    const isReload = navEntries.length > 0 && navEntries[0].type === "reload";
 
-    // Show modal when page loads
-    deliveryModal.show();
+    // Show modal only if not a reload
+    if (!isReload) {
+        deliveryModal.show();
+    } else {
+        // On reload, show menu directly
+        if (menuSection) {
+            menuSection.style.display = 'block';
+        }
+
+        // Restore previous delivery type if exists
+        selectedOption = sessionStorage.getItem('delivery_type');
+        selectedLocationId = sessionStorage.getItem('location_id');
+        
+        if (selectedOption) {
+            document.querySelectorAll('.add-to-cart').forEach(btn => {
+                btn.dataset.deliveryType = selectedOption;
+                btn.dataset.locationId = selectedLocationId;
+            });
+        }
+    }
 
     // Handle delivery type button click
     document.querySelectorAll('.delivery-option-btn').forEach(button => {
         button.addEventListener('click', function() {
             selectedOption = this.dataset.option;
+            selectedLocationId = this.dataset.locationId;
 
-            // Optional: store in localStorage
-            localStorage.setItem('delivery_type', selectedOption);
-
+            // Store in sessionStorage
+            sessionStorage.setItem('delivery_type', selectedOption);
+            sessionStorage.setItem('location_id', selectedLocationId);
             // Hide modal and show menu
             deliveryModal.hide();
             if (menuSection) {
@@ -114,11 +137,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add delivery type to all add-to-cart buttons
             document.querySelectorAll('.add-to-cart').forEach(btn => {
                 btn.dataset.deliveryType = selectedOption;
+                btn.dataset.locationId = selectedLocationId;
             });
         });
     });
 });
-
 
 /*
 *  ---------------------------- end of delivery option ------------------------------
@@ -140,11 +163,15 @@ document.addEventListener('DOMContentLoaded', (event) => {
     document.querySelectorAll('.delivery-option-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const selectedType = btn.getAttribute('data-option');
+            const locationId = btn.getAttribute('data-location-id');
+
             localStorage.setItem('selectedDeliveryType', selectedType);
+            localStorage.setItem('location_id', locationId);
 
             // Set this delivery type on all add-to-cart buttons
             document.querySelectorAll('.add-to-cart').forEach(addBtn => {
                 addBtn.setAttribute('data-delivery-type', selectedType);
+                addBtn.setAttribute('data-location-id', locationId);
             });
         });
     });
@@ -184,10 +211,33 @@ document.addEventListener('DOMContentLoaded', (event) => {
             const foodName = button.getAttribute('data-food-name');
             const foodPrice = button.getAttribute('data-food-price');
             const deliveryType = button.getAttribute('data-delivery-type') || localStorage.getItem('selectedDeliveryType') || '';
+            const locationId = button.getAttribute('data-location-id') || localStorage.getItem('location_id') || '';
 
+            // ✅ Validate location ID and delivery type
+            if (!locationId) {
+                alert("⚠️ Location ID is missing. Please select a location first.");
+                return;
+            }
             if (!deliveryType) {
                 alert("⚠️ Please select a delivery type before adding to cart!");
                 return;
+            }
+
+            const firstCartItemKey = Object.keys(cart)[0];
+            const cartDeliveryType = firstCartItemKey ? cart[firstCartItemKey].deliveryType : null;
+            const cartLocationId = firstCartItemKey ? cart[firstCartItemKey].locationId : null;
+
+            // Only check for mismatches if cart is NOT empty
+            if (firstCartItemKey) {
+                if (cartDeliveryType && cartDeliveryType !== deliveryType) {
+                    alert(`⚠️ You already have items in your cart with delivery type "${cartDeliveryType}". Please clear your cart before adding items with "${deliveryType}".`);
+                    return;
+                }
+
+                if (String(cartLocationId) !== String(locationId)) {
+                    alert(`⚠️ You already have items in your cart from a different location. Please clear your cart before adding items from this location.`);
+                    return;
+                }
             }
 
             if (cart[foodId]) {
@@ -198,6 +248,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     name: foodName,
                     price: foodPrice,
                     deliveryType: deliveryType,
+                    locationId: locationId,
                     quantity: 1
                 }
             }
