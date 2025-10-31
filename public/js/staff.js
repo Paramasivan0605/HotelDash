@@ -184,7 +184,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-
 /*
 *  --------------------------- Function for Order Modal ---------------------------------
 */
@@ -196,58 +195,67 @@ document.addEventListener('DOMContentLoaded', () => {
     const editStatus = document.getElementById('edit-order-status');
     const statusChange = document.querySelector('.modal-edit-order .order-status .data');
     const submitBtn = document.querySelector('.modal-edit-order .button-section input[type="submit"]');
-
-    let orderStatus;
+    const foodListElement = document.querySelector('.modal-edit-order .food-list-order .list');
+    const form = document.querySelector('.modal-edit-order form');
+    const orderStatusInput = document.getElementById('order-status-input');
 
     modalPopupBtns.forEach((modalPopupBtn) => {
         modalPopupBtn.addEventListener('click', () => {
+            // Get order data from data attributes
+            const orderId = modalPopupBtn.getAttribute('data-id');
+            const orderStatus = modalPopupBtn.getAttribute('data-status');
+            const foodList = modalPopupBtn.getAttribute('data-food-list');
+
+            // Update modal content
+            statusChange.textContent = orderStatus;
+            statusChange.classList.remove('completed');
+            
+            // Update food list
+            const foodItems = foodList.split(',').map(food => 
+                `<span>${food.trim()}</span>`
+            ).join('<span>,</span>');
+            foodListElement.innerHTML = foodItems;
+
+            // Update form action using Laravel route helper
+            form.action = updateOrderRoute.replace(':id', orderId);
+            
+            // Set initial status
+            orderStatusInput.value = orderStatus;
+
+            // Show modal
             modalPopup.style.visibility = 'visible';
             modalPopup.style.opacity = '1';
-
-            orderStatus = statusChange.textContent;
 
             disableSubmitBtn();
         });
     });
 
     closeBtn.addEventListener('click', () => {
-        modalPopup.style.visibility = 'hidden';
-        modalPopup.style.opacity = '0';
-
-        // Reset the status to its original value when closing the modal
-        statusChange.textContent = orderStatus;
-        statusChange.classList.remove('completed');
-
-        disableSubmitBtn();
+        closeModal();
     });
 
     cancelBtn.addEventListener('click', () => {
-        modalPopup.style.visibility = 'hidden';
-        modalPopup.style.opacity = '0';
-
-        // Reset the status to its original value when closing the modal
-        statusChange.textContent = orderStatus;
-        statusChange.classList.remove('completed');
-
-        disableSubmitBtn();
+        closeModal();
     });
 
     editStatus.addEventListener('click', () => {
         statusChange.textContent = 'Completed';
         statusChange.classList.add('completed');
-
+        orderStatusInput.value = 'Completed';
         submitBtn.disabled = false;
     });
 
-    // Function to disable submit button if order status is not completed
     function disableSubmitBtn() {
-        if (orderStatus !== 'Completed') {
+        if (statusChange.textContent !== 'Completed') {
             submitBtn.disabled = true;
         } else {
             submitBtn.disabled = false;
         }
     }
+
+    function closeModal() {
+        modalPopup.style.visibility = 'hidden';
+        modalPopup.style.opacity = '0';
+        disableSubmitBtn();
+    }
 });
-/*
-*  ---------------------------------- End of Order Modal ------------------------------------
-*/

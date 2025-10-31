@@ -93,11 +93,6 @@ class OrderControler extends Controller
 
         return back()->with('success-message', 'Table number successfully registered.');
     }
-
-
-
-
-
     /*
     *  Function to update order status resource
     */
@@ -105,15 +100,13 @@ class OrderControler extends Controller
     {   
         // Find order id
         $order = CustomerOrder::findOrFail($id);
-
         $order->update(['order_status' => OrderStatusEnum::Completed]);
+        // // Get dining table based on order id
+        // $diningTable = $order->diningTable;
 
-        // Get dining table based on order id
-        $diningTable = $order->diningTable;
+        // $diningTable->update(['isOccupied' => false]);
 
-        $diningTable->update(['isOccupied' => false]);
-
-        Log::info([$order, $diningTable]);
+        // Log::info([$order, $diningTable]);
 
         return back()->with('success-message', 'Order status updated successfully.');
     }

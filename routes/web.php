@@ -149,9 +149,10 @@ Route::prefix('staff')->middleware('auth', 'isStaff')->group(function () {
         'show' => 'customer-order-show',      // Not used yet
         'edit' => 'customer-order-edit',      // Not used yet
     ]);
-
-    Route::put('/customer-order/update-order/{id}', [OrderControler::class, 'updateStatus'])->name('update-order');
-
+    
+    Route::prefix('customer-order')->group(function () {
+        Route::put('/update-order/{id}', [OrderControler::class, 'updateStatus'])->name('update-order');
+    });
 
     // Reservation module
     Route::resource('/customer-reservation', ReservationController::class)->names([

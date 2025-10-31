@@ -65,6 +65,8 @@
                                     <th>Food Order</th>
                                     <th>Order Status</th>
                                     <th>Paid Status</th>
+                                    <th>Payment Method</th>
+                                    <th>Total Price</th>
                                     <th>Customer Contact No.</th>
                                     <th></th>
                                 </tr>
@@ -85,14 +87,19 @@
                                         <td>{{ $order->order_status }}</td>
                                         <td>
                                             @if ($order->isPaid)
-                                                True
+                                                Paid
                                             @else
-                                                False
+                                                Not Paid
                                             @endif
                                         </td>
+                                        <td>{{ $order->payment_type }}</td>
+                                        <td>${{ number_format($order->order_total_price, 2) }}</td>
                                         <td>{{ $order->customer_contact }}</td>
                                         <td>
-                                            <button class="modal-button">
+                                            <button class="modal-button" 
+                                                    data-id="{{ $order->id }}"
+                                                    data-status="{{ $order->order_status }}"
+                                                    data-food-list="{{ $order->customerOrderDetail->map(function($detail) { return $detail->foodMenu->name; })->implode(',') }}">
                                                 <i class='bx bxs-pencil'></i>
                                                 <span>Edit</span>
                                             </button>
