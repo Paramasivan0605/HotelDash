@@ -14,9 +14,9 @@
         <button class="btn btn-outline-primary delivery-option-btn" data-option="Doorstep Delivery" data-location-id="{{ $location->location_id }}">
           🛵 Doorstep Delivery
         </button>
-        <button class="btn btn-outline-success delivery-option-btn" data-option="Restaurant Dine-in" data-location-id="{{ $location->location_id }}">
+        {{-- <button class="btn btn-outline-success delivery-option-btn" data-option="Restaurant Dine-in" data-location-id="{{ $location->location_id }}">
           🍽️ Restaurant Dine-in
-        </button>
+        </button> --}}
         <button class="btn btn-outline-warning delivery-option-btn" data-option="Counter Pickup" data-location-id="{{ $location->location_id }}">
           🧾 Counter Pickup
         </button>

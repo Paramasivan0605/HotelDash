@@ -33,22 +33,38 @@ use Illuminate\Support\Facades\Route;
 */
 
 
-// Public Route
-Route::get('/', [PublicController::class, 'home'])->name('home');
-Route::get('/menu', [PublicController::class, 'menu'])->name('menu');
-Route::get('/about', [PublicController::class, 'about'])->name('about');
-Route::get('/promotion', [PublicController::class, 'promotion'])->name('promotion');
-Route::get('/reservation', [PublicController::class, 'reservation'])->name('reservation');
-Route::get('/location/{id}/menu', [PublicController::class, 'locationMenuPage'])->name('location.menu');
-// Add to cart
-Route::post('/menu/create-order', [PublicController::class, 'createOrder'])->name('create-order');
+// Public Routes
+Route::get('/', [PublicController::class, 'login'])->name('welcome');
+Route::post('/login/submit', [PublicController::class, 'submit'])->name('login.submit');
 
-// Search
-Route::get('/search', [PublicController::class, 'search'])->name('search');
+// Protected Routes - Require customer login
+Route::middleware(['customer.auth'])->group(function () {
+    Route::get('/home', [PublicController::class, 'home'])->name('home');
+    Route::get('/menu', [PublicController::class, 'menu'])->name('menu');
+    Route::get('/about', [PublicController::class, 'about'])->name('about');
+    Route::get('/promotion', [PublicController::class, 'promotion'])->name('promotion');
+    Route::get('/reservation', [PublicController::class, 'reservation'])->name('reservation');
+    Route::get('/location/{id}/menu', [PublicController::class, 'locationMenuPage'])->name('location.menu');
+    
+    // Add to cart
+    Route::post('/menu/create-order', [PublicController::class, 'createOrder'])->name('create-order');
+    
+    // Reservation
+    Route::post('/reservation/create', [PublicController::class, 'makeReservation'])->name('create-reservation');
+    
+    // Search
+    Route::get('/search', [PublicController::class, 'search'])->name('search');
+    
+    // Order History Routes
+    Route::get('/orders', [PublicController::class, 'orderHistory'])->name('orders.history');
+    Route::get('/orders/{orderId}', [PublicController::class, 'orderDetails'])->name('orders.details');
+});
 
-// Make reservation
-Route::post('/reservation/create', [PublicController::class, 'makeReservation'])->name('create-reservation');
-
+// // Logout route
+// Route::post('/logout', function () {
+//     session()->forget(['customer_id', 'customer_name', 'customer_mobile']);
+//     return redirect()->route('welcome')->with('success', 'Logged out successfully.');
+// })->name('logout');
 
 // Route for login
 Route::get('/login', [LoginController::class, 'index'])->name('login');

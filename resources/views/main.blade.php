@@ -68,6 +68,13 @@
                 <div class="company">
                     <a href="{{ route('login') }}"><i class='bx bx-buildings'></i></a>
                 </div>
+                
+                  <!-- Add Orders Link -->
+                @if(session('customer_id'))
+                <div class="{{ request()->routeIs(['orders.*']) ? 'active' : '' }}">
+                    <a href="{{ route('orders.history') }}"><span>My Orders</span></a>
+                </div>
+                @endif
             </div>
 
         </div>

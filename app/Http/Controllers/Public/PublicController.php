@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Enums\OrderStatusEnum;
 use App\Enums\ReservationStatusEnum;
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\CustomerOrder;
 use App\Models\CustomerOrderDetail;
 use App\Models\DiningTable;
@@ -25,20 +26,57 @@ use Illuminate\View\View;
 
 class PublicController extends Controller
 {
-    public function home() : View
+    public function login(): View
+    {
+        return view('public.login');
+    }
+
+    public function submit(Request $request): RedirectResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|max:255',
+            'mobile' => 'required|numeric',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $validated = $validator->validated();
+
+        // Find customer by mobile number (regardless of name)
+        $customer = Customer::where('mobile', $validated['mobile'])->first();
+
+        if ($customer) {
+            Log::info('customer logged in: ' . $customer->name . ' (ID: ' . $customer->id . ')');
+        } else {
+            // Create new customer
+            $customer = Customer::create([
+                'name' => $validated['name'],
+                'mobile' => $validated['mobile']
+            ]);
+            Log::info('New customer created: ' . $customer->name . ' (ID: ' . $customer->id . ')');
+        }
+
+        // Store customer ID in session
+        session(['customer_id' => $customer->id]);
+        session(['customer_name' => $customer->name]);
+        session(['customer_mobile' => $customer->mobile]);
+
+        Log::info('Login submitted for customer: ' . $customer->name . ' (ID: ' . $customer->id . ')');
+
+        return redirect()->route('home')
+            ->with('success-message', 'Welcome, ' . $customer->name . '!');
+    }
+
+    public function home(): View
     {
         $menu = FoodMenu::all();
 
         return view('public.home', compact('menu'));
     }
 
-
-
-
-    /*
-    *  Function to view menu file
-    */
-    public function menu() : View
+    public function menu(): View
     {
         $menu = FoodMenu::all();
         $category = FoodCategory::all();
@@ -61,15 +99,12 @@ class PublicController extends Controller
         return view('public.locationMenu', compact('foodMenu', 'location'));
     }
 
-    /*
-    *  Function to view about file
-    */
-    public function about() : View
+    public function about(): View
     {
         return view('public.about');
     }
 
-    public function promotion() : View
+    public function promotion(): View
     {
         // Get current date
         $currentMonth = Carbon::now();
@@ -97,29 +132,37 @@ class PublicController extends Controller
         return view('public.promotion', compact('promotion', 'coupon', 'menu'));
     }
 
-
-
-
-
-
-
-    /*
-    *  Function to view reservation file
-    */
-    public function reservation() : View
+    public function reservation(): View
     {
         return view('public.reservation');
     }
 
+    // Add new method for order history
+    public function orderHistory(): View
+    {
+        $orders = [];
+        if (session('customer_id')) {
+            $orders = CustomerOrder::with(['customerOrderDetail.foodMenu.foodLocations', 'diningTable'])
+                ->where('customer_id', session('customer_id'))
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
 
+        return view('public.order-history', compact('orders'));
+    }
 
+    // Add method for order details
+    public function orderDetails($orderId): View
+    {
+        $order = CustomerOrder::with(['customerOrderDetail.foodMenu.foodLocations', 'diningTable'])
+            ->where('customer_id', session('customer_id'))
+            ->where('id', $orderId)
+            ->firstOrFail();
 
+        return view('public.order-details', compact('order'));
+    }
 
-
-    /*
-    *  Function to search
-    */
-    public function search(Request $request) : View
+    public function search(Request $request): View
     {
         $keyword = $request->input('search');
 
@@ -136,16 +179,13 @@ class PublicController extends Controller
         return view('public.menu', ['menu' => $search]);
     }
 
-    /*
-    *  Function for add to cart
-    */
     public function createOrder(Request $request): JsonResponse
     {
         $cartItem = $request->input('cartData');
         $totalPrice = $request->input('totalAmount');
         $tableNumber = $request->input('table_number');
         $contact = $request->input('customer_contact');
-        $paymentType = $request->input('payment_type'); // 'cash' or 'card'
+        $paymentType = $request->input('payment_type');
 
         // Validate payment type
         if (!in_array($paymentType, ['cash', 'card'])) {
@@ -179,11 +219,13 @@ class PublicController extends Controller
             $tableId = null;
         }
 
+        // Create order with customer_id from session
         $order = CustomerOrder::create([
+            'customer_id' => session('customer_id'),
             'dining_table_id' => $tableId,
             'order_total_price' => $totalPrice,
             'delivery_type' => $deliveryType,
-            'payment_type' => $paymentType, // Save payment type
+            'payment_type' => $paymentType,
             'isPaid' => false,
             'order_status' => OrderStatusEnum::Preparing,
             'customer_contact' => $contact,
@@ -198,16 +240,15 @@ class PublicController extends Controller
             ]);
         }
 
+        Log::info('Order created for customer ID: ' . session('customer_id') . ', Order ID: ' . $order->id);
+
         return response()->json([
             'success-message' => 'Your order is being processed. Please wait 15–30 minutes.',
+            'order_id' => $order->id
         ]);
     }
 
-
-    /*
-    *  Function for reservation
-    */
-    public function makeReservation(Request $request) : RedirectResponse
+    public function makeReservation(Request $request): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
             'book_name' => 'required|max:255',
@@ -223,8 +264,9 @@ class PublicController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        // Store reservation data
+        // Store reservation data with customer_id
         $reservation = Reservation::create([
+            'customer_id' => session('customer_id'),
             'reservation_name' => $request->book_name,
             'reservation_email' => $request->book_email,
             'reservation_contact' => $request->book_phone,
@@ -236,7 +278,7 @@ class PublicController extends Controller
             'reservation_status' => ReservationStatusEnum::Pending,
         ]);
 
-        Log::info($reservation);
+        Log::info('Reservation created for customer ID: ' . session('customer_id') . ', Reservation ID: ' . $reservation->id);
 
         return back()->with('success-message', 'We have received your reservation. We will process immediately and we will contact you as soon as possible. Thank you.');
     }
