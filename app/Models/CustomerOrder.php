@@ -14,6 +14,7 @@ class CustomerOrder extends Model
     use HasFactory, HasUlids;
 
     protected $fillable = [
+        'customer_id',
         'dining_table_id',
         'delivery_type',
         'order_total_price',
