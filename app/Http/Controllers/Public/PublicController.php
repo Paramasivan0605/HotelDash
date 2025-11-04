@@ -162,6 +162,72 @@ class PublicController extends Controller
         return view('public.order-details', compact('order'));
     }
 
+    
+    // Helper method for status classes (add this to your controller)
+    public static function getStatusClass($status)
+    {
+        // Handle both string and OrderStatusEnum cases
+        if ($status instanceof \App\Enums\OrderStatusEnum) {
+            $statusValue = $status->value;
+        } else {
+            $statusValue = $status;
+        }
+
+        // Normalize the status to handle case inconsistencies
+        $normalizedStatus = strtolower($statusValue);
+        
+        switch($normalizedStatus) {
+            case 'ordered': return 'status-ordered';
+            case 'preparing': return 'status-preparing';
+            case 'ready_to_deliver': return 'status-ready';
+            case 'delivery_on_the_way': return 'status-delivery';
+            case 'delivered': return 'status-delivered';
+            case 'completed': return 'status-completed';
+            case 'cancelled': return 'status-cancelled';
+            default: return 'status-ordered';
+        }
+    }
+
+    // Helper method for status display
+    public static function getStatusDisplay($status)
+    {
+        // Handle both string and OrderStatusEnum cases
+        if ($status instanceof \App\Enums\OrderStatusEnum) {
+            $statusValue = $status->value;
+        } else {
+            $statusValue = $status;
+        }
+
+        return ucwords(str_replace('_', ' ', $statusValue));
+    }
+
+    // Add this method to your OrderController
+    public static function getOrderTimeline($orderStatus)
+    {
+        // Handle both string and OrderStatusEnum cases
+        if ($orderStatus instanceof \App\Enums\OrderStatusEnum) {
+            $currentStatus = $orderStatus->value;
+        } else {
+            $currentStatus = $orderStatus;
+        }
+        
+        $currentStatus = strtolower($currentStatus);
+        
+        $statuses = [
+            'ordered' => 'Order Placed',
+            'preparing' => 'Preparing',
+            'ready_to_deliver' => 'Ready',
+            'delivery_on_the_way' => 'On the Way',
+            'delivered' => 'Delivered',
+            'completed' => 'Completed'
+        ];
+        
+        return [
+            'statuses' => $statuses,
+            'currentStatus' => $currentStatus
+        ];
+    }
+
     public function getCustomerAddress($id): JsonResponse
     {
         try {

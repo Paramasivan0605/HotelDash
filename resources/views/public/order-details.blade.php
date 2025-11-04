@@ -68,7 +68,7 @@
                 </div>
 
                 <div class="col-md-4">
-                    <div class="card">
+                    {{-- <div class="card">
                         <div class="card-header bg-info text-white">
                             <h5 class="mb-0">Order Summary</h5>
                         </div>
@@ -96,9 +96,15 @@
                                 </span>
                             </div>
                             <div class="mb-3">
-                                <strong>Status:</strong>
-                                <span class="badge bg-{{ $order->order_status == 'completed' ? 'success' : 'warning' }}">
-                                    {{ $order->order_status }}
+                                <strong>Payment Status:</strong>
+                                <span class="payment-badge {{ $order->isPaid ? 'payment-paid' : 'payment-not-paid' }}">
+                                    {{ $order->isPaid ? 'Paid' : 'Not Paid' }}
+                                </span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Order Status:</strong>
+                                <span class="status-badge {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusClass($order->order_status) }}">
+                                    {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusDisplay($order->order_status) }}
                                 </span>
                             </div>
                             <div class="mb-3">
@@ -110,10 +116,199 @@
                                 <span class="h5 text-primary mb-0">RM {{ number_format($order->order_total_price, 2) }}</span>
                             </div>
                         </div>
+                    </div> --}}
+
+                    <!-- Order Status Timeline -->
+                    <div class="card">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0">Order Progress</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="order-timeline">
+                                @php
+                                    $statuses = [
+                                        'ordered' => 'Order Placed',
+                                        'preparing' => 'Preparing',
+                                        'ready_to_deliver' => 'Ready',
+                                        'delivery_on_the_way' => 'On the Way',
+                                        'delivered' => 'Delivered',
+                                        'completed' => 'Completed'
+                                    ];
+
+                                    // Handle both string and OrderStatusEnum cases
+                                    if ($order->order_status instanceof \App\Enums\OrderStatusEnum) {
+                                        $currentStatus = $order->order_status->value;
+                                    } else {
+                                        $currentStatus = $order->order_status;
+                                    }
+                                    $currentStatus = strtolower($currentStatus);
+                                @endphp
+                                
+                                @foreach($statuses as $status => $label)
+                                    @php
+                                        $isActive = $currentStatus === $status;
+                                        $isCompleted = array_search($currentStatus, array_keys($statuses)) > array_search($status, array_keys($statuses));
+                                        $isFuture = array_search($currentStatus, array_keys($statuses)) < array_search($status, array_keys($statuses));
+                                    @endphp
+                                    <div class="timeline-step {{ $isActive ? 'active' : ($isCompleted ? 'completed' : '') }}">
+                                        <div class="timeline-icon">
+                                            @if($isActive)
+                                                <i class="bi bi-arrow-right-circle-fill text-primary"></i>
+                                            @elseif($isCompleted)
+                                                <i class="bi bi-check-circle-fill text-success"></i>
+                                            @else
+                                                <i class="bi bi-circle text-muted"></i>
+                                            @endif
+                                        </div>
+                                        <div class="timeline-label">
+                                            <strong>{{ $label }}</strong>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    /* Status Badge Styles */
+    .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-align: center;
+        min-width: 120px;
+        border: 1px solid transparent;
+    }
+
+    /* Status Colors */
+    .status-ordered {
+        background-color: #e3f2fd;
+        color: #1976d2;
+        border-color: #bbdefb;
+    }
+
+    .status-preparing {
+        background-color: #fff3e0;
+        color: #f57c00;
+        border-color: #ffe0b2;
+    }
+
+    .status-ready {
+        background-color: #e8f5e8;
+        color: #388e3c;
+        border-color: #c8e6c9;
+    }
+
+    .status-delivery {
+        background-color: #e3f2fd;
+        color: #0288d1;
+        border-color: #b3e5fc;
+    }
+
+    .status-delivered {
+        background-color: #e8f5e8;
+        color: #2e7d32;
+        border-color: #a5d6a7;
+    }
+
+    .status-completed {
+        background-color: #e8f5e8;
+        color: #1b5e20;
+        border-color: #81c784;
+    }
+
+    .status-cancelled {
+        background-color: #ffebee;
+        color: #c62828;
+        border-color: #ffcdd2;
+    }
+
+    /* Payment Badge Styles */
+    .payment-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-align: center;
+        min-width: 80px;
+        border: 1px solid transparent;
+    }
+
+    .payment-paid {
+        background-color: #e8f5e8;
+        color: #2e7d32;
+        border-color: #a5d6a7;
+    }
+
+    .payment-not-paid {
+        background-color: #ffebee;
+        color: #c62828;
+        border-color: #ffcdd2;
+    }
+
+    /* Order Timeline Styles */
+    .order-timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .order-timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background-color: #e9ecef;
+    }
+
+    .timeline-step {
+        position: relative;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+
+    .timeline-icon {
+        position: absolute;
+        left: -30px;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        border-radius: 50%;
+        z-index: 2;
+    }
+
+    .timeline-step.completed .timeline-icon {
+        color: #28a745 !important;
+    }
+
+    .timeline-step.active .timeline-icon {
+        color: #007bff !important;
+    }
+
+    .timeline-label {
+        margin-left: 10px;
+    }
+
+    .timeline-step.completed .timeline-label {
+        color: #28a745;
+    }
+
+    .timeline-step.active .timeline-label {
+        color: #007bff;
+        font-weight: bold;
+    }
+</style>
 @endsection

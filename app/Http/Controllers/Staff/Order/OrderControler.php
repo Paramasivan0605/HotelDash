@@ -18,14 +18,23 @@ class OrderControler extends Controller
     public function index() : View
     {
         $order = CustomerOrder::with(['diningTable', 'customerOrderDetail.foodMenu'])
-        ->where('order_status', OrderStatusEnum::Preparing)->paginate(10);
+        ->orderByRaw("
+            CASE 
+                WHEN order_status = 'Ordered' THEN 1
+                WHEN order_status = 'preparing' THEN 2
+                WHEN order_status = 'ready_to_deliver' THEN 3
+                WHEN order_status = 'delivery_on_the_way' THEN 4
+                WHEN order_status = 'delivered' THEN 5
+                WHEN order_status = 'completed' THEN 6
+                WHEN order_status = 'cancelled' THEN 7
+                ELSE 8
+            END
+        ")
+        ->orderBy('created_at', 'asc')
+        ->get();
 
         return view('company.staff.order.index', ['customerOrder' => $order]);
     }
-
-
-
-
 
     /*
     *  Funtion to view create file
@@ -36,10 +45,6 @@ class OrderControler extends Controller
 
         return view('company.staff.order.create', ['diningTable' => $table]);
     }
-
-
-
-
 
     /*
     *  Function to store data of dining table number
@@ -93,21 +98,72 @@ class OrderControler extends Controller
 
         return back()->with('success-message', 'Table number successfully registered.');
     }
+
     /*
     *  Function to update order status resource
     */
-    public function updateStatus($id) : RedirectResponse
+    public function updateStatus(Request $request, $id): RedirectResponse
     {   
-        // Find order id
+        $validated = $request->validate([
+            'order_status' => 'required|in:Ordered,preparing,ready_to_deliver,delivery_on_the_way,delivered,completed,cancelled'
+        ]);
+
         $order = CustomerOrder::findOrFail($id);
-        $order->update(['order_status' => OrderStatusEnum::Completed]);
-        // // Get dining table based on order id
-        // $diningTable = $order->diningTable;
+        $order->update(['order_status' => $validated['order_status']]);
 
-        // $diningTable->update(['isOccupied' => false]);
+        return back()->with('success-message', 'Order status updated successfully to ' . ucwords(str_replace('_', ' ', $validated['order_status'])) . '.');
+    }
 
-        // Log::info([$order, $diningTable]);
+    public static function getStatusClass($status)
+    {
+        // Handle both string and OrderStatusEnum cases
+        if ($status instanceof OrderStatusEnum) {
+            $statusValue = $status->value;
+        } else {
+            $statusValue = $status;
+        }
 
-        return back()->with('success-message', 'Order status updated successfully.');
+        // Normalize the status to handle case inconsistencies
+        $normalizedStatus = strtolower($statusValue);
+        
+        switch($normalizedStatus) {
+            case 'ordered': return 'status-ordered';
+            case 'preparing': return 'status-preparing';
+            case 'ready_to_deliver': return 'status-ready';
+            case 'delivery_on_the_way': return 'status-delivery';
+            case 'delivered': return 'status-delivered';
+            case 'completed': return 'status-completed';
+            case 'cancelled': return 'status-cancelled';
+            default: return 'status-ordered';
+        }
+    }
+
+    // Helper method to get display text for status
+    public static function getStatusDisplay($status)
+    {
+        // Handle both string and OrderStatusEnum cases
+        if ($status instanceof OrderStatusEnum) {
+            $statusValue = $status->value;
+        } else {
+            $statusValue = $status;
+        }
+
+        return ucwords(str_replace('_', ' ', $statusValue));
+    }
+    /*
+    *  Function to update payment status resource
+    */
+    public function updatePaymentStatus(Request $request, $id): RedirectResponse
+    {   
+        $validated = $request->validate([
+            'is_paid' => 'required|in:0,1'
+        ]);
+
+        $order = CustomerOrder::findOrFail($id);
+        $order->update(['isPaid' => $validated['is_paid']]);
+
+        $statusText = $validated['is_paid'] == '1' ? 'Paid' : 'Not Paid';
+
+        return back()->with('success-message', 'Payment status updated successfully to ' . $statusText . '.');
     }
 }

@@ -169,6 +169,7 @@ Route::prefix('staff')->middleware('auth', 'isStaff')->group(function () {
     
     Route::prefix('customer-order')->group(function () {
         Route::put('/update-order/{id}', [OrderControler::class, 'updateStatus'])->name('update-order');
+        Route::put('/update-order-payment/{id}', [OrderControler::class, 'updatePaymentStatus'])->name('update-order-payment');
     });
 
     // Reservation module

@@ -37,8 +37,8 @@
                                 </td>
                                 <td>RM {{ number_format($order->order_total_price, 2) }}</td>
                                 <td>
-                                    <span class="badge bg-{{ $order->order_status == 'completed' ? 'success' : 'warning' }}">
-                                        {{ $order->order_status }}
+                                    <span class="status-badge {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusClass($order->order_status) }}">
+                                        {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusDisplay($order->order_status) }}
                                     </span>
                                 </td>
                                 <td>
@@ -61,4 +61,61 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* Status Badge Styles */
+    .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-align: center;
+        min-width: 120px;
+        border: 1px solid transparent;
+    }
+
+    /* Status Colors */
+    .status-ordered {
+        background-color: #e3f2fd;
+        color: #1976d2;
+        border-color: #bbdefb;
+    }
+
+    .status-preparing {
+        background-color: #fff3e0;
+        color: #f57c00;
+        border-color: #ffe0b2;
+    }
+
+    .status-ready {
+        background-color: #e8f5e8;
+        color: #388e3c;
+        border-color: #c8e6c9;
+    }
+
+    .status-delivery {
+        background-color: #e3f2fd;
+        color: #0288d1;
+        border-color: #b3e5fc;
+    }
+
+    .status-delivered {
+        background-color: #e8f5e8;
+        color: #2e7d32;
+        border-color: #a5d6a7;
+    }
+
+    .status-completed {
+        background-color: #e8f5e8;
+        color: #1b5e20;
+        border-color: #81c784;
+    }
+
+    .status-cancelled {
+        background-color: #ffebee;
+        color: #c62828;
+        border-color: #ffcdd2;
+    }
+</style>
 @endsection
