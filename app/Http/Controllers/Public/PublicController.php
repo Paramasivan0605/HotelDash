@@ -162,6 +162,30 @@ class PublicController extends Controller
         return view('public.order-details', compact('order'));
     }
 
+    public function getCustomerAddress($id): JsonResponse
+    {
+        try {
+            $customer = Customer::find($id);
+            
+            if (!$customer) {
+                return response()->json([
+                    'success' => false,
+                    'address' => ''
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'address' => $customer->address ?? ''
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'address' => ''
+            ]);
+        }
+    }
+
     public function search(Request $request): View
     {
         $keyword = $request->input('search');
@@ -185,6 +209,7 @@ class PublicController extends Controller
         $totalPrice = $request->input('totalAmount');
         $tableNumber = $request->input('table_number');
         $contact = $request->input('customer_contact');
+        $address = $request->input('customer_address');
         $paymentType = $request->input('payment_type');
 
         // Validate payment type
@@ -196,6 +221,13 @@ class PublicController extends Controller
 
         // Get deliveryType from the first item in cartData
         $deliveryType = $cartItem[0]['deliveryType'] ?? null;
+
+        // Validate address for doorstep delivery
+        if ($deliveryType === 'Doorstep Delivery' && empty(trim($address))) {
+            return response()->json([
+                'validation-error-message' => 'Delivery address is required for doorstep delivery.',
+            ], 422);
+        }
 
         // For dine-in, check table logic
         if ($deliveryType === 'Restaurant Dine-in') {
@@ -219,9 +251,21 @@ class PublicController extends Controller
             $tableId = null;
         }
 
+        // Update customer address if provided and customer exists
+        $customerId = session('customer_id');
+        if ($customerId && $address) {
+            $customer = Customer::find($customerId);
+            if ($customer) {
+                $customer->update([
+                    'address' => $address
+                ]);
+                Log::info('Customer address updated for ID: ' . $customerId);
+            }
+        }
+
         // Create order with customer_id from session
         $order = CustomerOrder::create([
-            'customer_id' => session('customer_id'),
+            'customer_id' => $customerId,
             'dining_table_id' => $tableId,
             'order_total_price' => $totalPrice,
             'delivery_type' => $deliveryType,
@@ -229,6 +273,7 @@ class PublicController extends Controller
             'isPaid' => false,
             'order_status' => OrderStatusEnum::Preparing,
             'customer_contact' => $contact,
+            'delivery_address' => $deliveryType === 'Doorstep Delivery' ? $address : null,
         ]);
 
         foreach ($cartItem as $item) {
@@ -240,7 +285,7 @@ class PublicController extends Controller
             ]);
         }
 
-        Log::info('Order created for customer ID: ' . session('customer_id') . ', Order ID: ' . $order->id);
+        Log::info('Order created for customer ID: ' . $customerId . ', Order ID: ' . $order->id);
 
         return response()->json([
             'success-message' => 'Your order is being processed. Please wait 15–30 minutes.',

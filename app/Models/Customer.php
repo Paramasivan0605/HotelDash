@@ -11,6 +11,7 @@ class Customer extends Model
     protected $fillable = [
         'name',
         'mobile',
+        'address',
     ];
 
     public function orders()

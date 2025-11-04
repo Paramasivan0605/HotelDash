@@ -18,7 +18,7 @@
 
 </head>
 
-<body>
+<body data-customer-id="{{ session('customer_id') ?? '' }}">
 
     <div class="topbar">
 
@@ -131,6 +131,23 @@
             <input type="text" name="customer_contact" placeholder="0123456789" required>
         </div>
 
+         {{-- Address Field --}}
+        <div class="customer-address">
+            <span style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">
+                Delivery Address <span style="color:red;">*</span>
+            </span>
+            <textarea 
+                name="customer_address" 
+                placeholder="Enter your full delivery address" 
+                rows="3" 
+                required
+                style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; resize: vertical; min-height: 80px; transition: border-color 0.3s ease; font-family: inherit;"
+            ></textarea>
+            <div class="address-note" style="font-size:12px; color:#666; margin-top:5px;">
+                📍 This address will be saved to your profile for future orders
+            </div>
+        </div>
+
         {{-- Cash Note --}}
         <div class="cash-note" style="font-size:13px; color:#ff9800; margin-top:10px;">
             💵 <strong>Note:</strong> No online payment — Cash only.
@@ -154,10 +171,10 @@
             <div class="modal-body text-center">
                 <p class="fs-5 mb-4">Select new order type:</p>
                 <div class="delivery-options-change">
-                    <button type="button" class="btn btn-outline-primary btn-delivery-option" data-option="Restaurant Dine-in">
+                    {{-- <button type="button" class="btn btn-outline-primary btn-delivery-option" data-option="Restaurant Dine-in">
                         <i class="bi bi-cup-hot-fill"></i><br>
                         Restaurant Dine-in
-                    </button>
+                    </button> --}}
                     <button type="button" class="btn btn-outline-success btn-delivery-option" data-option="Doorstep Delivery">
                         <i class="bi bi-house-door-fill"></i><br>
                         Doorstep Delivery

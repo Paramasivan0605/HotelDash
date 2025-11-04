@@ -45,6 +45,7 @@ Route::middleware(['customer.auth'])->group(function () {
     Route::get('/promotion', [PublicController::class, 'promotion'])->name('promotion');
     Route::get('/reservation', [PublicController::class, 'reservation'])->name('reservation');
     Route::get('/location/{id}/menu', [PublicController::class, 'locationMenuPage'])->name('location.menu');
+    Route::get('/customer/address/{id}', [PublicController::class, 'getCustomerAddress']);
     
     // Add to cart
     Route::post('/menu/create-order', [PublicController::class, 'createOrder'])->name('create-order');
