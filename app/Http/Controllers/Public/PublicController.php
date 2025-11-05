@@ -337,7 +337,7 @@ class PublicController extends Controller
             'delivery_type' => $deliveryType,
             'payment_type' => $paymentType,
             'isPaid' => false,
-            'order_status' => OrderStatusEnum::Preparing,
+            'order_status' => OrderStatusEnum::Ordered,
             'customer_contact' => $contact,
             'delivery_address' => $deliveryType === 'Doorstep Delivery' ? $address : null,
         ]);

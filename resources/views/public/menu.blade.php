@@ -56,7 +56,7 @@
             </div>
         </main>
 
-        @include('public.modal.success-message')
+        {{-- @include('public.modal.success-message') --}}
 
     </section>
 </div>

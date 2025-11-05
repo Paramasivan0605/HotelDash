@@ -7,160 +7,104 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('scroll', () => {
         if (window.scrollY > 0) {
             topbar.classList.add('scrolled');
-        }
-        else {
+        } else {
             topbar.classList.remove('scrolled');
         }
     });
 });
 
 /*
-*  -------------------- Function for Success Message ---------------------------
-*/
-document.addEventListener('DOMContentLoaded', () => {
-    const successMessage = document.querySelector('.success-message');
-
-    if (successMessage) {
-        setTimeout(() => {
-            successMessage.style.opacity = '0';
-            successMessage.remove();
-        }, 3000);
-    }
-});
-
-/*
-*  ------------------------------ Search -------------------------------------------
-*/
-document.addEventListener('DOMContentLoaded', () => {
-    const openSearch = document.getElementById('open-search');
-    const searchBox = document.querySelector('.search-container');
-    const body = document.querySelector('body');
-
-    openSearch.addEventListener('click', (event) => {
-        event.stopPropagation();
-        searchBox.classList.toggle('active');
-    });
-
-    searchBox.addEventListener('click', (event) => {
-        event.stopPropagation();
-    });
-
-    body.addEventListener('click', () => {
-        searchBox.classList.remove('active');
-    });
-});
-
-/*
-*  -------------------------- Function to Click an Icon for Search ---------------------
-*/
-document.addEventListener('DOMContentLoaded', () => {
-    const searchBtn = document.getElementById('search-button');
-
-    searchBtn.addEventListener('click', () => {
-        const search = document.getElementById('search-form');
-        search.submit();
-    });
-});
-
-/*
-*  ---------------------------- choose delivery option ------------------------------
+*  ---------------------------- Choose Delivery Option ------------------------------
 */
 document.addEventListener('DOMContentLoaded', function() {
-    const deliveryModal = new bootstrap.Modal(document.getElementById('deliveryOptionModal'));
+    const deliveryModal = document.getElementById('deliveryOptionModal');
     const menuSection = document.getElementById('menuSection');
     let selectedOption = null;
     let selectedLocationId = null;
     
-    const navEntries = performance.getEntriesByType("navigation");
-    const isReload = navEntries.length > 0 && navEntries[0].type === "reload";
+    if (deliveryModal) {
+        const bsDeliveryModal = new bootstrap.Modal(deliveryModal);
+        const navEntries = performance.getEntriesByType("navigation");
+        const isReload = navEntries.length > 0 && navEntries[0].type === "reload";
 
-    // Show modal only if not a reload
-    if (!isReload) {
-        deliveryModal.show();
-    } else {
-        if (menuSection) {
-            menuSection.style.display = 'block';
-        }
-
-        selectedOption = sessionStorage.getItem('delivery_type');
-        selectedLocationId = sessionStorage.getItem('location_id');
-        
-        if (selectedOption) {
-            document.querySelectorAll('.add-to-cart').forEach(btn => {
-                btn.dataset.deliveryType = selectedOption;
-                btn.dataset.locationId = selectedLocationId;
-            });
-        }
-    }
-
-    // Handle delivery type button click
-    document.querySelectorAll('.delivery-option-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            selectedOption = this.dataset.option;
-            selectedLocationId = this.dataset.locationId;
-
-            sessionStorage.setItem('delivery_type', selectedOption);
-            sessionStorage.setItem('location_id', selectedLocationId);
-            
-            deliveryModal.hide();
+        if (!isReload) {
+            bsDeliveryModal.show();
+        } else {
             if (menuSection) {
                 menuSection.style.display = 'block';
             }
 
-            document.querySelectorAll('.add-to-cart').forEach(btn => {
-                btn.dataset.deliveryType = selectedOption;
-                btn.dataset.locationId = selectedLocationId;
+            selectedOption = sessionStorage.getItem('delivery_type');
+            selectedLocationId = sessionStorage.getItem('location_id');
+            
+            if (selectedOption) {
+                document.querySelectorAll('.add-to-cart').forEach(btn => {
+                    btn.dataset.deliveryType = selectedOption;
+                    btn.dataset.locationId = selectedLocationId;
+                });
+            }
+        }
+
+        document.querySelectorAll('.delivery-option-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                selectedOption = this.dataset.option;
+                selectedLocationId = this.dataset.locationId;
+
+                sessionStorage.setItem('delivery_type', selectedOption);
+                sessionStorage.setItem('location_id', selectedLocationId);
+                
+                bsDeliveryModal.hide();
+                if (menuSection) {
+                    menuSection.style.display = 'block';
+                }
+
+                document.querySelectorAll('.add-to-cart').forEach(btn => {
+                    btn.dataset.deliveryType = selectedOption;
+                    btn.dataset.locationId = selectedLocationId;
+                });
             });
         });
-    });
+    }
 });
 
 /*
-*  ---------------------------- Add to Cart ------------------------------
-*/
-/*
-*  ---------------------------- Add to Cart ------------------------------
+*  ---------------------------- Add to Cart - FIXED & COMPLETE ------------------------------
 */
 document.addEventListener('DOMContentLoaded', (event) => {
-    const body = document.querySelector('body');
-    const cartSection = document.querySelector('.cart-section');
-    const openCart = document.querySelector('.cart');
-    const closeCart = document.querySelector('.close-cart');
     const cartList = document.querySelector('.cart-list');
     const addProduct = document.querySelectorAll('.add-to-cart');
+    let cart = JSON.parse(localStorage.getItem('cart')) || {};
 
-    // Initialize an empty cart object
-    const cart = JSON.parse(localStorage.getItem('cart')) || {};
-
-    // Get inputs
     const tableNumberInput = document.querySelector('input[name="table_number"]');
     const customerContactInput = document.querySelector('input[name="customer_contact"]');
     const customerAddressInput = document.querySelector('textarea[name="customer_address"]');
     const confirmOrderBtn = document.querySelector('.confirm-order');
-    const addressSection = document.querySelector('.customer-address');
+    const cartBadge = document.getElementById('cart-quantity');
 
-    // Load saved customer address if exists
+    // Initialize cart display
     loadCustomerAddress();
-
     updateCart();
     updateConfirmButtonState();
 
-    openCart.addEventListener('click', (event) => {
-        event.stopPropagation();
-        body.classList.add('cart-active');
-    });
+    // Contact number input listener
+    if (customerContactInput) {
+        customerContactInput.addEventListener('input', updateConfirmButtonState);
+    }
 
-    closeCart.addEventListener('click', () => {
-        body.classList.remove('cart-active');
-    });
+    // Address input listener
+    if (customerAddressInput) {
+        customerAddressInput.addEventListener('input', () => {
+            updateConfirmButtonState();
+            sessionStorage.setItem('temp_address', customerAddressInput.value);
+        });
+    }
 
-    body.addEventListener('click', (event) => {
-        if (!cartSection.contains(event.target) && !event.target.classList.contains('cart')) {
-            body.classList.remove('cart-active');
-        }
-    });
+    // Table number input listener
+    if (tableNumberInput) {
+        tableNumberInput.addEventListener('input', updateConfirmButtonState);
+    }
 
-    // Add product when clicked
+    // Add product to cart
     addProduct.forEach(button => {
         button.addEventListener('click', () => {
             const foodId = button.getAttribute('data-food-id');
@@ -170,29 +114,30 @@ document.addEventListener('DOMContentLoaded', (event) => {
             const deliveryType = button.getAttribute('data-delivery-type') || localStorage.getItem('selectedDeliveryType') || '';
             const locationId = button.getAttribute('data-location-id') || localStorage.getItem('location_id') || '';
 
-            // Validate location ID and delivery type
             if (!locationId) {
-                alert("⚠️ Location ID is missing. Please select a location first.");
+                showToast('⚠️ Location ID is missing. Please select a location first.', 'warning');
                 return;
             }
             if (!deliveryType) {
-                alert("⚠️ Please select a delivery type before adding to cart!");
+                showToast('⚠️ Please select a delivery type before adding to cart!', 'warning');
                 return;
             }
+
+            // Get fresh cart data from localStorage
+            cart = JSON.parse(localStorage.getItem('cart')) || {};
 
             const firstCartItemKey = Object.keys(cart)[0];
             const cartDeliveryType = firstCartItemKey ? cart[firstCartItemKey].deliveryType : null;
             const cartLocationId = firstCartItemKey ? cart[firstCartItemKey].locationId : null;
 
-            // Only check for mismatches if cart is NOT empty
             if (firstCartItemKey) {
                 if (cartDeliveryType && cartDeliveryType !== deliveryType) {
-                    alert(`⚠️ You already have items in your cart with delivery type "${cartDeliveryType}". Please clear your cart before adding items with "${deliveryType}".`);
+                    showToast(`⚠️ You already have items in your cart with delivery type "${cartDeliveryType}". Please clear your cart before adding items with "${deliveryType}".`, 'warning');
                     return;
                 }
 
                 if (String(cartLocationId) !== String(locationId)) {
-                    alert(`⚠️ You already have items in your cart from a different location. Please clear your cart before adding items from this location.`);
+                    showToast(`⚠️ You already have items in your cart from a different location. Please clear your cart before adding items from this location.`, 'warning');
                     return;
                 }
             }
@@ -212,31 +157,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
             localStorage.setItem('cart', JSON.stringify(cart));
             updateCart();
-            showTempMessage(`${foodName} added to cart!`, 'success');
+            showToast(`✓ ${foodName} added to cart!`, 'success');
         });
-    });
-
-    // Table number input listener
-    tableNumberInput.addEventListener('input', () => {
-        updateConfirmButtonState();
-    });
-
-    // Contact number input listener
-    customerContactInput.addEventListener('input', () => {
-        updateConfirmButtonState();
-    });
-
-    // Address input listener
-    customerAddressInput.addEventListener('input', () => {
-        updateConfirmButtonState();
-        // Save address to session storage temporarily
-        sessionStorage.setItem('temp_address', customerAddressInput.value);
     });
 
     // Minus button
     document.addEventListener('click', (event) => {
-        if (event.target.classList.contains('minus')) {
-            const foodId = event.target.getAttribute('data-food-id');
+        if (event.target.classList.contains('minus') || event.target.closest('.minus')) {
+            const button = event.target.classList.contains('minus') ? event.target : event.target.closest('.minus');
+            const foodId = button.getAttribute('data-food-id');
+            cart = JSON.parse(localStorage.getItem('cart')) || {};
+            
             if (cart[foodId] && cart[foodId].quantity > 1) {
                 cart[foodId].quantity--;
                 localStorage.setItem('cart', JSON.stringify(cart));
@@ -247,8 +178,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Plus button
     document.addEventListener('click', (event) => {
-        if (event.target.classList.contains('plus')) {
-            const foodId = event.target.getAttribute('data-food-id');
+        if (event.target.classList.contains('plus') || event.target.closest('.plus')) {
+            const button = event.target.classList.contains('plus') ? event.target : event.target.closest('.plus');
+            const foodId = button.getAttribute('data-food-id');
+            cart = JSON.parse(localStorage.getItem('cart')) || {};
+            
             if (cart[foodId]) {
                 cart[foodId].quantity++;
                 localStorage.setItem('cart', JSON.stringify(cart));
@@ -259,32 +193,35 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Delete button
     document.addEventListener('click', (event) => {
-        if (event.target.classList.contains('bx') || event.target.classList.contains('bxs-trash')) {
-            const foodId = event.target.getAttribute('data-food-id');
+        if (event.target.closest('.delete-cart-item')) {
+            const foodId = event.target.closest('.delete-cart-item').getAttribute('data-food-id');
+            cart = JSON.parse(localStorage.getItem('cart')) || {};
+            
             if (cart[foodId]) {
                 const foodName = cart[foodId].name;
                 delete cart[foodId];
                 localStorage.setItem('cart', JSON.stringify(cart));
                 updateCart();
                 updateConfirmButtonState();
-                showTempMessage(`${foodName} removed from cart`, 'warning');
+                showToast(`${foodName} removed from cart`, 'warning');
             }
         }
     });
 
-    // ✅ Delivery Type Change Functionality
-    document.getElementById('changeDeliveryType').addEventListener('click', () => {
-        const changeDeliveryModal = new bootstrap.Modal(document.getElementById('changeDeliveryModal'));
-        changeDeliveryModal.show();
-    });
+    // Change delivery type
+    const changeDeliveryBtn = document.getElementById('changeDeliveryType');
+    if (changeDeliveryBtn) {
+        changeDeliveryBtn.addEventListener('click', () => {
+            const changeDeliveryModal = new bootstrap.Modal(document.getElementById('changeDeliveryModal'));
+            changeDeliveryModal.show();
+        });
+    }
 
-    // Handle delivery type change in modal
     document.querySelectorAll('.btn-delivery-option').forEach(btn => {
         btn.addEventListener('click', function() {
             const newDeliveryType = this.getAttribute('data-option');
-            const locationId = localStorage.getItem('location_id');
+            cart = JSON.parse(localStorage.getItem('cart')) || {};
             
-            // Update all items in cart with new delivery type
             for (const foodId in cart) {
                 cart[foodId].deliveryType = newDeliveryType;
             }
@@ -303,43 +240,79 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 modalInstance.hide();
             }
             
-            showTempMessage(`Order type changed to ${newDeliveryType}`, 'success');
+            showToast(`Order type changed to ${newDeliveryType}`, 'success');
         });
     });
 
-    // Update cart view
+    // ================== UPDATE CART DISPLAY - FIXED VERSION ==================
     function updateCart() {
         cartList.innerHTML = '';
 
+        // Get fresh cart data
+        cart = JSON.parse(localStorage.getItem('cart')) || {};
+        
         let totalAmount = 0;
         let totalItemCount = 0;
 
         if (Object.keys(cart).length === 0) {
-            cartList.innerHTML = '<li><span class="empty">No item in cart</span></li>';
+            cartList.innerHTML = `
+                <li class="text-center py-5 text-muted">
+                    <i class="bi bi-cart-x fs-1 d-block mb-2"></i>
+                    <span class="empty">No items in cart</span>
+                </li>
+            `;
         } else {
             for (const foodId in cart) {
                 const product = cart[foodId];
                 const productTotalPrice = product.price * product.quantity;
 
                 const listItem = document.createElement('li');
+                listItem.className = 'mb-3';
                 listItem.innerHTML = `
-                    <div class="product">
-                        <img src="${product.image}" alt="food-image">
-                        <span>${product.name}</span>
-                    </div>
-                    <div class="quantity-price">
-                        <span>${product.quantity}</span>
-                        <span>RM ${(productTotalPrice).toFixed(2)}</span>
-                    </div>
-                    <div class="action">
-                        <button type="button" class="minus" data-food-id="${foodId}">-</button>
-                        <span>${product.quantity}</span>
-                        <button type="button" class="plus" data-food-id="${foodId}">+</button>
-                    </div>
-                    <div class="delete">
-                        <button type="button" class="cart-list-delete">
-                            <i class='bx bxs-trash' data-food-id="${foodId}"></i>
-                        </button>
+                    <div class="card cart-item-card border shadow-sm">
+                        <div class="card-body p-2 p-sm-3">
+                            <div class="row g-2 align-items-center">
+                                <!-- Product Image (Hidden on very small screens) -->
+                                <div class="col-3 col-sm-2 d-none d-sm-block">
+                                    <img src="${product.image}" 
+                                         alt="${product.name}" 
+                                         class="cart-product-img w-100 rounded">
+                                </div>
+                                
+                                <!-- Product Details -->
+                                <div class="col-8 col-sm-6">
+                                    <h6 class="mb-1 fw-semibold text-truncate" title="${product.name}">${product.name}</h6>
+                                    <small class="text-muted d-block">RM ${product.price.toFixed(2)} each</small>
+                                    <div class="fw-bold text-primary mt-1">RM ${productTotalPrice.toFixed(2)}</div>
+                                </div>
+                                
+                                <!-- Quantity Controls & Delete -->
+                                <div class="col-4 col-sm-4">
+                                    <!-- Quantity Controls -->
+                                    <div class="d-flex align-items-center justify-content-end gap-1 mb-2">
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-primary qty-btn minus" 
+                                                data-food-id="${foodId}">
+                                            <i class="bi bi-dash"></i>
+                                        </button>
+                                        <span class="fw-bold mx-1 small">${product.quantity}</span>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-primary qty-btn plus" 
+                                                data-food-id="${foodId}">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Delete Button -->
+                                    <button type="button" 
+                                            class="btn btn-sm btn-danger w-100 delete-cart-item" 
+                                            data-food-id="${foodId}">
+                                        <i class="bi bi-trash"></i>
+                                        <span class="d-none d-sm-inline ms-1">Remove</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 `;
 
@@ -349,11 +322,22 @@ document.addEventListener('DOMContentLoaded', (event) => {
             }
         }
 
+        // Update cart summary
         document.getElementById('cart-total-amount').textContent = `RM ${totalAmount.toFixed(2)}`;
-        document.getElementById('cart-item-count').textContent = `Total ${totalItemCount} items`;
-        document.getElementById('cart-quantity').textContent = totalItemCount;
+        document.getElementById('cart-item-count').textContent = `${totalItemCount} item${totalItemCount !== 1 ? 's' : ''}`;
+        
+        // Update cart badge
+        if (cartBadge) {
+            if (totalItemCount > 0) {
+                cartBadge.textContent = totalItemCount;
+                cartBadge.style.display = 'inline-block';
+            } else {
+                cartBadge.textContent = '0';
+                cartBadge.style.display = 'none';
+            }
+        }
 
-        // ✅ Show delivery type and field visibility
+        // Update delivery type display
         const deliveryInfoDiv = document.querySelector('.delivery-type-info');
         const deliveryTypeSpan = document.getElementById('selected-delivery-type');
         const tableNumberSection = document.querySelector('.table-number');
@@ -367,106 +351,82 @@ document.addEventListener('DOMContentLoaded', (event) => {
             if (deliveryTypeSpan) deliveryTypeSpan.textContent = deliveryType;
             if (deliveryInfoDiv) deliveryInfoDiv.style.display = 'block';
 
-            // Show address only for Doorstep Delivery
             if (deliveryType === 'Doorstep Delivery') {
-                tableNumberSection.style.display = 'none';
-                addressSection.style.display = 'block';
-                cashNote.style.display = 'block';
-                tableNumberInput.value = ''; // clear table number
-            }
-            // For Counter Pickup, hide address
-            else {
-                tableNumberSection.style.display = 'none';
-                addressSection.style.display = 'none';
-                cashNote.style.display = 'block';
-                tableNumberInput.value = ''; // clear table number
+                if (tableNumberSection) tableNumberSection.style.display = 'none';
+                if (addressSection) addressSection.style.display = 'block';
+                if (cashNote) cashNote.style.display = 'block';
+                if (tableNumberInput) tableNumberInput.value = '';
+            } else if (deliveryType === 'Restaurant Dine-in') {
+                if (tableNumberSection) tableNumberSection.style.display = 'block';
+                if (addressSection) addressSection.style.display = 'none';
+                if (cashNote) cashNote.style.display = 'block';
+            } else {
+                if (tableNumberSection) tableNumberSection.style.display = 'none';
+                if (addressSection) addressSection.style.display = 'none';
+                if (cashNote) cashNote.style.display = 'block';
+                if (tableNumberInput) tableNumberInput.value = '';
             }
         } else {
             if (deliveryInfoDiv) deliveryInfoDiv.style.display = 'none';
-            tableNumberSection.style.display = 'none';
-            addressSection.style.display = 'none';
+            if (tableNumberSection) tableNumberSection.style.display = 'none';
+            if (addressSection) addressSection.style.display = 'none';
+            if (cashNote) cashNote.style.display = 'none';
         }
 
         updateConfirmButtonState();
     }
 
-    // ✅ FIXED: Button enable/disable logic
+    // Update confirm button state
     function updateConfirmButtonState() {
-        const tableNumberValue = tableNumberInput.value.trim();
+        if (!confirmOrderBtn) return;
+
+        const tableNumberValue = tableNumberInput ? tableNumberInput.value.trim() : '';
         const isCartEmpty = Object.keys(cart).length === 0;
-        const hasContact = customerContactInput.value.trim() !== '';
-        const addressValue = customerAddressInput.value.trim();
+        const hasContact = customerContactInput ? customerContactInput.value.trim() !== '' : false;
+        const addressValue = customerAddressInput ? customerAddressInput.value.trim() : '';
 
         let requiresTable = false;
         let requiresAddress = false;
         let hasDeliveryType = false;
-        let currentDeliveryType = '';
 
         if (Object.keys(cart).length > 0) {
             const firstItem = cart[Object.keys(cart)[0]];
             if (firstItem.deliveryType) {
                 hasDeliveryType = true;
-                currentDeliveryType = firstItem.deliveryType;
-                // Only require table number for Restaurant Dine-in
                 requiresTable = firstItem.deliveryType === 'Restaurant Dine-in';
-                // Only require address for Doorstep Delivery
                 requiresAddress = firstItem.deliveryType === 'Doorstep Delivery';
             }
         }
 
-        console.log('Debug:', {
-            isCartEmpty,
-            hasContact,
-            hasDeliveryType,
-            currentDeliveryType,
-            requiresTable,
-            requiresAddress,
-            tableNumberValue,
-            addressValue,
-            tableValid: !requiresTable || tableNumberValue !== '',
-            addressValid: !requiresAddress || addressValue !== ''
-        });
-
-        // Check all conditions
         const isEnabled = !isCartEmpty && 
                           hasContact && 
                           hasDeliveryType && 
                           (!requiresTable || tableNumberValue !== '') && 
                           (!requiresAddress || addressValue !== '');
 
-        console.log('Should enable button:', isEnabled);
-
+        confirmOrderBtn.disabled = !isEnabled;
+        
+        // Update button appearance
         if (isEnabled) {
-            confirmOrderBtn.disabled = false;
-            confirmOrderBtn.style.backgroundColor = '#28a745';
-            confirmOrderBtn.style.cursor = 'pointer';
-            confirmOrderBtn.style.opacity = '1';
+            confirmOrderBtn.classList.remove('btn-secondary');
+            confirmOrderBtn.classList.add('btn-success', 'gradient-button');
         } else {
-            confirmOrderBtn.disabled = true;
-            confirmOrderBtn.style.backgroundColor = '#6c757d';
-            confirmOrderBtn.style.cursor = 'not-allowed';
-            confirmOrderBtn.style.opacity = '0.6';
+            confirmOrderBtn.classList.remove('btn-success', 'gradient-button');
+            confirmOrderBtn.classList.add('btn-secondary');
         }
     }
 
-    // ✅ Load customer address from server
+    // Load customer address
     function loadCustomerAddress() {
         const customerId = document.body.getAttribute('data-customer-id');
-        console.log('Loading address for customer ID:', customerId);
-        if (customerId && customerId.trim() !== '') {
+        if (customerId && customerId.trim() !== '' && customerAddressInput) {
             fetch(`/customer/address/${customerId}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
+                .then(response => response.ok ? response.json() : Promise.reject())
                 .then(data => {
                     if (data.address && data.address.trim() !== '') {
                         customerAddressInput.value = data.address;
                         updateConfirmButtonState();
                     } else {
-                        // Load temporary address from session storage if exists
                         const tempAddress = sessionStorage.getItem('temp_address');
                         if (tempAddress) {
                             customerAddressInput.value = tempAddress;
@@ -474,17 +434,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         }
                     }
                 })
-                .catch(error => {
-                    console.log('Could not load customer address:', error);
-                    // Load temporary address as fallback
+                .catch(() => {
                     const tempAddress = sessionStorage.getItem('temp_address');
-                    if (tempAddress) {
+                    if (tempAddress && customerAddressInput) {
                         customerAddressInput.value = tempAddress;
                         updateConfirmButtonState();
                     }
                 });
-        } else {
-            // Load temporary address for guest users
+        } else if (customerAddressInput) {
             const tempAddress = sessionStorage.getItem('temp_address');
             if (tempAddress) {
                 customerAddressInput.value = tempAddress;
@@ -493,51 +450,74 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
-    // ✅ Helper function to show temporary messages
-    function showTempMessage(message, type) {
-        // Remove any existing temp messages
-        const existingAlerts = document.querySelectorAll('.temp-alert');
-        existingAlerts.forEach(alert => alert.remove());
-
-        const tempDiv = document.createElement('div');
-        tempDiv.className = `temp-alert alert alert-${type} alert-dismissible fade show`;
-        tempDiv.style.position = 'fixed';
-        tempDiv.style.top = '20px';
-        tempDiv.style.right = '20px';
-        tempDiv.style.zIndex = '9999';
-        tempDiv.style.minWidth = '300px';
-        tempDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    // Toast notification helper
+    function showToast(message, type) {
+        const toastContainer = document.querySelector('.toast-container') || createToastContainer();
+        
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'danger'} border-0`;
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
         `;
         
-        document.body.appendChild(tempDiv);
+        toastContainer.appendChild(toast);
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
         
-        // Auto remove after 3 seconds
-        setTimeout(() => {
-            if (tempDiv.parentNode) {
-                tempDiv.remove();
-            }
-        }, 3000);
+        toast.addEventListener('hidden.bs.toast', () => toast.remove());
     }
 
-    // ✅ Payment and Order Confirmation Flow
+    function createToastContainer() {
+        const container = document.createElement('div');
+        container.className = 'toast-container position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '9999';
+        document.body.appendChild(container);
+        return container;
+    }
+
+    // ================== PAYMENT AND CONFIRMATION FLOW ==================
     let paymentModal, finalConfirmationModal;
 
     function initializeModals() {
         if (!paymentModal) {
-            paymentModal = new bootstrap.Modal(document.getElementById('paymentConfirmationModal'));
+            const paymentModalEl = document.getElementById('paymentConfirmationModal');
+            if (paymentModalEl) {
+                paymentModal = new bootstrap.Modal(paymentModalEl);
+            }
         }
         if (!finalConfirmationModal) {
-            finalConfirmationModal = new bootstrap.Modal(document.getElementById('finalConfirmationModal'));
+            const finalModalEl = document.getElementById('finalConfirmationModal');
+            if (finalModalEl) {
+                finalConfirmationModal = new bootstrap.Modal(finalModalEl);
+            }
         }
+    }
+
+    if (confirmOrderBtn) {
+        confirmOrderBtn.addEventListener('click', () => {
+            initializeModals();
+            setupConfirmationFlow();
+            
+            const totalAmount = document.getElementById('cart-total-amount').textContent;
+            document.getElementById('paymentOrderSummary').textContent = `Total: ${totalAmount}`;
+            
+            if (paymentModal) {
+                paymentModal.show();
+            }
+        });
     }
 
     function setupConfirmationFlow() {
         const confirmPaymentBtn = document.getElementById('confirmPayment');
         const finalConfirmOrderBtn = document.getElementById('finalConfirmOrder');
         
-        // Clone and replace to avoid duplicate event listeners
+        if (!confirmPaymentBtn || !finalConfirmOrderBtn) return;
+        
+        // Remove existing event listeners and add new ones
         const newConfirmPaymentBtn = confirmPaymentBtn.cloneNode(true);
         const newFinalConfirmOrderBtn = finalConfirmOrderBtn.cloneNode(true);
         
@@ -549,17 +529,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function handlePaymentConfirmation() {
-        const selectedPayment = document.querySelector('input[name="paymentType"]:checked').value;
+        const selectedPaymentInput = document.querySelector('input[name="paymentType"]:checked');
+        if (!selectedPaymentInput) return;
+        
+        const selectedPayment = selectedPaymentInput.value;
         const paymentMethod = selectedPayment === 'cash' ? 'Cash' : 'Card';
         const totalAmount = document.getElementById('cart-total-amount').textContent;
-        
-        // Get delivery type and address for confirmation message
         const deliveryType = document.getElementById('selected-delivery-type').textContent;
-        const address = customerAddressInput.value;
+        const address = customerAddressInput ? customerAddressInput.value : '';
         
         let finalMessage = `Please confirm your order:\n\n• Order Type: ${deliveryType}\n• Payment Method: ${paymentMethod}\n• ${totalAmount}\n`;
         
-        // Add address to message if it's doorstep delivery
         if (deliveryType === 'Doorstep Delivery' && address) {
             finalMessage += `• Delivery Address: ${address}\n`;
         }
@@ -568,73 +548,25 @@ document.addEventListener('DOMContentLoaded', (event) => {
         
         document.getElementById('finalConfirmationMessage').textContent = finalMessage;
         
-        paymentModal.hide();
-        finalConfirmationModal.show();
+        if (paymentModal) paymentModal.hide();
+        if (finalConfirmationModal) finalConfirmationModal.show();
     }
 
     function handleFinalConfirmation() {
-        const selectedPayment = document.querySelector('input[name="paymentType"]:checked').value;
+        const selectedPaymentInput = document.querySelector('input[name="paymentType"]:checked');
+        const selectedPayment = selectedPaymentInput ? selectedPaymentInput.value : 'cash';
         sendOrderData(selectedPayment);
     }
 
-    // Confirm order button click handler
-    confirmOrderBtn.addEventListener('click', () => {
-        // Double-check validation before proceeding
-        const tableNumberValue = tableNumberInput.value.trim();
-        const hasContact = customerContactInput.value.trim() !== '';
-        const addressValue = customerAddressInput.value.trim();
-
-        let requiresTable = false;
-        let requiresAddress = false;
-
-        if (Object.keys(cart).length > 0) {
-            const firstItem = cart[Object.keys(cart)[0]];
-            if (firstItem.deliveryType) {
-                requiresTable = firstItem.deliveryType === 'Restaurant Dine-in';
-                requiresAddress = firstItem.deliveryType === 'Doorstep Delivery';
-            }
-        }
-
-        // Final validation check
-        if (requiresAddress && !addressValue) {
-            showTempMessage('Please enter delivery address for doorstep delivery', 'error');
-            return;
-        }
-
-        if (requiresTable && !tableNumberValue) {
-            showTempMessage('Please enter table number for dine-in', 'error');
-            return;
-        }
-
-        if (!hasContact) {
-            showTempMessage('Please enter contact number', 'error');
-            return;
-        }
-
-        initializeModals();
-        setupConfirmationFlow();
-        
-        const totalAmount = document.getElementById('cart-total-amount').textContent;
-        document.getElementById('paymentOrderSummary').textContent = `Total: ${totalAmount}`;
-        
-        paymentModal.show();
-    });
-
-    // ✅ Send order data function
     function sendOrderData(paymentType) {
         const cartData = [];
         let totalAmount = 0;
 
-        const table_number = tableNumberInput.value;
-        const customer_contact = customerContactInput.value;
-        const customer_address = customerAddressInput.value;
+        const table_number = tableNumberInput ? tableNumberInput.value : '';
+        const customer_contact = customerContactInput ? customerContactInput.value : '';
+        const customer_address = customerAddressInput ? customerAddressInput.value : '';
 
-        // Final validation
-        const firstItem = cart[Object.keys(cart)[0]];
-        if (firstItem.deliveryType === 'Doorstep Delivery' && !customer_address.trim()) {
-            showTempMessage('Please enter delivery address', 'error');
-            return;
-        }
+        cart = JSON.parse(localStorage.getItem('cart')) || {};
 
         for (const foodId in cart) {
             const product = cart[foodId];
@@ -671,17 +603,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 payment_type: paymentType 
             }),
         })
-        .then(res => {
-            if (!res.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return res.json();
-        })
+        .then(res => res.ok ? res.json() : Promise.reject('Network error'))
         .then(data => {
-            finalConfirmationModal.hide();
+            if (finalConfirmationModal) finalConfirmationModal.hide();
             
             if (data['success-message']) {
-                // Clear temporary address from storage
                 sessionStorage.removeItem('temp_address');
                 
                 const successMessage = document.getElementById('successMessage');
@@ -694,25 +620,26 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     const bsModal = new bootstrap.Modal(successModalEl);
                     bsModal.show();
 
-                    const newCloseBtn = closeModalBtn.cloneNode(true);
-                    closeModalBtn.parentNode.replaceChild(newCloseBtn, closeModalBtn);
-                    
-                    newCloseBtn.addEventListener('click', () => {
-                        // Clear cart and reload
-                        localStorage.removeItem('cart');
-                        sessionStorage.removeItem('temp_address');
-                        updateCart();
-                        location.reload();
-                    });
+                    if (closeModalBtn) {
+                        const newCloseBtn = closeModalBtn.cloneNode(true);
+                        closeModalBtn.parentNode.replaceChild(newCloseBtn, closeModalBtn);
+                        
+                        newCloseBtn.addEventListener('click', () => {
+                            localStorage.removeItem('cart');
+                            sessionStorage.removeItem('temp_address');
+                            updateCart();
+                            location.reload();
+                        });
+                    }
                 }
             } else if (data['validation-error-message']) {
-                showTempMessage(data['validation-error-message'], 'error');
+                showToast(data['validation-error-message'], 'danger');
             }
         })
         .catch(error => {
-            finalConfirmationModal.hide();
+            if (finalConfirmationModal) finalConfirmationModal.hide();
             console.error('Error:', error);
-            showTempMessage('An error occurred while placing your order. Please try again.', 'error');
+            showToast('An error occurred while placing your order. Please try again.', 'danger');
         });
     }
 });
