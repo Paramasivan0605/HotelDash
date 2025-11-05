@@ -26,9 +26,10 @@ use Illuminate\View\View;
 
 class PublicController extends Controller
 {
-    public function login(): View
+    public function login()
     {
-        return view('public.login');
+        $locations = Location::all(); // Fetch location data
+        return view('public.login', compact('locations'));
     }
 
     public function submit(Request $request): RedirectResponse
@@ -36,38 +37,63 @@ class PublicController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|max:255',
             'mobile' => 'required|numeric',
+            'location' => 'required|exists:location,location_id', // validate location
         ]);
 
         if ($validator->fails()) {
+            // Uncomment this for debugging if needed
             return back()->withErrors($validator)->withInput();
         }
 
         $validated = $validator->validated();
 
-        // Find customer by mobile number (regardless of name)
+        // Find existing customer or create new one
         $customer = Customer::where('mobile', $validated['mobile'])->first();
 
-        if ($customer) {
-            Log::info('customer logged in: ' . $customer->name . ' (ID: ' . $customer->id . ')');
-        } else {
-            // Create new customer
+        if (!$customer) {
             $customer = Customer::create([
                 'name' => $validated['name'],
-                'mobile' => $validated['mobile']
+                'mobile' => $validated['mobile'],
             ]);
             Log::info('New customer created: ' . $customer->name . ' (ID: ' . $customer->id . ')');
+        } else {
+            Log::info('Customer logged in: ' . $customer->name . ' (ID: ' . $customer->id . ')');
+        }
+                // After the customer is found or created
+        // If existing customer, restore previous cart and order data
+        if ($customer->wasRecentlyCreated === false) {
+            // Store old cart info in session (if any exists)
+            session(['restore_cart' => true]);
+
+            // Optional: Load the last order status
+            $lastOrder = CustomerOrder::where('customer_id', $customer->id)
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+            // If the last order is not completed or cancelled, you can notify them
+            if ($lastOrder && !in_array($lastOrder->order_status, ['completed', 'cancelled'])) {
+                session(['pending_order' => $lastOrder->id]);
+            }
+        } else {
+            // New customer - fresh start
+            session()->forget(['restore_cart', 'pending_order']);
         }
 
-        // Store customer ID in session
-        session(['customer_id' => $customer->id]);
-        session(['customer_name' => $customer->name]);
-        session(['customer_mobile' => $customer->mobile]);
+
+        // Store basic customer data in session
+        session([
+            'customer_id' => $customer->id,
+            'customer_name' => $customer->name,
+            'customer_mobile' => $customer->mobile,
+        ]);
 
         Log::info('Login submitted for customer: ' . $customer->name . ' (ID: ' . $customer->id . ')');
 
-        return redirect()->route('home')
+        // ✅ Redirect the user to that location's menu page
+        return redirect()->route('location.menu', ['id' => $validated['location']])
             ->with('success-message', 'Welcome, ' . $customer->name . '!');
     }
+
 
     public function home(): View
     {
@@ -96,7 +122,12 @@ class PublicController extends Controller
             ->where('food_price.location_id', $locationId)
             ->get();
 
-        return view('public.locationMenu', compact('foodMenu', 'location'));
+       return view('public.locationMenu', compact('foodMenu', 'location'))
+    ->with([
+        'restore_cart' => session('restore_cart'),
+        'pending_order' => session('pending_order')
+    ]);
+
     }
 
     public function about(): View

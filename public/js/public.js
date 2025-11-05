@@ -45,7 +45,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        document.querySelectorAll('.delivery-option-btn').forEach(button => {
+        // ✅ Target the correct buttons
+        document.querySelectorAll('.delivery-option-card').forEach(button => {
             button.addEventListener('click', function() {
                 selectedOption = this.dataset.option;
                 selectedLocationId = this.dataset.locationId;
