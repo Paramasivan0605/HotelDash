@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable; // ✅ correct base class
+use Illuminate\Notifications\Notifiable;
 
-class Customer extends Model
+class Customer extends Authenticatable // ✅ extend Authenticatable, not Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
+
     protected $fillable = [
         'name',
         'mobile',
