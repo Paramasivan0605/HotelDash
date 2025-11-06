@@ -38,7 +38,7 @@
 
                     <!-- CTA Button -->
                     <div data-aos="fade-up" data-aos-delay="400">
-                        <a href="{{ route('menu') }}" 
+                        <a href="{{ route('location.menu', ['id' => session('location_id')]) }}" 
                            class="btn btn-lg px-5 py-3 text-white fw-bold shadow-lg"
                            style="background: linear-gradient(135deg, #6A0DAD 0%, #A46AEF 100%); 
                                   border-radius: 50px; 
@@ -107,7 +107,7 @@
             <h3 class="text-center fw-bold mb-4">Quick Actions</h3>
             <div class="row g-3">
                 <div class="col-6">
-                    <a href="{{ route('menu') }}" class="btn btn-outline-primary w-100 py-3 rounded-3">
+                    <a href="{{ route('location.menu', ['id' => session('location_id')]) }}" class="btn btn-outline-primary w-100 py-3 rounded-3">
                         <i class="bi bi-book fs-3 d-block mb-2"></i>
                         <small>Menu</small>
                     </a>

@@ -45,7 +45,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // ✅ Target the correct buttons
         document.querySelectorAll('.delivery-option-card').forEach(button => {
             button.addEventListener('click', function() {
                 selectedOption = this.dataset.option;
@@ -69,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /*
-*  ---------------------------- Add to Cart - FIXED & COMPLETE ------------------------------
+*  ---------------------------- Add to Cart - MOBILE FIXED ------------------------------
 */
 document.addEventListener('DOMContentLoaded', (event) => {
     const cartList = document.querySelector('.cart-list');
@@ -78,21 +77,30 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     const tableNumberInput = document.querySelector('input[name="table_number"]');
     const customerContactInput = document.querySelector('input[name="customer_contact"]');
+    const additionalContactInput = document.querySelector('input[name="additional_contact"]');
     const customerAddressInput = document.querySelector('textarea[name="customer_address"]');
     const confirmOrderBtn = document.querySelector('.confirm-order');
     const cartBadge = document.getElementById('cart-quantity');
 
-    // Initialize cart display
+    // Initialize
     loadCustomerAddress();
     updateCart();
     updateConfirmButtonState();
 
-    // Contact number input listener
+    // Event Listeners
     if (customerContactInput) {
-        customerContactInput.addEventListener('input', updateConfirmButtonState);
+        customerContactInput.addEventListener('input', () => {
+            updateConfirmButtonState();
+            sessionStorage.setItem('temp_contact', customerContactInput.value);
+        });
     }
 
-    // Address input listener
+    if (additionalContactInput) {
+        additionalContactInput.addEventListener('input', () => {
+            sessionStorage.setItem('temp_additional_contact', additionalContactInput.value);
+        });
+    }
+
     if (customerAddressInput) {
         customerAddressInput.addEventListener('input', () => {
             updateConfirmButtonState();
@@ -100,12 +108,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     }
 
-    // Table number input listener
     if (tableNumberInput) {
         tableNumberInput.addEventListener('input', updateConfirmButtonState);
     }
 
-    // Add product to cart
+    // Add to Cart
     addProduct.forEach(button => {
         button.addEventListener('click', () => {
             const foodId = button.getAttribute('data-food-id');
@@ -124,7 +131,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 return;
             }
 
-            // Get fresh cart data from localStorage
             cart = JSON.parse(localStorage.getItem('cart')) || {};
 
             const firstCartItemKey = Object.keys(cart)[0];
@@ -162,10 +168,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     });
 
-    // Minus button
+    // Quantity Controls
     document.addEventListener('click', (event) => {
-        if (event.target.classList.contains('minus') || event.target.closest('.minus')) {
-            const button = event.target.classList.contains('minus') ? event.target : event.target.closest('.minus');
+        // Minus button
+        if (event.target.classList.contains('minus-btn') || event.target.closest('.minus-btn')) {
+            const button = event.target.classList.contains('minus-btn') ? event.target : event.target.closest('.minus-btn');
             const foodId = button.getAttribute('data-food-id');
             cart = JSON.parse(localStorage.getItem('cart')) || {};
             
@@ -175,12 +182,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 updateCart();
             }
         }
-    });
 
-    // Plus button
-    document.addEventListener('click', (event) => {
-        if (event.target.classList.contains('plus') || event.target.closest('.plus')) {
-            const button = event.target.classList.contains('plus') ? event.target : event.target.closest('.plus');
+        // Plus button
+        if (event.target.classList.contains('plus-btn') || event.target.closest('.plus-btn')) {
+            const button = event.target.classList.contains('plus-btn') ? event.target : event.target.closest('.plus-btn');
             const foodId = button.getAttribute('data-food-id');
             cart = JSON.parse(localStorage.getItem('cart')) || {};
             
@@ -190,12 +195,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 updateCart();
             }
         }
-    });
 
-    // Delete button
-    document.addEventListener('click', (event) => {
-        if (event.target.closest('.delete-cart-item')) {
-            const foodId = event.target.closest('.delete-cart-item').getAttribute('data-food-id');
+        // Delete button
+        if (event.target.closest('.delete-btn')) {
+            const foodId = event.target.closest('.delete-btn').getAttribute('data-food-id');
             cart = JSON.parse(localStorage.getItem('cart')) || {};
             
             if (cart[foodId]) {
@@ -209,7 +212,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
-    // Change delivery type
+    // Change Delivery Type
     const changeDeliveryBtn = document.getElementById('changeDeliveryType');
     if (changeDeliveryBtn) {
         changeDeliveryBtn.addEventListener('click', () => {
@@ -245,11 +248,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     });
 
-    // ================== UPDATE CART DISPLAY - FIXED VERSION ==================
+    // ================== UPDATE CART DISPLAY - MOBILE OPTIMIZED ==================
     function updateCart() {
         cartList.innerHTML = '';
-
-        // Get fresh cart data
         cart = JSON.parse(localStorage.getItem('cart')) || {};
         
         let totalAmount = 0;
@@ -257,9 +258,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
         if (Object.keys(cart).length === 0) {
             cartList.innerHTML = `
-                <li class="text-center py-5 text-muted">
-                    <i class="bi bi-cart-x fs-1 d-block mb-2"></i>
-                    <span class="empty">No items in cart</span>
+                <li class="empty-cart">
+                    <i class="bi bi-cart-x" style="font-size: 3rem;"></i>
+                    <p class="mt-3 mb-0">No items in cart</p>
                 </li>
             `;
         } else {
@@ -268,48 +269,47 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 const productTotalPrice = product.price * product.quantity;
 
                 const listItem = document.createElement('li');
-                listItem.className = 'mb-3';
                 listItem.innerHTML = `
-                    <div class="card cart-item-card border shadow-sm">
-                        <div class="card-body p-2 p-sm-3">
-                            <div class="row g-2 align-items-center">
-                                <!-- Product Image (Hidden on very small screens) -->
-                                <div class="col-3 col-sm-2 d-none d-sm-block">
+                    <div class="cart-item">
+                        <div class="card-body p-3">
+                            <div class="row g-3 align-items-center">
+                                <!-- Product Image -->
+                                <div class="col-auto">
                                     <img src="${product.image}" 
                                          alt="${product.name}" 
-                                         class="cart-product-img w-100 rounded">
+                                         class="cart-item-img">
                                 </div>
                                 
                                 <!-- Product Details -->
-                                <div class="col-8 col-sm-6">
-                                    <h6 class="mb-1 fw-semibold text-truncate" title="${product.name}">${product.name}</h6>
-                                    <small class="text-muted d-block">RM ${product.price.toFixed(2)} each</small>
-                                    <div class="fw-bold text-primary mt-1">RM ${productTotalPrice.toFixed(2)}</div>
+                                <div class="col">
+                                    <h6 class="mb-1 fw-semibold">${product.name}</h6>
+                                    <small class="text-muted d-block mb-2">RM ${product.price.toFixed(2)} each</small>
+                                    <div class="fw-bold text-primary">RM ${productTotalPrice.toFixed(2)}</div>
                                 </div>
-                                
-                                <!-- Quantity Controls & Delete -->
-                                <div class="col-4 col-sm-4">
-                                    <!-- Quantity Controls -->
-                                    <div class="d-flex align-items-center justify-content-end gap-1 mb-2">
+                            </div>
+                            
+                            <!-- Quantity Controls & Delete -->
+                            <div class="row g-2 mt-2">
+                                <div class="col-7">
+                                    <div class="qty-controls">
                                         <button type="button" 
-                                                class="btn btn-sm btn-outline-primary qty-btn minus" 
+                                                class="btn qty-btn minus-btn" 
                                                 data-food-id="${foodId}">
                                             <i class="bi bi-dash"></i>
                                         </button>
-                                        <span class="fw-bold mx-1 small">${product.quantity}</span>
+                                        <span class="fw-bold mx-2">${product.quantity}</span>
                                         <button type="button" 
-                                                class="btn btn-sm btn-outline-primary qty-btn plus" 
+                                                class="btn qty-btn plus-btn" 
                                                 data-food-id="${foodId}">
                                             <i class="bi bi-plus"></i>
                                         </button>
                                     </div>
-                                    
-                                    <!-- Delete Button -->
+                                </div>
+                                <div class="col-5">
                                     <button type="button" 
-                                            class="btn btn-sm btn-danger w-100 delete-cart-item" 
+                                            class="btn btn-danger w-100 btn-sm btn-delete delete-btn" 
                                             data-food-id="${foodId}">
-                                        <i class="bi bi-trash"></i>
-                                        <span class="d-none d-sm-inline ms-1">Remove</span>
+                                        <i class="bi bi-trash"></i> Remove
                                     </button>
                                 </div>
                             </div>
@@ -323,61 +323,61 @@ document.addEventListener('DOMContentLoaded', (event) => {
             }
         }
 
-        // Update cart summary
+        // Update Summary
         document.getElementById('cart-total-amount').textContent = `RM ${totalAmount.toFixed(2)}`;
         document.getElementById('cart-item-count').textContent = `${totalItemCount} item${totalItemCount !== 1 ? 's' : ''}`;
         
-        // Update cart badge
+        // Update Badge
         if (cartBadge) {
             if (totalItemCount > 0) {
                 cartBadge.textContent = totalItemCount;
-                cartBadge.style.display = 'inline-block';
+                cartBadge.style.display = 'inline-flex';
             } else {
                 cartBadge.textContent = '0';
                 cartBadge.style.display = 'none';
             }
         }
 
-        // Update delivery type display
-        const deliveryInfoDiv = document.querySelector('.delivery-type-info');
+        // Update Delivery Type Display
+        const deliveryInfoSection = document.getElementById('deliveryInfoSection');
         const deliveryTypeSpan = document.getElementById('selected-delivery-type');
-        const tableNumberSection = document.querySelector('.table-number');
-        const addressSection = document.querySelector('.customer-address');
-        const cashNote = document.querySelector('.cash-note');
+        const tableNumberSection = document.getElementById('tableNumberSection');
+        const addressSection = document.getElementById('addressSection');
+        const cashNote = document.getElementById('cashNote');
 
         if (Object.keys(cart).length > 0) {
             const firstItem = cart[Object.keys(cart)[0]];
             const deliveryType = firstItem.deliveryType || '';
 
             if (deliveryTypeSpan) deliveryTypeSpan.textContent = deliveryType;
-            if (deliveryInfoDiv) deliveryInfoDiv.style.display = 'block';
+            if (deliveryInfoSection) deliveryInfoSection.classList.remove('d-none');
 
             if (deliveryType === 'Doorstep Delivery') {
-                if (tableNumberSection) tableNumberSection.style.display = 'none';
-                if (addressSection) addressSection.style.display = 'block';
-                if (cashNote) cashNote.style.display = 'block';
+                if (tableNumberSection) tableNumberSection.classList.add('d-none');
+                if (addressSection) addressSection.classList.remove('d-none');
+                if (cashNote) cashNote.classList.remove('d-none');
                 if (tableNumberInput) tableNumberInput.value = '';
             } else if (deliveryType === 'Restaurant Dine-in') {
-                if (tableNumberSection) tableNumberSection.style.display = 'block';
-                if (addressSection) addressSection.style.display = 'none';
-                if (cashNote) cashNote.style.display = 'block';
+                if (tableNumberSection) tableNumberSection.classList.remove('d-none');
+                if (addressSection) addressSection.classList.add('d-none');
+                if (cashNote) cashNote.classList.remove('d-none');
             } else {
-                if (tableNumberSection) tableNumberSection.style.display = 'none';
-                if (addressSection) addressSection.style.display = 'none';
-                if (cashNote) cashNote.style.display = 'block';
+                if (tableNumberSection) tableNumberSection.classList.add('d-none');
+                if (addressSection) addressSection.classList.add('d-none');
+                if (cashNote) cashNote.classList.remove('d-none');
                 if (tableNumberInput) tableNumberInput.value = '';
             }
         } else {
-            if (deliveryInfoDiv) deliveryInfoDiv.style.display = 'none';
-            if (tableNumberSection) tableNumberSection.style.display = 'none';
-            if (addressSection) addressSection.style.display = 'none';
-            if (cashNote) cashNote.style.display = 'none';
+            if (deliveryInfoSection) deliveryInfoSection.classList.add('d-none');
+            if (tableNumberSection) tableNumberSection.classList.add('d-none');
+            if (addressSection) addressSection.classList.add('d-none');
+            if (cashNote) cashNote.classList.add('d-none');
         }
 
         updateConfirmButtonState();
     }
 
-    // Update confirm button state
+    // Update Confirm Button State
     function updateConfirmButtonState() {
         if (!confirmOrderBtn) return;
 
@@ -406,52 +406,84 @@ document.addEventListener('DOMContentLoaded', (event) => {
                           (!requiresAddress || addressValue !== '');
 
         confirmOrderBtn.disabled = !isEnabled;
-        
-        // Update button appearance
-        if (isEnabled) {
-            confirmOrderBtn.classList.remove('btn-secondary');
-            confirmOrderBtn.classList.add('btn-success', 'gradient-button');
-        } else {
-            confirmOrderBtn.classList.remove('btn-success', 'gradient-button');
-            confirmOrderBtn.classList.add('btn-secondary');
-        }
     }
 
-    // Load customer address
+    // Load Customer Address and Contact
     function loadCustomerAddress() {
         const customerId = document.body.getAttribute('data-customer-id');
-        if (customerId && customerId.trim() !== '' && customerAddressInput) {
+        if (customerId && customerId.trim() !== '') {
             fetch(`/customer/address/${customerId}`)
                 .then(response => response.ok ? response.json() : Promise.reject())
                 .then(data => {
-                    if (data.address && data.address.trim() !== '') {
+                    // Pre-fill address
+                    if (data.address && data.address.trim() !== '' && customerAddressInput) {
                         customerAddressInput.value = data.address;
-                        updateConfirmButtonState();
                     } else {
                         const tempAddress = sessionStorage.getItem('temp_address');
-                        if (tempAddress) {
+                        if (tempAddress && customerAddressInput) {
                             customerAddressInput.value = tempAddress;
-                            updateConfirmButtonState();
                         }
                     }
+                    
+                    // Pre-fill contact
+                    if (data.contact && data.contact.trim() !== '' && customerContactInput) {
+                        customerContactInput.value = data.contact;
+                    } else {
+                        const tempContact = sessionStorage.getItem('temp_contact');
+                        if (tempContact && customerContactInput) {
+                            customerContactInput.value = tempContact;
+                        }
+                    }
+                    
+                    // Load additional contact from session if exists
+                    const tempAdditionalContact = sessionStorage.getItem('temp_additional_contact');
+                    if (tempAdditionalContact && additionalContactInput) {
+                        additionalContactInput.value = tempAdditionalContact;
+                    }
+                    
+                    updateConfirmButtonState();
                 })
                 .catch(() => {
+                    // Fallback to session storage
                     const tempAddress = sessionStorage.getItem('temp_address');
                     if (tempAddress && customerAddressInput) {
                         customerAddressInput.value = tempAddress;
-                        updateConfirmButtonState();
                     }
+                    
+                    const tempContact = sessionStorage.getItem('temp_contact');
+                    if (tempContact && customerContactInput) {
+                        customerContactInput.value = tempContact;
+                    }
+                    
+                    const tempAdditionalContact = sessionStorage.getItem('temp_additional_contact');
+                    if (tempAdditionalContact && additionalContactInput) {
+                        additionalContactInput.value = tempAdditionalContact;
+                    }
+                    
+                    updateConfirmButtonState();
                 });
-        } else if (customerAddressInput) {
+        } else {
+            // For guest users, load from session storage
             const tempAddress = sessionStorage.getItem('temp_address');
-            if (tempAddress) {
+            if (tempAddress && customerAddressInput) {
                 customerAddressInput.value = tempAddress;
-                updateConfirmButtonState();
             }
+            
+            const tempContact = sessionStorage.getItem('temp_contact');
+            if (tempContact && customerContactInput) {
+                customerContactInput.value = tempContact;
+            }
+            
+            const tempAdditionalContact = sessionStorage.getItem('temp_additional_contact');
+            if (tempAdditionalContact && additionalContactInput) {
+                additionalContactInput.value = tempAdditionalContact;
+            }
+            
+            updateConfirmButtonState();
         }
     }
 
-    // Toast notification helper
+    // Toast Notification
     function showToast(message, type) {
         const toastContainer = document.querySelector('.toast-container') || createToastContainer();
         
@@ -518,7 +550,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         
         if (!confirmPaymentBtn || !finalConfirmOrderBtn) return;
         
-        // Remove existing event listeners and add new ones
         const newConfirmPaymentBtn = confirmPaymentBtn.cloneNode(true);
         const newFinalConfirmOrderBtn = finalConfirmOrderBtn.cloneNode(true);
         
@@ -538,11 +569,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const totalAmount = document.getElementById('cart-total-amount').textContent;
         const deliveryType = document.getElementById('selected-delivery-type').textContent;
         const address = customerAddressInput ? customerAddressInput.value : '';
+        const additionalContact = additionalContactInput ? additionalContactInput.value : '';
         
         let finalMessage = `Please confirm your order:\n\n• Order Type: ${deliveryType}\n• Payment Method: ${paymentMethod}\n• ${totalAmount}\n`;
         
         if (deliveryType === 'Doorstep Delivery' && address) {
             finalMessage += `• Delivery Address: ${address}\n`;
+        }
+        
+        if (additionalContact) {
+            finalMessage += `• Additional Contact: ${additionalContact}\n`;
         }
         
         finalMessage += `\nThis action cannot be undone.`;
@@ -566,6 +602,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const table_number = tableNumberInput ? tableNumberInput.value : '';
         const customer_contact = customerContactInput ? customerContactInput.value : '';
         const customer_address = customerAddressInput ? customerAddressInput.value : '';
+        const additional_contact = additionalContactInput ? additionalContactInput.value : '';
 
         cart = JSON.parse(localStorage.getItem('cart')) || {};
 
@@ -601,6 +638,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 table_number, 
                 customer_contact,
                 customer_address,
+                additional_contact,
                 payment_type: paymentType 
             }),
         })
@@ -610,6 +648,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             
             if (data['success-message']) {
                 sessionStorage.removeItem('temp_address');
+                sessionStorage.removeItem('temp_additional_contact');
                 
                 const successMessage = document.getElementById('successMessage');
                 const successModalEl = document.getElementById('successModal');
@@ -628,6 +667,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         newCloseBtn.addEventListener('click', () => {
                             localStorage.removeItem('cart');
                             sessionStorage.removeItem('temp_address');
+                            sessionStorage.removeItem('temp_additional_contact');
                             updateCart();
                             location.reload();
                         });

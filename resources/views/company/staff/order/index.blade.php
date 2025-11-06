@@ -68,6 +68,7 @@
                                     <th>Payment Method</th>
                                     <th>Total Price</th>
                                     <th>Customer Contact No.</th>
+                                    <th> Address </th>
                                     <th>Ordered At</th>
                                 </tr>
                             </thead>
@@ -100,7 +101,13 @@
                                         </td>
                                         <td>{{ $order->payment_type }}</td>
                                         <td>${{ number_format($order->order_total_price, 2) }}</td>
-                                        <td>{{ $order->customer_contact }}</td>
+                                       <td>
+                                            {{ $order->customer_contact ?? 'N/A' }}
+                                            @if(!empty($order->customer->mobile))
+                                                / {{ $order->customer->mobile }}
+                                            @endif
+                                        </td>
+                                        <td>{{ $order->customer->address ?? 'N/A' }}</td>
                                         <td>{{ $order->created_at->format('j M Y, g:i A') }}</td>
                                     </tr>
                                 @endforeach

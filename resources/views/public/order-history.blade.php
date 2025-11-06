@@ -15,7 +15,7 @@
                         <table class="table table-striped table-hover">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>S.No</th>
+                                    <th>Order Id</th>
                                     <th>Date</th>
                                     <th>Delivery Type</th>
                                     <th>Payment Type</th>
@@ -25,10 +25,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php $counter = 1; @endphp
                                 @foreach($orders as $order)
                                 <tr>
-                                    <td>{{ $counter++ }}</td>
+                                    <td>#{{ $order->id }}</td>
                                     <td>{{ $order->created_at->format('M d, Y h:i A') }}</td>
                                     <td>
                                         <span class="badge bg-info">{{ $order->delivery_type }}</span>
@@ -59,14 +58,13 @@
                 <!-- Mobile Card View -->
                 <div class="d-md-none">
                     <div class="row g-3">
-                        @php $counter = 1; @endphp
                         @foreach($orders as $order)
                         <div class="col-12">
                             <div class="card shadow-sm border-0">
                                 <div class="card-body">
                                     <!-- Header with S.No and Date -->
                                     <div class="d-flex justify-content-between align-items-start mb-3">
-                                        <span class="badge bg-secondary fs-6">#{{ $counter++ }}</span>
+                                        <span class="badge bg-secondary fs-6">#{{ $order->id }}</span>
                                         <small class="text-muted">{{ $order->created_at->format('M d, Y h:i A') }}</small>
                                     </div>
                                     
@@ -113,7 +111,7 @@
                     </div>
                     <h4 class="alert-heading">No orders found</h4>
                     <p class="mb-4">You haven't placed any orders yet.</p>
-                    <a href="{{ route('menu') }}" class="btn btn-primary btn-lg">
+                    <a href="{{ route('location.menu', ['id' => session('location_id')]) }}" class="btn btn-primary btn-lg">
                         <i class="bi bi-menu-button me-2"></i>Browse Menu
                     </a>
                 </div>

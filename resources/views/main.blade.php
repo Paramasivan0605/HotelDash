@@ -15,16 +15,13 @@
     <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 <style>
-        /* Minimal Custom Styles */
+    /* Custom Styles */
     :root {
         --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         --success-gradient: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        /* New cart color variables - Teal/Blue Gradient */
         --cart-primary: #2dd4bf;
         --cart-secondary: #0ea5e9;
-        --cart-accent: #06b6d4;
         --cart-gradient: linear-gradient(135deg, #0ea5e9 0%, #2dd4bf 100%);
-        --cart-hover: linear-gradient(135deg, #0284c7 0%, #14b8a6 100%);
     }
 
     body {
@@ -64,227 +61,7 @@
         -webkit-text-fill-color: transparent;
     }
 
-    /* Cart Offcanvas Styling - COLOR CHANGES */
-    .offcanvas-cart {
-        width: 100% !important;
-        max-width: 480px !important;
-    }
-
-    .cart-badge {
-        position: absolute;
-        top: -5px;
-        right: -5px;
-        font-size: 0.7rem;
-        background: var(--cart-primary) !important;
-    }
-
-    .cart-item-card {
-        transition: all 0.3s ease;
-        border-left: 3px solid var(--cart-primary);
-    }
-
-    .cart-item-card:hover {
-        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
-        transform: translateY(-2px);
-        border-left-color: var(--cart-secondary);
-    }
-
-    /* Cart Header - COLOR CHANGES */
-    .gradient-header {
-        background: var(--cart-gradient) !important;
-    }
-
-    .gradient-button {
-        background: var(--success-gradient);
-        border: none;
-        transition: all 0.3s ease;
-    }
-
-    .gradient-button:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
-    }
-
-    /* Search Container */
-    .search-container {
-        position: relative;
-    }
-
-    .search-container.active {
-        display: block !important;
-    }
-
-    /* Mobile Menu */
-    @media (max-width: 991px) {
-        .logo-section span {
-            font-size: 1.2rem;
-        }
-        
-        .offcanvas-cart {
-            max-width: 100% !important;
-        }
-    }
-
-    /* Product Image in Cart */
-    .cart-product-img {
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
-        border-radius: 8px;
-        border: 2px solid #f0fdfa;
-    }
-
-    /* Quantity Controls - COLOR CHANGES */
-    .qty-btn {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-        font-weight: 600;
-        background: var(--cart-primary);
-        color: white;
-        border: none;
-        transition: all 0.3s ease;
-    }
-
-    .qty-btn:hover {
-        background: var(--cart-secondary);
-        transform: scale(1.1);
-    }
-
-    .delivery-type-badge {
-        animation: fadeIn 0.3s ease;
-        background: var(--cart-gradient);
-        color: white;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Footer */
-    .footer {
-        background: #2c3e50;
-        color: white;
-        margin-top: 80px;
-    }
-    /* Cart Offcanvas - Mobile Responsive Fixes */
-    @media (min-width: 576px) {
-        #cartOffcanvas {
-            max-width: 480px !important;
-        }
-    }
-
-    @media (max-width: 575px) {
-        #cartOffcanvas {
-            max-width: 100% !important;
-        }
-    }
-
-    /* Flexbox layout for proper scrolling */
-    #cartOffcanvas .offcanvas-body {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        padding: 0;
-    }
-
-    /* Scrollable area */
-    #cartOffcanvas .overflow-auto {
-        overflow-y: auto;
-        overflow-x: hidden;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    /* Cart items */
-    .cart-item-card {
-        transition: all 0.2s ease;
-        margin-bottom: 0.75rem;
-        border-left: 3px solid var(--cart-primary);
-    }
-
-    .cart-item-card:hover {
-        box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
-    }
-
-    .cart-product-img {
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
-        border: 2px solid #f0fdfa;
-    }
-
-    /* Quantity buttons - COLOR CHANGES */
-    .qty-btn {
-        width: 32px;
-        height: 32px;
-        padding: 0;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-        font-weight: 600;
-        border-radius: 4px;
-        background: var(--cart-primary);
-        color: white;
-        border: none;
-    }
-
-    .qty-btn:hover {
-        background: var(--cart-secondary);
-    }
-
-    /* Mobile optimizations */
-    @media (max-width: 576px) {
-        .cart-item-card .card-body {
-            padding: 0.75rem !important;
-        }
-        
-        .cart-product-img {
-            width: 50px !important;
-            height: 50px !important;
-        }
-        
-        .qty-btn {
-            width: 28px !important;
-            height: 28px !important;
-            font-size: 0.875rem !important;
-        }
-        
-        .cart-list h6 {
-            font-size: 0.875rem;
-        }
-        
-        .cart-list .text-muted {
-            font-size: 0.75rem;
-        }
-        
-        .cart-list .text-primary {
-            font-size: 0.875rem;
-        }
-
-        #cartOffcanvas .offcanvas-header h5 {
-            font-size: 1rem;
-        }
-
-        #cartOffcanvas .border-top {
-            padding: 0.75rem !important;
-        }
-
-        #cartOffcanvas .form-label {
-            font-size: 0.875rem;
-        }
-
-        #cartOffcanvas .btn-lg {
-            padding: 0.75rem 1rem;
-            font-size: 1rem;
-        }
-    }
-
+    /* Cart Badge */
     .cart-badge {
         position: absolute;
         top: -5px;
@@ -298,15 +75,143 @@
         background: var(--cart-primary) !important;
     }
 
+    /* ============ MOBILE CART FIXES ============ */
+    
+    /* Cart Offcanvas Responsive Width */
+    .offcanvas-cart {
+        width: 100% !important;
+    }
+
+    @media (min-width: 576px) {
+        .offcanvas-cart {
+            max-width: 480px !important;
+        }
+    }
+
+    /* Cart Header */
+    .cart-header {
+        background: var(--cart-gradient) !important;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    /* Delivery Info Section */
+    .delivery-info-section {
+        flex-shrink: 0;
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    /* Cart Summary */
+    .cart-summary {
+        flex-shrink: 0;
+        background: var(--cart-gradient);
+        color: white;
+    }
+
+    /* Scrollable Cart Items */
+    .cart-items-container {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        min-height: 0;
+        padding: 1rem;
+    }
+
+    /* Cart Item Card - Mobile Optimized */
+    .cart-item {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-left: 3px solid var(--cart-primary);
+        border-radius: 0.5rem;
+        margin-bottom: 0.75rem;
+        transition: all 0.2s ease;
+    }
+
+    .cart-item:hover {
+        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .cart-item-img {
+        width: 70px;
+        height: 70px;
+        object-fit: cover;
+        border-radius: 0.5rem;
+        border: 2px solid #f0fdfa;
+    }
+
+    /* Mobile: Smaller image */
+    @media (max-width: 576px) {
+        .cart-item-img {
+            width: 60px;
+            height: 60px;
+        }
+    }
+
+    /* Quantity Controls */
+    .qty-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .qty-btn {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.375rem;
+        background: var(--cart-primary);
+        color: white;
+        border: none;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .qty-btn:hover {
+        background: var(--cart-secondary);
+        transform: scale(1.05);
+    }
+
+    @media (max-width: 576px) {
+        .qty-btn {
+            width: 28px;
+            height: 28px;
+            font-size: 0.875rem;
+        }
+    }
+
+    /* Delete Button */
+    .btn-delete {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    /* Order Details Form */
+    .order-details-section {
+        flex-shrink: 0;
+        background: #f8f9fa;
+        border-top: 2px solid #dee2e6;
+        max-height: 35vh;
+        /* overflow-y: auto; */
+    }
+
+    /* Buttons */
     .gradient-button {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        background: var(--success-gradient);
         border: none;
         transition: all 0.3s ease;
     }
 
     .gradient-button:hover:not(:disabled) {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
     }
 
     .gradient-button:disabled {
@@ -314,55 +219,72 @@
         cursor: not-allowed;
     }
 
-    /* Cart Total Summary - COLOR CHANGES */
-    #cartOffcanvas .bg-primary {
-        background: var(--cart-gradient) !important;
-    }
-
-    /* Change Delivery Button - COLOR CHANGES */
-    #changeDeliveryType {
-        background: var(--cart-primary);
-        border: none;
-    }
-
-    #changeDeliveryType:hover {
-        background: var(--cart-secondary);
-        transform: translateY(-1px);
-    }
-    /* Enhanced Cart Styles with New Colors */
-    .cart-section .header {
-        background: var(--cart-gradient);
-        color: white;
-    }
-
-    .close-cart {
-        background: rgba(255,255,255,0.2);
-    }
-
-    .close-cart:hover {
-        background: rgba(255,255,255,0.3);
-    }
-
     .btn-change-delivery {
         background: var(--cart-primary);
+        border: none;
+        color: white;
+        transition: all 0.2s ease;
     }
 
     .btn-change-delivery:hover {
         background: var(--cart-secondary);
     }
 
-    .cart-total {
-        background: var(--cart-gradient);
+    /* Empty Cart */
+    .empty-cart {
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
     }
 
-    .action button {
-        background: var(--cart-primary);
+    /* Mobile Optimizations */
+    @media (max-width: 576px) {
+        .logo-section span {
+            font-size: 1.2rem;
+        }
+        
+        .cart-item .card-body {
+            padding: 0.75rem !important;
+        }
+        
+        .cart-item h6 {
+            font-size: 0.875rem;
+        }
+        
+        .cart-item .text-muted {
+            font-size: 0.75rem;
+        }
+        
+        .order-details-section {
+            padding: 0.75rem !important;
+        }
+
+        .order-details-section .form-label {
+            font-size: 0.875rem;
+        }
+
+        .order-details-section .btn-lg {
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+        }
     }
 
-    .action button:hover {
-        background: var(--cart-secondary);
+    /* Footer */
+    .footer {
+        background: #2c3e50;
+        color: white;
+        margin-top: 80px;
     }
-    </style>
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+ 
+</style>
     @yield('styles')
 </head>
 
@@ -383,16 +305,17 @@
             </button>
 
             <!-- Navigation Links -->
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mx-auto">
+            <div class="collapse navbar-collapse bg-white" id="navbarNav">
+                <ul class="navbar-nav mx-auto p-2">
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs(['home']) ? 'active fw-bold' : '' }}" href="{{ route('home') }}">
                             <i class="bi bi-house-door"></i> Home
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs(['menu', 'search']) ? 'active fw-bold' : '' }}" href="{{ route('menu') }}">
-                            <i class="bi bi-book"></i> Menu
+                        <a class="nav-link {{ request()->routeIs(['location.menu', 'search']) ? 'active fw-bold' : '' }}"
+                            href="{{ route('location.menu', ['id' => session('location_id')]) }}">
+                                <i class="bi bi-book"></i> Menu
                         </a>
                     </li>
                     <li class="nav-item">
@@ -412,6 +335,16 @@
                         </a>
                     </li>
                     @endif
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('customer.logout') ? 'active fw-bold' : '' }}"
+                        href="{{ route('customer.logout') }}"
+                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
+                        <form id="logout-form" action="{{ route('customer.logout') }}" method="POST" class="d-none">
+                            @csrf
+                        </form>
+                    </li>
                 </ul>
 
                 <!-- Right Side Icons -->
@@ -455,93 +388,106 @@
         </div>
     </nav>
 
-    <!-- Cart Offcanvas - COMPLETE FIXED VERSION -->
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="cartOffcanvas" style="max-width: 480px;">
-        <div class="offcanvas-header" style="background: var(--cart-gradient); color: white;">
-            <h5 class="offcanvas-title fw-bold">
+    <!-- Cart Offcanvas - FIXED MOBILE VERSION -->
+    <div class="offcanvas offcanvas-end offcanvas-cart" tabindex="-1" id="cartOffcanvas">
+        <!-- Header -->
+        <div class="offcanvas-header cart-header">
+            <h5 class="offcanvas-title fw-bold mb-0">
                 <i class="bi bi-cart-check"></i> Your Cart
             </h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
         </div>
 
-        <div class="offcanvas-body p-0 d-flex flex-column" style="height: 100%;">
-            <!-- Order Type Info -->
-            <div class="delivery-type-info p-3 bg-light border-bottom" style="display:none; flex-shrink: 0;">
+        <!-- Body with Flexbox Layout -->
+        <div class="offcanvas-body p-0 d-flex flex-column">
+            
+            <!-- Delivery Type Info -->
+            <div class="delivery-info-section p-2 d-none" id="deliveryInfoSection">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <small class="text-muted d-block">Order Type</small>
+                        <small class="text-muted d-block mb-1">Order Type</small>
                         <strong id="selected-delivery-type" class="text-primary"></strong>
                     </div>
-                    <button type="button" class="btn btn-sm btn-info text-white" id="changeDeliveryType">
+                    <button type="button" class="btn btn-sm btn-change-delivery" id="changeDeliveryType">
                         <i class='bx bx-edit'></i> Change
                     </button>
                 </div>
             </div>
 
-            <!-- Cart Total Summary -->
-            <div class="p-3 bg-primary bg-gradient text-white" style="flex-shrink: 0;">
-                <div class="row g-2">
+            <!-- Cart Summary -->
+            <div class="cart-summary p-2">
+                <div class="row g-2 text-center">
                     <div class="col-6">
-                        <small class="d-block opacity-75">Total Items</small>
+                        <small class="d-block opacity-75 mb-1">Total Items</small>
                         <h5 class="mb-0 fw-bold" id="cart-item-count">0 items</h5>
                     </div>
-                    <div class="col-6 text-end">
-                        <small class="d-block opacity-75">Total Amount</small>
+                    <div class="col-6">
+                        <small class="d-block opacity-75 mb-1">Total Amount</small>
                         <h4 class="mb-0 fw-bold" id="cart-total-amount">RM 0.00</h4>
                     </div>
                 </div>
             </div>
 
-            <!-- Cart Items List - SCROLLABLE AREA -->
-            <div class="flex-grow-1 overflow-auto p-3" style="min-height: 0;">
+            <!-- Cart Items - SCROLLABLE -->
+            <div class="cart-items-container">
                 <ul class="cart-list list-unstyled mb-0">
-                    <li class="text-center py-5 text-muted">
-                        <i class="bi bi-cart-x fs-1 d-block mb-2"></i>
-                        <span class="empty">No items in cart</span>
+                    <li class="empty-cart">
+                        <i class="bi bi-cart-x" style="font-size: 3rem;"></i>
+                        <p class="mt-3 mb-0">No items in cart</p>
                     </li>
                 </ul>
             </div>
 
             <!-- Order Details Form - FIXED AT BOTTOM -->
-            <div class="border-top p-3 bg-light" style="flex-shrink: 0;">
-                <!-- Table Number (Hidden by default) -->
-                <div class="table-number mb-3" style="display:none;">
-                    <label class="form-label fw-semibold small">
+            <div class="order-details-section p-3">
+                <!-- Table Number -->
+                <div class="mb-3 d-none" id="tableNumberSection">
+                    <label class="form-label fw-semibold small mb-2">
                         <i class="bi bi-table"></i> Table Number <span class="text-danger">*</span>
                     </label>
                     <input type="text" name="table_number" class="form-control" placeholder="Enter table number">
                 </div>
 
                 <!-- Contact Number -->
-                <div class="customer-contact mb-3">
-                    <label class="form-label fw-semibold small">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small mb-2">
                         <i class="bi bi-telephone"></i> Contact Number <span class="text-danger">*</span>
                     </label>
                     <input type="tel" name="customer_contact" class="form-control" placeholder="0123456789" required>
                 </div>
+                <!-- Optional Contact Number -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small mb-2">
+                        <i class="bi bi-telephone-plus"></i> Additional Contact Number <span class="text-muted">(Optional)</span>
+                    </label>
+                    <input type="tel" name="additional_contact" class="form-control" placeholder="Optional second contact number">
+                    <small class="text-muted d-block mt-1">
+                        <i class="bi bi-info-circle"></i> In case we need to reach you at another number
+                    </small>
+                </div>
 
                 <!-- Delivery Address -->
-                <div class="customer-address mb-3" style="display:none;">
-                    <label class="form-label fw-semibold small">
+                <div class="mb-3 d-none" id="addressSection">
+                    <label class="form-label fw-semibold small mb-2">
                         <i class="bi bi-geo-alt"></i> Delivery Address <span class="text-danger">*</span>
                     </label>
                     <textarea name="customer_address" class="form-control" rows="3" placeholder="Enter your full delivery address" required></textarea>
-                    <small class="text-muted">
+                    <small class="text-muted d-block mt-1">
                         <i class="bi bi-info-circle"></i> This address will be saved to your profile
                     </small>
                 </div>
 
                 <!-- Cash Note -->
-                <div class="alert alert-warning py-2 mb-3 cash-note" style="display:none;">
-                    <small><i class="bi bi-cash-coin"></i> <strong>Note:</strong> Cash payment only - No online payment available.</small>
+                <div class="alert alert-warning py-2 mb-3 d-none" id="cashNote">
+                    <small><i class="bi bi-cash-coin"></i> <strong>Note:</strong> Cash payment only</small>
                 </div>
 
                 <!-- Confirm Button -->
-                <div class="cart-button">
+                <div>
                     <small class="text-muted d-block text-center mb-2">
                         Please review your order before confirming
                     </small>
-                    <button type="button" class="btn btn-success btn-lg w-100 confirm-order fw-bold" disabled>
+                    <button type="button" class="btn btn-success btn-lg w-100 gradient-button confirm-order" disabled>
                         <i class="bi bi-check-circle"></i> Confirm Order
                     </button>
                 </div>
@@ -706,5 +652,4 @@
     <script src="{{ asset('js/public.js') }}"></script>
 
 </body>
-
 </html>

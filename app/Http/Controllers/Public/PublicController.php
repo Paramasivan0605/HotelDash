@@ -85,6 +85,7 @@ class PublicController extends Controller
             'customer_id' => $customer->id,
             'customer_name' => $customer->name,
             'customer_mobile' => $customer->mobile,
+             'location_id' => $validated['location'],
         ]);
 
         Log::info('Login submitted for customer: ' . $customer->name . ' (ID: ' . $customer->id . ')');
@@ -273,7 +274,8 @@ class PublicController extends Controller
 
             return response()->json([
                 'success' => true,
-                'address' => $customer->address ?? ''
+                'address' => $customer->address ?? '',
+                'contact' => $customer->mobile ?? ''
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -308,6 +310,7 @@ class PublicController extends Controller
         $contact = $request->input('customer_contact');
         $address = $request->input('customer_address');
         $paymentType = $request->input('payment_type');
+        $additionalContact = $request->input('additional_contact');
 
         // Validate payment type
         if (!in_array($paymentType, ['cash', 'card'])) {
@@ -369,7 +372,7 @@ class PublicController extends Controller
             'payment_type' => $paymentType,
             'isPaid' => false,
             'order_status' => OrderStatusEnum::Ordered,
-            'customer_contact' => $contact,
+            'customer_contact' => $additionalContact ? $additionalContact : $contact,
             'delivery_address' => $deliveryType === 'Doorstep Delivery' ? $address : null,
         ]);
 
@@ -424,4 +427,10 @@ class PublicController extends Controller
 
         return back()->with('success-message', 'We have received your reservation. We will process immediately and we will contact you as soon as possible. Thank you.');
     }
+    public function logout(): RedirectResponse
+    {
+        session()->forget(['customer_id', 'customer_name', 'customer_mobile', 'location_id']);
+        return redirect()->route('welcome')->with('success', 'Logged out successfully.');
+    }
+
 }

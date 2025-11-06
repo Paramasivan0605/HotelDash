@@ -37,4 +37,10 @@ class CustomerOrder extends Model
     {
         return $this->belongsTo(DiningTable::class, 'dining_table_id');
     }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'customer_id', 'id');
+    }
+
 }

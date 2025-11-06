@@ -79,12 +79,12 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4 text-lg-end">
+            {{-- <div class="col-lg-4 text-lg-end">
                 <a href="{{ route('menu') }}" class="btn-change-location">
                     <i class='bx bx-transfer'></i>
                     <span>Change Location</span>
                 </a>
-            </div>
+            </div> --}}
         </div>
     </div>
 </div>
@@ -112,9 +112,9 @@
                 <div class="empty-icon">🍽️</div>
                 <h3>No Menu Items Available</h3>
                 <p>Check back soon for delicious options!</p>
-                <a href="{{ route('menu') }}" class="btn-primary-custom">
+                {{-- <a href="{{ route('menu') }}" class="btn-primary-custom">
                     Browse Other Locations
-                </a>
+                </a> --}}
             </div>
         @else
             <div class="food-menu-grid">

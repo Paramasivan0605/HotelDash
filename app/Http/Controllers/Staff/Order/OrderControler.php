@@ -17,7 +17,7 @@ class OrderControler extends Controller
 {
     public function index() : View
     {
-        $order = CustomerOrder::with(['diningTable', 'customerOrderDetail.foodMenu'])
+        $order = CustomerOrder::with(['customer','diningTable', 'customerOrderDetail.foodMenu'])
         ->orderByRaw("
             CASE 
                 WHEN order_status = 'Ordered' THEN 1
