@@ -3,6 +3,9 @@
 @section('title', 'Menu - ' . $location->location_name)
 
 @section('content')
+<script>
+    window.locationCurrency = "{{ $currency ?? 'RM' }}";
+</script>
 @if(session('restore_cart'))
     <script>
         // Logic to restore the user's cart from backend or local storage
@@ -79,12 +82,6 @@
                     </div>
                 </div>
             </div>
-            {{-- <div class="col-lg-4 text-lg-end">
-                <a href="{{ route('menu') }}" class="btn-change-location">
-                    <i class='bx bx-transfer'></i>
-                    <span>Change Location</span>
-                </a>
-            </div> --}}
         </div>
     </div>
 </div>

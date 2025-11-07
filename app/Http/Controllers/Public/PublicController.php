@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Enums\OrderStatusEnum;
 use App\Enums\ReservationStatusEnum;
 use App\Http\Controllers\Controller;
+use App\Models\Cart;
 use App\Models\Customer;
 use App\Models\CustomerOrder;
 use App\Models\CustomerOrderDetail;
@@ -28,7 +29,7 @@ class PublicController extends Controller
 {
     public function login()
     {
-        $locations = Location::all(); // Fetch location data
+        $locations = Location::all();
         return view('public.login', compact('locations'));
     }
 
@@ -37,17 +38,15 @@ class PublicController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|max:255',
             'mobile' => 'required|numeric',
-            'location' => 'required|exists:location,location_id', // validate location
+            'location' => 'required|exists:location,location_id',
         ]);
 
         if ($validator->fails()) {
-            // Uncomment this for debugging if needed
             return back()->withErrors($validator)->withInput();
         }
 
         $validated = $validator->validated();
 
-        // Find existing customer or create new one
         $customer = Customer::where('mobile', $validated['mobile'])->first();
 
         if (!$customer) {
@@ -59,47 +58,40 @@ class PublicController extends Controller
         } else {
             Log::info('Customer logged in: ' . $customer->name . ' (ID: ' . $customer->id . ')');
         }
-                // After the customer is found or created
-        // If existing customer, restore previous cart and order data
-        if ($customer->wasRecentlyCreated === false) {
-            // Store old cart info in session (if any exists)
-            session(['restore_cart' => true]);
 
-            // Optional: Load the last order status
+        if ($customer->wasRecentlyCreated === false) {
+            $cartCount = Cart::where('user_id', $customer->id)->count();
+            if ($cartCount > 0) {
+                session(['restore_cart' => true]);
+            }
+
             $lastOrder = CustomerOrder::where('customer_id', $customer->id)
                 ->orderBy('created_at', 'desc')
                 ->first();
 
-            // If the last order is not completed or cancelled, you can notify them
             if ($lastOrder && !in_array($lastOrder->order_status, ['completed', 'cancelled'])) {
                 session(['pending_order' => $lastOrder->id]);
             }
         } else {
-            // New customer - fresh start
             session()->forget(['restore_cart', 'pending_order']);
         }
 
-
-        // Store basic customer data in session
         session([
             'customer_id' => $customer->id,
             'customer_name' => $customer->name,
             'customer_mobile' => $customer->mobile,
-             'location_id' => $validated['location'],
+            'location_id' => $validated['location'],
         ]);
 
         Log::info('Login submitted for customer: ' . $customer->name . ' (ID: ' . $customer->id . ')');
 
-        // ✅ Redirect the user to that location's menu page
         return redirect()->route('location.menu', ['id' => $validated['location']])
             ->with('success-message', 'Welcome, ' . $customer->name . '!');
     }
 
-
     public function home(): View
     {
         $menu = FoodMenu::all();
-
         return view('public.home', compact('menu'));
     }
 
@@ -109,26 +101,53 @@ class PublicController extends Controller
         $category = FoodCategory::all();
         $locations = Location::all();
 
-        return view('public.menu', compact('menu', 'category','locations'));
+        return view('public.menu', compact('menu', 'category', 'locations'));
     }
 
     public function locationMenuPage($locationId)
     {
-        // Get the location
         $location = Location::findOrFail($locationId);
 
-        // Join food_locations with food_menu to get food details and price for this location
         $foodMenu = FoodMenu::select('food_menus.*', 'food_price.price')
             ->join('food_price', 'food_price.food_id', '=', 'food_menus.id')
             ->where('food_price.location_id', $locationId)
             ->get();
 
-       return view('public.locationMenu', compact('foodMenu', 'location'))
-    ->with([
-        'restore_cart' => session('restore_cart'),
-        'pending_order' => session('pending_order')
-    ]);
+        // Get cart items for this customer and location
+        $cartItems = [];
+        $cartTotal = 0;
+        $cartCount = 0;
+        $currency = $location->currency;
+        
+        if (session('customer_id')) {
+            $carts = Cart::where('user_id', session('customer_id'))
+                ->where('location_id', $locationId)
+                ->with(['food.locations', 'location'])
+                ->get();
 
+            foreach ($carts as $cart) {
+                $price = $cart->getPrice();
+                
+                $cartItems[] = [
+                    'id' => $cart->food_id,
+                    'name' => $cart->food->name,
+                    'image' => $cart->food->image ? asset($cart->food->image) : asset('images/placeholder.jpg'),
+                    'price' => $price,
+                    'quantity' => $cart->quantity,
+                    'delivery_type' => $cart->delivery_type,
+                    'total' => $cart->getTotalPrice()
+                ];
+                
+                $cartTotal += $cart->getTotalPrice();
+                $cartCount += $cart->quantity;
+            }
+        }
+
+        return view('public.locationMenu', compact('foodMenu', 'location', 'cartItems', 'cartTotal', 'cartCount', 'currency'))
+            ->with([
+                'restore_cart' => session('restore_cart'),
+                'pending_order' => session('pending_order')
+            ]);
     }
 
     public function about(): View
@@ -138,22 +157,15 @@ class PublicController extends Controller
 
     public function promotion(): View
     {
-        // Get current date
         $currentMonth = Carbon::now();
+        $monthBefore = Carbon::now()->subMonth();
 
-        // Get month before now
-        $monthBefore = Carbon::now()->subMonth(); 
-
-        // Get event available if user is within the event month and one month after even
-        // Other than that the promotion is unavailable
         $promotion = PromotionEvent::where(function ($query) use ($currentMonth, $monthBefore) {
             $query->whereMonth('event_date', '=', $currentMonth)
                 ->orWhereMonth('event_date', '=', $monthBefore);
         })->get();
 
-        // Initialize as empty array to store coupon based on $promotion
         $coupon = [];
-
         foreach ($promotion as $event) {
             $eventCoupon = PromotionDiscount::where('event_id', $event->id)->get();
             $coupon[$event->id] = $eventCoupon;
@@ -169,7 +181,218 @@ class PublicController extends Controller
         return view('public.reservation');
     }
 
-    // Add new method for order history
+    // ==================== CART MANAGEMENT METHODS ====================
+    
+    public function addToCart(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'food_id' => 'required|exists:food_menus,id',
+            'quantity' => 'required|integer|min:1',
+            'delivery_type' => 'required|string',
+            'location_id' => 'required|exists:location,location_id'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first()
+            ], 422);
+        }
+
+        $customerId = session('customer_id');
+        if (!$customerId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please login first'
+            ], 401);
+        }
+
+        // Check if cart has items with different delivery type or location
+        $existingCart = Cart::where('user_id', $customerId)->first();
+        
+        if ($existingCart) {
+            if ($existingCart->delivery_type !== $request->delivery_type) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "You already have items with delivery type '{$existingCart->delivery_type}'. Please clear your cart first."
+                ], 422);
+            }
+            
+            if ($existingCart->location_id != $request->location_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You already have items from a different location. Please clear your cart first.'
+                ], 422);
+            }
+        }
+
+        // Add or update cart item
+        $cartItem = Cart::where('user_id', $customerId)
+            ->where('food_id', $request->food_id)
+            ->first();
+
+        if ($cartItem) {
+            $cartItem->quantity += $request->quantity;
+            $cartItem->save();
+        } else {
+            Cart::create([
+                'user_id' => $customerId,
+                'food_id' => $request->food_id,
+                'quantity' => $request->quantity,
+                'delivery_type' => $request->delivery_type,
+                'location_id' => $request->location_id
+            ]);
+        }
+
+        $food = FoodMenu::find($request->food_id);
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$food->name} added to cart!",
+            'cart_count' => Cart::where('user_id', $customerId)->sum('quantity')
+        ]);
+    }
+
+    public function updateCartQuantity(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'food_id' => 'required|exists:food_menus,id',
+            'quantity' => 'required|integer|min:1'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first()
+            ], 422);
+        }
+
+        $customerId = session('customer_id');
+        $cartItem = Cart::where('user_id', $customerId)
+            ->where('food_id', $request->food_id)
+            ->first();
+
+        if (!$cartItem) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Item not found in cart'
+            ], 404);
+        }
+
+        $cartItem->quantity = $request->quantity;
+        $cartItem->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cart updated successfully',
+            'cart_count' => Cart::where('user_id', $customerId)->sum('quantity')
+        ]);
+    }
+
+    public function removeFromCart(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'food_id' => 'required|exists:food_menus,id'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first()
+            ], 422);
+        }
+
+        $customerId = session('customer_id');
+        $cartItem = Cart::where('user_id', $customerId)
+            ->where('food_id', $request->food_id)
+            ->first();
+
+        if (!$cartItem) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Item not found in cart'
+            ], 404);
+        }
+
+        $foodName = $cartItem->food->name;
+        $cartItem->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$foodName} removed from cart",
+            'cart_count' => Cart::where('user_id', $customerId)->sum('quantity')
+        ]);
+    }
+
+    public function clearCart(): JsonResponse
+    {
+        $customerId = session('customer_id');
+        Cart::where('user_id', $customerId)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cart cleared successfully'
+        ]);
+    }
+
+public function getCart(): JsonResponse
+{
+    $customerId = session('customer_id');
+    
+    $carts = Cart::where('user_id', $customerId)
+        ->with(['food', 'location'])
+        ->get();
+
+    $cartItems = [];
+    $totalAmount = 0;
+    $currency = '';
+
+    foreach ($carts as $cart) {
+        $food = $cart->food;
+        $location = $cart->location;
+
+        // Get price dynamically via pivot table method
+        $price = $food->getPriceForLocation($cart->location_id);
+        $itemTotal = $price * $cart->quantity;
+
+        // Dynamic currency (fallback to 'RM' if missing)
+        $currency = $location->currency ?? 'RM';
+
+        // ✅ Use full stored image path (matches locationMenuPage)
+        $imageUrl = $food->image
+            ? asset($food->image)
+            : asset('images/no-image.jpg');
+
+        $cartItems[] = [
+            'id'            => $cart->food_id,
+            'name'          => $food->name,
+            'image'         => $imageUrl,
+            'price'         => $price,
+            'quantity'      => $cart->quantity,
+            'delivery_type' => $cart->delivery_type,
+            'location_id'   => $cart->location_id,
+            'currency'      => $currency,
+            'total'         => $itemTotal,
+        ];
+        
+        $totalAmount += $itemTotal;
+    }
+
+    return response()->json([
+        'success'      => true,
+        'cart_items'   => $cartItems,
+        'total_amount' => $totalAmount,
+        'currency'     => $currency,
+        'cart_count'   => $carts->sum('quantity'),
+        'delivery_type'=> $carts->first()->delivery_type ?? null
+    ]);
+}
+
+
+
+
+    // ==================== ORDER MANAGEMENT ====================
+
     public function orderHistory(): View
     {
         $orders = [];
@@ -183,7 +406,6 @@ class PublicController extends Controller
         return view('public.order-history', compact('orders'));
     }
 
-    // Add method for order details
     public function orderDetails($orderId): View
     {
         $order = CustomerOrder::with(['customerOrderDetail.foodMenu.foodLocations', 'diningTable'])
@@ -194,36 +416,38 @@ class PublicController extends Controller
         return view('public.order-details', compact('order'));
     }
 
-    
-    // Helper method for status classes (add this to your controller)
     public static function getStatusClass($status)
     {
-        // Handle both string and OrderStatusEnum cases
         if ($status instanceof \App\Enums\OrderStatusEnum) {
             $statusValue = $status->value;
         } else {
             $statusValue = $status;
         }
 
-        // Normalize the status to handle case inconsistencies
         $normalizedStatus = strtolower($statusValue);
         
-        switch($normalizedStatus) {
-            case 'ordered': return 'status-ordered';
-            case 'preparing': return 'status-preparing';
-            case 'ready_to_deliver': return 'status-ready';
-            case 'delivery_on_the_way': return 'status-delivery';
-            case 'delivered': return 'status-delivered';
-            case 'completed': return 'status-completed';
-            case 'cancelled': return 'status-cancelled';
-            default: return 'status-ordered';
+        switch ($normalizedStatus) {
+            case 'ordered':
+                return 'status-ordered';
+            case 'preparing':
+                return 'status-preparing';
+            case 'ready_to_deliver':
+                return 'status-ready';
+            case 'delivery_on_the_way':
+                return 'status-delivery';
+            case 'delivered':
+                return 'status-delivered';
+            case 'completed':
+                return 'status-completed';
+            case 'cancelled':
+                return 'status-cancelled';
+            default:
+                return 'status-ordered';
         }
     }
 
-    // Helper method for status display
     public static function getStatusDisplay($status)
     {
-        // Handle both string and OrderStatusEnum cases
         if ($status instanceof \App\Enums\OrderStatusEnum) {
             $statusValue = $status->value;
         } else {
@@ -233,10 +457,8 @@ class PublicController extends Controller
         return ucwords(str_replace('_', ' ', $statusValue));
     }
 
-    // Add this method to your OrderController
     public static function getOrderTimeline($orderStatus)
     {
-        // Handle both string and OrderStatusEnum cases
         if ($orderStatus instanceof \App\Enums\OrderStatusEnum) {
             $currentStatus = $orderStatus->value;
         } else {
@@ -291,10 +513,10 @@ class PublicController extends Controller
 
         $search = FoodMenu::where(function ($query) use ($keyword) {
             $query->where('name', 'like', '%' . $keyword . '%')
-            ->orWhere('price', 'like', '%' . $keyword . '%')
-            ->orWhereHas('foodCategory', function ($query) use ($keyword) {
-                $query->where('name', 'like', '%' . $keyword . '%');
-            });
+                ->orWhere('price', 'like', '%' . $keyword . '%')
+                ->orWhereHas('foodCategory', function ($query) use ($keyword) {
+                    $query->where('name', 'like', '%' . $keyword . '%');
+                });
         })->get();
 
         Log::info([$keyword, $search]);
@@ -304,32 +526,41 @@ class PublicController extends Controller
 
     public function createOrder(Request $request): JsonResponse
     {
-        $cartItem = $request->input('cartData');
-        $totalPrice = $request->input('totalAmount');
         $tableNumber = $request->input('table_number');
         $contact = $request->input('customer_contact');
         $address = $request->input('customer_address');
         $paymentType = $request->input('payment_type');
         $additionalContact = $request->input('additional_contact');
 
-        // Validate payment type
         if (!in_array($paymentType, ['cash', 'card'])) {
             return response()->json([
                 'validation-error-message' => 'Invalid payment method selected.',
             ], 422);
         }
 
-        // Get deliveryType from the first item in cartData
-        $deliveryType = $cartItem[0]['deliveryType'] ?? null;
+        $customerId = session('customer_id');
+        
+        // Get cart items from database
+        $cartItems = Cart::where('user_id', $customerId)
+            ->with(['food', 'location'])
+            ->get();
 
-        // Validate address for doorstep delivery
+        if ($cartItems->isEmpty()) {
+            return response()->json([
+                'validation-error-message' => 'Your cart is empty.',
+            ], 422);
+        }
+
+        $deliveryType = $cartItems->first()->delivery_type;
+        $locationId = $cartItems->first()->location_id;
+
         if ($deliveryType === 'Doorstep Delivery' && empty(trim($address))) {
             return response()->json([
                 'validation-error-message' => 'Delivery address is required for doorstep delivery.',
             ], 422);
         }
 
-        // For dine-in, check table logic
+        $tableId = null;
         if ($deliveryType === 'Restaurant Dine-in') {
             $table = DiningTable::where('table_name', $tableNumber)->first();
 
@@ -347,23 +578,28 @@ class PublicController extends Controller
 
             $table->update(['isOccupied' => true]);
             $tableId = $table->id;
-        } else {
-            $tableId = null;
         }
 
-        // Update customer address if provided and customer exists
-        $customerId = session('customer_id');
+        // Update customer address
         if ($customerId && $address) {
             $customer = Customer::find($customerId);
             if ($customer) {
-                $customer->update([
-                    'address' => $address
-                ]);
+                $customer->update(['address' => $address]);
                 Log::info('Customer address updated for ID: ' . $customerId);
             }
         }
 
-        // Create order with customer_id from session
+        // Calculate total from cart
+        $totalPrice = 0;
+        foreach ($cartItems as $cartItem) {
+            $foodPrice = $cartItem->food->foodLocations
+                ->where('id', $locationId)
+                ->first();
+            $price = $foodPrice ? $foodPrice->pivot->price : 0;
+            $totalPrice += $price * $cartItem->quantity;
+        }
+
+        // Create order
         $order = CustomerOrder::create([
             'customer_id' => $customerId,
             'dining_table_id' => $tableId,
@@ -376,14 +612,23 @@ class PublicController extends Controller
             'delivery_address' => $deliveryType === 'Doorstep Delivery' ? $address : null,
         ]);
 
-        foreach ($cartItem as $item) {
+        // Create order details from cart
+        foreach ($cartItems as $cartItem) {
+            $foodPrice = $cartItem->food->foodLocations
+                ->where('id', $locationId)
+                ->first();
+            $price = $foodPrice ? $foodPrice->pivot->price : 0;
+
             CustomerOrderDetail::create([
                 'order_id' => $order->id,
-                'food_id' => $item['id'],
-                'quantity' => $item['quantity'],
-                'total_price' => $item['eachTotalPrice'],
+                'food_id' => $cartItem->food_id,
+                'quantity' => $cartItem->quantity,
+                'total_price' => $price * $cartItem->quantity,
             ]);
         }
+
+        // Clear cart after order is created
+        Cart::where('user_id', $customerId)->delete();
 
         Log::info('Order created for customer ID: ' . $customerId . ', Order ID: ' . $order->id);
 
@@ -409,7 +654,6 @@ class PublicController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        // Store reservation data with customer_id
         $reservation = Reservation::create([
             'customer_id' => session('customer_id'),
             'reservation_name' => $request->book_name,
@@ -427,10 +671,10 @@ class PublicController extends Controller
 
         return back()->with('success-message', 'We have received your reservation. We will process immediately and we will contact you as soon as possible. Thank you.');
     }
+
     public function logout(): RedirectResponse
     {
         session()->forget(['customer_id', 'customer_name', 'customer_mobile', 'location_id']);
         return redirect()->route('welcome')->with('success', 'Logged out successfully.');
     }
-
 }

@@ -16,6 +16,11 @@ class Location extends Model
         'country',
         'currency',
     ];
-
+public function foodMenus()
+    {
+        return $this->belongsToMany(FoodMenu::class, 'food_price', 'location_id', 'food_id')
+                    ->withPivot('price')
+                    ->withTimestamps();
+    }
 
 }

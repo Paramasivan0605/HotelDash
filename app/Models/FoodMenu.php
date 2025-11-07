@@ -33,5 +33,19 @@ class FoodMenu extends Model
     {
         return $this->hasMany(FoodLocation::class, 'food_id');
     }
+public function locations()
+    {
+        return $this->belongsToMany(Location::class, 'food_price', 'food_id', 'location_id')
+                    ->withPivot('price')
+                    ->withTimestamps();
+    }
 
+    // Helper method to get price for a specific location
+    public function getPriceForLocation($locationId)
+    {
+$location = $this->locations()
+                ->where('food_price.location_id', $locationId)
+                ->first();
+        return $location ? $location->pivot->price : 0;
+    }
 }

@@ -38,6 +38,7 @@ Route::get('/', [PublicController::class, 'login'])->name('welcome');
 Route::post('/login/submit', [PublicController::class, 'submit'])->name('login.submit');
 
 // Protected Routes - Require customer login
+// routes/web.php
 Route::middleware(['customer.auth'])->group(function () {
     Route::get('/home', [PublicController::class, 'home'])->name('home');
     Route::get('/menu', [PublicController::class, 'menu'])->name('menu');
@@ -48,7 +49,14 @@ Route::middleware(['customer.auth'])->group(function () {
     Route::get('/customer/address/{id}', [PublicController::class, 'getCustomerAddress']);
     Route::post('/customer/logout', [PublicController::class, 'logout'])->name('customer.logout');
 
-    // Add to cart
+    // Cart Management Routes
+    Route::post('/cart/add', [PublicController::class, 'addToCart'])->name('cart.add');
+    Route::post('/cart/update', [PublicController::class, 'updateCartQuantity'])->name('cart.update');
+    Route::post('/cart/remove', [PublicController::class, 'removeFromCart'])->name('cart.remove');
+    Route::post('/cart/clear', [PublicController::class, 'clearCart'])->name('cart.clear');
+    Route::get('/cart/get', [PublicController::class, 'getCart'])->name('cart.get');
+
+    // Order Routes
     Route::post('/menu/create-order', [PublicController::class, 'createOrder'])->name('create-order');
     
     // Reservation

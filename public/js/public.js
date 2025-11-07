@@ -68,12 +68,11 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /*
-*  ---------------------------- Add to Cart - MOBILE FIXED ------------------------------
+*  ---------------------------- Cart Management - DATABASE DRIVEN ------------------------------
 */
 document.addEventListener('DOMContentLoaded', (event) => {
     const cartList = document.querySelector('.cart-list');
     const addProduct = document.querySelectorAll('.add-to-cart');
-    let cart = JSON.parse(localStorage.getItem('cart')) || {};
 
     const tableNumberInput = document.querySelector('input[name="table_number"]');
     const customerContactInput = document.querySelector('input[name="customer_contact"]');
@@ -84,10 +83,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Initialize
     loadCustomerAddress();
-    updateCart();
-    updateConfirmButtonState();
+    loadCart();
 
-    // Event Listeners
+    // Event Listeners for form inputs
     if (customerContactInput) {
         customerContactInput.addEventListener('input', () => {
             updateConfirmButtonState();
@@ -112,15 +110,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
         tableNumberInput.addEventListener('input', updateConfirmButtonState);
     }
 
-    // Add to Cart
+    // ================== ADD TO CART ==================
     addProduct.forEach(button => {
         button.addEventListener('click', () => {
             const foodId = button.getAttribute('data-food-id');
-            const foodImage = button.getAttribute('data-food-image');
             const foodName = button.getAttribute('data-food-name');
-            const foodPrice = button.getAttribute('data-food-price');
-            const deliveryType = button.getAttribute('data-delivery-type') || localStorage.getItem('selectedDeliveryType') || '';
-            const locationId = button.getAttribute('data-location-id') || localStorage.getItem('location_id') || '';
+            const deliveryType = button.getAttribute('data-delivery-type') || sessionStorage.getItem('delivery_type') || '';
+            const locationId = button.getAttribute('data-location-id') || sessionStorage.getItem('location_id') || '';
 
             if (!locationId) {
                 showToast('⚠️ Location ID is missing. Please select a location first.', 'warning');
@@ -131,55 +127,46 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 return;
             }
 
-            cart = JSON.parse(localStorage.getItem('cart')) || {};
-
-            const firstCartItemKey = Object.keys(cart)[0];
-            const cartDeliveryType = firstCartItemKey ? cart[firstCartItemKey].deliveryType : null;
-            const cartLocationId = firstCartItemKey ? cart[firstCartItemKey].locationId : null;
-
-            if (firstCartItemKey) {
-                if (cartDeliveryType && cartDeliveryType !== deliveryType) {
-                    showToast(`⚠️ You already have items in your cart with delivery type "${cartDeliveryType}". Please clear your cart before adding items with "${deliveryType}".`, 'warning');
-                    return;
+            // Add to database via AJAX
+            fetch('/cart/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    food_id: foodId,
+                    quantity: 1,
+                    delivery_type: deliveryType,
+                    location_id: locationId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(`✓ ${foodName} added to cart!`, 'success');
+                    loadCart();
+                } else {
+                    showToast(data.message, 'warning');
                 }
-
-                if (String(cartLocationId) !== String(locationId)) {
-                    showToast(`⚠️ You already have items in your cart from a different location. Please clear your cart before adding items from this location.`, 'warning');
-                    return;
-                }
-            }
-
-            if (cart[foodId]) {
-                cart[foodId].quantity++;
-            } else {
-                cart[foodId] = {
-                    image: foodImage,
-                    name: foodName,
-                    price: parseFloat(foodPrice),
-                    deliveryType: deliveryType,
-                    locationId: locationId,
-                    quantity: 1
-                };
-            }
-
-            localStorage.setItem('cart', JSON.stringify(cart));
-            updateCart();
-            showToast(`✓ ${foodName} added to cart!`, 'success');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Error adding item to cart', 'danger');
+            });
         });
     });
 
-    // Quantity Controls
+    // ================== QUANTITY CONTROLS ==================
     document.addEventListener('click', (event) => {
         // Minus button
         if (event.target.classList.contains('minus-btn') || event.target.closest('.minus-btn')) {
             const button = event.target.classList.contains('minus-btn') ? event.target : event.target.closest('.minus-btn');
             const foodId = button.getAttribute('data-food-id');
-            cart = JSON.parse(localStorage.getItem('cart')) || {};
+            const currentQty = parseInt(button.nextElementSibling.textContent);
             
-            if (cart[foodId] && cart[foodId].quantity > 1) {
-                cart[foodId].quantity--;
-                localStorage.setItem('cart', JSON.stringify(cart));
-                updateCart();
+            if (currentQty > 1) {
+                updateCartQuantity(foodId, currentQty - 1);
             }
         }
 
@@ -187,76 +174,43 @@ document.addEventListener('DOMContentLoaded', (event) => {
         if (event.target.classList.contains('plus-btn') || event.target.closest('.plus-btn')) {
             const button = event.target.classList.contains('plus-btn') ? event.target : event.target.closest('.plus-btn');
             const foodId = button.getAttribute('data-food-id');
-            cart = JSON.parse(localStorage.getItem('cart')) || {};
+            const currentQty = parseInt(button.previousElementSibling.textContent);
             
-            if (cart[foodId]) {
-                cart[foodId].quantity++;
-                localStorage.setItem('cart', JSON.stringify(cart));
-                updateCart();
-            }
+            updateCartQuantity(foodId, currentQty + 1);
         }
 
         // Delete button
         if (event.target.closest('.delete-btn')) {
             const foodId = event.target.closest('.delete-btn').getAttribute('data-food-id');
-            cart = JSON.parse(localStorage.getItem('cart')) || {};
-            
-            if (cart[foodId]) {
-                const foodName = cart[foodId].name;
-                delete cart[foodId];
-                localStorage.setItem('cart', JSON.stringify(cart));
-                updateCart();
-                updateConfirmButtonState();
-                showToast(`${foodName} removed from cart`, 'warning');
-            }
+            removeFromCart(foodId);
         }
     });
 
-    // Change Delivery Type
-    const changeDeliveryBtn = document.getElementById('changeDeliveryType');
-    if (changeDeliveryBtn) {
-        changeDeliveryBtn.addEventListener('click', () => {
-            const changeDeliveryModal = new bootstrap.Modal(document.getElementById('changeDeliveryModal'));
-            changeDeliveryModal.show();
+    // ================== LOAD CART FROM DATABASE ==================
+    function loadCart() {
+        fetch('/cart/get', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayCart(data.cart_items, data.total_amount, data.cart_count, data.delivery_type, data.currency);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading cart:', error);
         });
     }
 
-    document.querySelectorAll('.btn-delivery-option').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const newDeliveryType = this.getAttribute('data-option');
-            cart = JSON.parse(localStorage.getItem('cart')) || {};
-            
-            for (const foodId in cart) {
-                cart[foodId].deliveryType = newDeliveryType;
-            }
-            
-            localStorage.setItem('cart', JSON.stringify(cart));
-            localStorage.setItem('selectedDeliveryType', newDeliveryType);
-            
-            document.querySelectorAll('.add-to-cart').forEach(addBtn => {
-                addBtn.setAttribute('data-delivery-type', newDeliveryType);
-            });
-            
-            updateCart();
-            
-            const modalInstance = bootstrap.Modal.getInstance(document.getElementById('changeDeliveryModal'));
-            if (modalInstance) {
-                modalInstance.hide();
-            }
-            
-            showToast(`Order type changed to ${newDeliveryType}`, 'success');
-        });
-    });
-
-    // ================== UPDATE CART DISPLAY - MOBILE OPTIMIZED ==================
-    function updateCart() {
+    // ================== DISPLAY CART ==================
+    function displayCart(cartItems, totalAmount, cartCount, deliveryType , currency) {
         cartList.innerHTML = '';
-        cart = JSON.parse(localStorage.getItem('cart')) || {};
-        
-        let totalAmount = 0;
-        let totalItemCount = 0;
 
-        if (Object.keys(cart).length === 0) {
+        if (cartItems.length === 0) {
             cartList.innerHTML = `
                 <li class="empty-cart">
                     <i class="bi bi-cart-x" style="font-size: 3rem;"></i>
@@ -264,43 +218,42 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 </li>
             `;
         } else {
-            for (const foodId in cart) {
-                const product = cart[foodId];
-                const productTotalPrice = product.price * product.quantity;
-
+            cartItems.forEach(item => {
                 const listItem = document.createElement('li');
                 listItem.innerHTML = `
                     <div class="cart-item">
                         <div class="card-body p-3">
                             <div class="row g-3 align-items-center">
-                                <!-- Product Image -->
                                 <div class="col-auto">
-                                    <img src="${product.image}" 
-                                         alt="${product.name}" 
+                                    <img src="${item.image}" 
+                                         alt="${item.name}" 
                                          class="cart-item-img">
                                 </div>
                                 
-                                <!-- Product Details -->
                                 <div class="col">
-                                    <h6 class="mb-1 fw-semibold">${product.name}</h6>
-                                    <small class="text-muted d-block mb-2">RM ${product.price.toFixed(2)} each</small>
-                                    <div class="fw-bold text-primary">RM ${productTotalPrice.toFixed(2)}</div>
+                                    <h6 class="mb-1 fw-semibold">${item.name}</h6>
+                                        <small class="text-muted d-block mb-2">
+                                        ${item.currency} ${parseFloat(item.price).toFixed(2)} each
+                                        </small>
+                                        <div class="fw-bold text-primary">
+                                        ${item.currency} ${parseFloat(item.total).toFixed(2)}
+                                        </div>
+
                                 </div>
                             </div>
                             
-                            <!-- Quantity Controls & Delete -->
                             <div class="row g-2 mt-2">
                                 <div class="col-7">
                                     <div class="qty-controls">
                                         <button type="button" 
                                                 class="btn qty-btn minus-btn" 
-                                                data-food-id="${foodId}">
+                                                data-food-id="${item.id}">
                                             <i class="bi bi-dash"></i>
                                         </button>
-                                        <span class="fw-bold mx-2">${product.quantity}</span>
+                                        <span class="fw-bold mx-2">${item.quantity}</span>
                                         <button type="button" 
                                                 class="btn qty-btn plus-btn" 
-                                                data-food-id="${foodId}">
+                                                data-food-id="${item.id}">
                                             <i class="bi bi-plus"></i>
                                         </button>
                                     </div>
@@ -308,7 +261,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                                 <div class="col-5">
                                     <button type="button" 
                                             class="btn btn-danger w-100 btn-sm btn-delete delete-btn" 
-                                            data-food-id="${foodId}">
+                                            data-food-id="${item.id}">
                                         <i class="bi bi-trash"></i> Remove
                                     </button>
                                 </div>
@@ -316,21 +269,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         </div>
                     </div>
                 `;
-
                 cartList.appendChild(listItem);
-                totalAmount += productTotalPrice;
-                totalItemCount += product.quantity;
-            }
+            });
         }
 
         // Update Summary
-        document.getElementById('cart-total-amount').textContent = `RM ${totalAmount.toFixed(2)}`;
-        document.getElementById('cart-item-count').textContent = `${totalItemCount} item${totalItemCount !== 1 ? 's' : ''}`;
+        document.getElementById('cart-total-amount').textContent = `${currency} ${parseFloat(totalAmount).toFixed(2)}`;
+        document.getElementById('cart-item-count').textContent = `${cartCount} item${cartCount !== 1 ? 's' : ''}`;
         
         // Update Badge
         if (cartBadge) {
-            if (totalItemCount > 0) {
-                cartBadge.textContent = totalItemCount;
+            if (cartCount > 0) {
+                cartBadge.textContent = cartCount;
                 cartBadge.style.display = 'inline-flex';
             } else {
                 cartBadge.textContent = '0';
@@ -345,10 +295,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const addressSection = document.getElementById('addressSection');
         const cashNote = document.getElementById('cashNote');
 
-        if (Object.keys(cart).length > 0) {
-            const firstItem = cart[Object.keys(cart)[0]];
-            const deliveryType = firstItem.deliveryType || '';
-
+        if (cartItems.length > 0 && deliveryType) {
             if (deliveryTypeSpan) deliveryTypeSpan.textContent = deliveryType;
             if (deliveryInfoSection) deliveryInfoSection.classList.remove('d-none');
 
@@ -377,31 +324,81 @@ document.addEventListener('DOMContentLoaded', (event) => {
         updateConfirmButtonState();
     }
 
+    // ================== UPDATE CART QUANTITY ==================
+    function updateCartQuantity(foodId, quantity) {
+        fetch('/cart/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                food_id: foodId,
+                quantity: quantity
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadCart();
+            } else {
+                showToast(data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error updating cart', 'danger');
+        });
+    }
+
+    // ================== REMOVE FROM CART ==================
+    function removeFromCart(foodId) {
+        fetch('/cart/remove', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                food_id: foodId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'warning');
+                loadCart();
+            } else {
+                showToast(data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error removing item', 'danger');
+        });
+    }
+
     // Update Confirm Button State
     function updateConfirmButtonState() {
         if (!confirmOrderBtn) return;
 
         const tableNumberValue = tableNumberInput ? tableNumberInput.value.trim() : '';
-        const isCartEmpty = Object.keys(cart).length === 0;
         const hasContact = customerContactInput ? customerContactInput.value.trim() !== '' : false;
         const addressValue = customerAddressInput ? customerAddressInput.value.trim() : '';
 
-        let requiresTable = false;
-        let requiresAddress = false;
-        let hasDeliveryType = false;
+        // Check cart via badge or make an API call
+        const cartCount = cartBadge ? parseInt(cartBadge.textContent) || 0 : 0;
+        const isCartEmpty = cartCount === 0;
 
-        if (Object.keys(cart).length > 0) {
-            const firstItem = cart[Object.keys(cart)[0]];
-            if (firstItem.deliveryType) {
-                hasDeliveryType = true;
-                requiresTable = firstItem.deliveryType === 'Restaurant Dine-in';
-                requiresAddress = firstItem.deliveryType === 'Doorstep Delivery';
-            }
-        }
+        const deliveryTypeSpan = document.getElementById('selected-delivery-type');
+        const deliveryType = deliveryTypeSpan ? deliveryTypeSpan.textContent : '';
+        
+        const requiresTable = deliveryType === 'Restaurant Dine-in';
+        const requiresAddress = deliveryType === 'Doorstep Delivery';
 
         const isEnabled = !isCartEmpty && 
                           hasContact && 
-                          hasDeliveryType && 
+                          deliveryType !== '' &&
                           (!requiresTable || tableNumberValue !== '') && 
                           (!requiresAddress || addressValue !== '');
 
@@ -415,7 +412,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             fetch(`/customer/address/${customerId}`)
                 .then(response => response.ok ? response.json() : Promise.reject())
                 .then(data => {
-                    // Pre-fill address
                     if (data.address && data.address.trim() !== '' && customerAddressInput) {
                         customerAddressInput.value = data.address;
                     } else {
@@ -425,7 +421,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         }
                     }
                     
-                    // Pre-fill contact
                     if (data.contact && data.contact.trim() !== '' && customerContactInput) {
                         customerContactInput.value = data.contact;
                     } else {
@@ -435,7 +430,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         }
                     }
                     
-                    // Load additional contact from session if exists
                     const tempAdditionalContact = sessionStorage.getItem('temp_additional_contact');
                     if (tempAdditionalContact && additionalContactInput) {
                         additionalContactInput.value = tempAdditionalContact;
@@ -444,7 +438,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     updateConfirmButtonState();
                 })
                 .catch(() => {
-                    // Fallback to session storage
                     const tempAddress = sessionStorage.getItem('temp_address');
                     if (tempAddress && customerAddressInput) {
                         customerAddressInput.value = tempAddress;
@@ -462,24 +455,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     
                     updateConfirmButtonState();
                 });
-        } else {
-            // For guest users, load from session storage
-            const tempAddress = sessionStorage.getItem('temp_address');
-            if (tempAddress && customerAddressInput) {
-                customerAddressInput.value = tempAddress;
-            }
-            
-            const tempContact = sessionStorage.getItem('temp_contact');
-            if (tempContact && customerContactInput) {
-                customerContactInput.value = tempContact;
-            }
-            
-            const tempAdditionalContact = sessionStorage.getItem('temp_additional_contact');
-            if (tempAdditionalContact && additionalContactInput) {
-                additionalContactInput.value = tempAdditionalContact;
-            }
-            
-            updateConfirmButtonState();
         }
     }
 
@@ -596,33 +571,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function sendOrderData(paymentType) {
-        const cartData = [];
-        let totalAmount = 0;
-
         const table_number = tableNumberInput ? tableNumberInput.value : '';
         const customer_contact = customerContactInput ? customerContactInput.value : '';
         const customer_address = customerAddressInput ? customerAddressInput.value : '';
         const additional_contact = additionalContactInput ? additionalContactInput.value : '';
-
-        cart = JSON.parse(localStorage.getItem('cart')) || {};
-
-        for (const foodId in cart) {
-            const product = cart[foodId];
-            const eachTotalPrice = product.price * product.quantity;
-
-            cartData.push({
-                id: foodId,
-                image: product.image,
-                name: product.name,
-                price: product.price,
-                deliveryType: product.deliveryType,
-                locationId: product.locationId,
-                quantity: product.quantity,
-                eachTotalPrice: eachTotalPrice.toFixed(2),
-            });
-
-            totalAmount = (parseFloat(totalAmount) + parseFloat(eachTotalPrice)).toFixed(2);
-        }
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
@@ -633,8 +585,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 'X-CSRF-TOKEN': csrfToken,
             },
             body: JSON.stringify({ 
-                cartData, 
-                totalAmount, 
                 table_number, 
                 customer_contact,
                 customer_address,
@@ -665,10 +615,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         closeModalBtn.parentNode.replaceChild(newCloseBtn, closeModalBtn);
                         
                         newCloseBtn.addEventListener('click', () => {
-                            localStorage.removeItem('cart');
                             sessionStorage.removeItem('temp_address');
                             sessionStorage.removeItem('temp_additional_contact');
-                            updateCart();
                             location.reload();
                         });
                     }
