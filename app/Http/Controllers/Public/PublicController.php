@@ -60,7 +60,11 @@ class PublicController extends Controller
         }
 
         if ($customer->wasRecentlyCreated === false) {
-            $cartCount = Cart::where('user_id', $customer->id)->count();
+            // ✅ Check if cart exists for THIS customer AND THIS location
+            $cartCount = Cart::where('user_id', $customer->id)
+                ->where('location_id', $validated['location'])
+                ->count();
+                
             if ($cartCount > 0) {
                 session(['restore_cart' => true]);
             }
@@ -83,7 +87,7 @@ class PublicController extends Controller
             'location_id' => $validated['location'],
         ]);
 
-        Log::info('Login submitted for customer: ' . $customer->name . ' (ID: ' . $customer->id . ')');
+        Log::info('Login submitted for customer: ' . $customer->name . ' (ID: ' . $customer->id . ') at location: ' . $validated['location']);
 
         return redirect()->route('location.menu', ['id' => $validated['location']])
             ->with('success-message', 'Welcome, ' . $customer->name . '!');
@@ -120,8 +124,9 @@ class PublicController extends Controller
         $currency = $location->currency;
         
         if (session('customer_id')) {
+            // ✅ ONLY get cart items that match BOTH customer_id AND location_id
             $carts = Cart::where('user_id', session('customer_id'))
-                ->where('location_id', $locationId)
+                ->where('location_id', $locationId)  // THIS IS THE KEY FILTER
                 ->with(['food.locations', 'location'])
                 ->get();
 
@@ -149,7 +154,6 @@ class PublicController extends Controller
                 'pending_order' => session('pending_order')
             ]);
     }
-
     public function about(): View
     {
         return view('public.about');
@@ -365,61 +369,61 @@ class PublicController extends Controller
         ]);
     }
 
-public function getCart(): JsonResponse
-{
-    $customerId = session('customer_id');
-    
-    $carts = Cart::where('user_id', $customerId)
-        ->with(['food', 'location'])
-        ->get();
-
-    $cartItems = [];
-    $totalAmount = 0;
-    $currency = '';
-
-    foreach ($carts as $cart) {
-        $food = $cart->food;
-        $location = $cart->location;
-
-        // Get price dynamically via pivot table method
-        $price = $food->getPriceForLocation($cart->location_id);
-        $itemTotal = $price * $cart->quantity;
-
-        // Dynamic currency (fallback to 'RM' if missing)
-        $currency = $location->currency ?? 'RM';
-
-        // ✅ Use full stored image path (matches locationMenuPage)
-        $imageUrl = $food->image
-            ? asset($food->image)
-            : asset('images/no-image.jpg');
-
-        $cartItems[] = [
-            'id'            => $cart->food_id,
-            'name'          => $food->name,
-            'image'         => $imageUrl,
-            'price'         => $price,
-            'quantity'      => $cart->quantity,
-            'delivery_type' => $cart->delivery_type,
-            'location_id'   => $cart->location_id,
-            'currency'      => $currency,
-            'total'         => $itemTotal,
-        ];
+    public function getCart(): JsonResponse
+    {
+        $customerId = session('customer_id');
+        $locationId = session('location_id'); // Get current location from session
         
-        $totalAmount += $itemTotal;
+        // ✅ Filter cart by BOTH customer_id AND location_id
+        $carts = Cart::where('user_id', $customerId)
+            ->where('location_id', $locationId)
+            ->with(['food', 'location'])
+            ->get();
+
+        $cartItems = [];
+        $totalAmount = 0;
+        $currency = '';
+
+        foreach ($carts as $cart) {
+            $food = $cart->food;
+            $location = $cart->location;
+
+            // Get price dynamically via pivot table method
+            $price = $food->getPriceForLocation($cart->location_id);
+            $itemTotal = $price * $cart->quantity;
+
+            // Dynamic currency (fallback to 'RM' if missing)
+            $currency = $location->currency ?? 'RM';
+
+            // Use full stored image path
+            $imageUrl = $food->image
+                ? asset($food->image)
+                : asset('images/no-image.jpg');
+
+            $cartItems[] = [
+                'id'            => $cart->food_id,
+                'name'          => $food->name,
+                'image'         => $imageUrl,
+                'price'         => $price,
+                'quantity'      => $cart->quantity,
+                'delivery_type' => $cart->delivery_type,
+                'location_id'   => $cart->location_id,
+                'currency'      => $currency,
+                'total'         => $itemTotal,
+            ];
+            
+            $totalAmount += $itemTotal;
+        }
+
+        return response()->json([
+            'success'      => true,
+            'cart_items'   => $cartItems,
+            'total_amount' => $totalAmount,
+            'currency'     => $currency,
+            'cart_count'   => $carts->sum('quantity'),
+            'delivery_type'=> $carts->first()->delivery_type ?? null
+        ]);
     }
-
-    return response()->json([
-        'success'      => true,
-        'cart_items'   => $cartItems,
-        'total_amount' => $totalAmount,
-        'currency'     => $currency,
-        'cart_count'   => $carts->sum('quantity'),
-        'delivery_type'=> $carts->first()->delivery_type ?? null
-    ]);
-}
-
-
-
 
     // ==================== ORDER MANAGEMENT ====================
 

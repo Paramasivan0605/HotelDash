@@ -284,6 +284,109 @@
         to { opacity: 1; transform: translateY(0); }
     }
  
+/* Enhanced Delivery Modal Styles */
+.delivery-card {
+    background: transparent;
+    transition: transform 0.2s ease;
+}
+
+.delivery-card:hover .card {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.delivery-card:active .card {
+    transform: translateY(-1px);
+}
+
+.delivery-card.active .card,
+.delivery-card.selected-delivery .card {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
+}
+
+.delivery-card.active .delivery-check i,
+.delivery-card.selected-delivery .delivery-check i {
+    display: block !important;
+}
+
+.delivery-card.active .delivery-check,
+.delivery-card.selected-delivery .delivery-check {
+    background: #10b981;
+    border-color: #10b981 !important;
+}
+
+.delivery-card.active .delivery-check i,
+.delivery-card.selected-delivery .delivery-check i {
+    color: white !important;
+}
+
+/* Counter Pickup Active State */
+.delivery-card[data-option="Counter Pickup"].active .card,
+.delivery-card[data-option="Counter Pickup"].selected-delivery .card {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2) !important;
+}
+
+.delivery-card[data-option="Counter Pickup"].active .delivery-check,
+.delivery-card[data-option="Counter Pickup"].selected-delivery .delivery-check {
+    background: #f59e0b;
+    border-color: #f59e0b !important;
+}
+
+/* Animation */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#changeDeliveryModal .modal-content {
+    animation: slideInUp 0.3s ease-out;
+    overflow: hidden;
+    border-radius: 20px;
+}
+
+#changeDeliveryModal .card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+/* Mobile Responsive */
+@media (max-width: 576px) {
+    #changeDeliveryModal .modal-body {
+        padding: 1.5rem 1rem;
+    }
+    
+    #changeDeliveryModal .delivery-icon {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    
+    #changeDeliveryModal .delivery-icon i {
+        font-size: 1.5rem !important;
+    }
+    
+    #changeDeliveryModal h5 {
+        font-size: 1rem;
+    }
+    
+    #changeDeliveryModal .card-body {
+        padding: 1rem !important;
+    }
+}
+
+/* Toast Info Style */
+.toast.bg-info {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+}
 </style>
     @yield('styles')
 </head>
@@ -495,32 +598,80 @@
         </div>
     </div>
 
-    <!-- Change Delivery Type Modal -->
-    <div class="modal fade" id="changeDeliveryModal" tabindex="-1">
+    <!-- Change Delivery Type Modal - Enhanced UI -->
+    <div class="modal fade" id="changeDeliveryModal" tabindex="-1" aria-labelledby="changeDeliveryModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title"><i class="bi bi-truck"></i> Change Order Type</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-content border-0 shadow-lg">
+                <!-- Header -->
+                <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="w-100 text-center py-3">
+                        <div class="mb-2">
+                            <i class="bi bi-arrow-left-right-circle text-white" style="font-size: 3rem;"></i>
+                        </div>
+                        <h5 class="modal-title text-white fw-bold mb-1" id="changeDeliveryModalLabel">
+                            Change Order Type
+                        </h5>
+                        <p class="text-white-50 small mb-0">Select how you'd like to receive your order</p>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <p class="text-center mb-4">Select new order type:</p>
+                
+                <!-- Body -->
+                <div class="modal-body px-4 py-4">
                     <div class="row g-3">
-                        <div class="col-6">
-                            <button type="button" class="btn btn-outline-success w-100 py-4 btn-delivery-option" data-option="Doorstep Delivery">
-                                <i class="bi bi-house-door-fill fs-1 d-block mb-2"></i>
-                                <strong>Doorstep Delivery</strong>
+                        <!-- Doorstep Delivery Option -->
+                        <div class="col-12">
+                            <button type="button" class="btn btn-delivery-option delivery-card w-100 text-start p-0 border-0" data-option="Doorstep Delivery">
+                                <div class="card border-2 h-100 shadow-sm hover-lift" style="border-color: #10b981 !important; transition: all 0.3s ease;">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="delivery-icon me-3" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 60px; height: 60px; border-radius: 15px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="bi bi-house-door-fill text-white" style="font-size: 1.8rem;"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h5 class="mb-1 fw-bold text-dark">Doorstep Delivery</h5>
+                                                <p class="mb-0 small text-muted">We'll deliver right to your door</p>
+                                            </div>
+                                            <div class="delivery-check ms-2" style="width: 30px; height: 30px; border-radius: 50%; border: 2px solid #10b981; display: flex; align-items: center; justify-content: center;">
+                                                <i class="bi bi-check text-success fw-bold" style="font-size: 1.2rem; display: none;"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </button>
                         </div>
-                        <div class="col-6">
-                            <button type="button" class="btn btn-outline-warning w-100 py-4 btn-delivery-option" data-option="Counter Pickup">
-                                <i class="bi bi-shop fs-1 d-block mb-2"></i>
-                                <strong>Counter Pickup</strong>
+                        
+                        <!-- Counter Pickup Option -->
+                        <div class="col-12">
+                            <button type="button" class="btn btn-delivery-option delivery-card w-100 text-start p-0 border-0" data-option="Counter Pickup">
+                                <div class="card border-2 h-100 shadow-sm hover-lift" style="border-color: #f59e0b !important; transition: all 0.3s ease;">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="delivery-icon me-3" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); width: 60px; height: 60px; border-radius: 15px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="bi bi-shop text-white" style="font-size: 1.8rem;"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h5 class="mb-1 fw-bold text-dark">Counter Pickup</h5>
+                                                <p class="mb-0 small text-muted">Pick up from our counter when ready</p>
+                                            </div>
+                                            <div class="delivery-check ms-2" style="width: 30px; height: 30px; border-radius: 50%; border: 2px solid #f59e0b; display: flex; align-items: center; justify-content: center;">
+                                                <i class="bi bi-check text-warning fw-bold" style="font-size: 1.2rem; display: none;"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </button>
                         </div>
                     </div>
-                    <div class="alert alert-warning mt-3">
-                        <i class="bi bi-exclamation-triangle"></i> <small>Changing order type will update all items in your cart.</small>
+                    
+                    <!-- Info Alert -->
+                    <div class="alert alert-info border-0 mt-4 mb-0" style="background: linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 100%);">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-info-circle-fill text-info me-2 mt-1" style="font-size: 1.2rem;"></i>
+                            <small class="text-dark">
+                                <strong>Note:</strong> Changing your order type will update all items in your cart and may affect delivery requirements.
+                            </small>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -180,8 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ================== CHANGE DELIVERY TYPE FUNCTIONALITY ==================
     const changeDeliveryBtn = document.getElementById('changeDeliveryType');
     const changeDeliveryModal = document.getElementById('changeDeliveryModal');
-    const locationId = sessionStorage.getItem('location_id');
-    const customerId = document.body.getAttribute('data-customer-id');
+    
     if (changeDeliveryBtn && changeDeliveryModal) {
         const bsChangeModal = new bootstrap.Modal(changeDeliveryModal);
         
@@ -194,15 +193,26 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.btn-delivery-option').forEach(button => {
             button.addEventListener('click', function() {
                 const newDeliveryType = this.getAttribute('data-option');
-                updateDeliveryType(newDeliveryType);
+                const locationId = sessionStorage.getItem('location_id');
+                const customerId = document.body.getAttribute('data-customer-id');
+                
+                // Update delivery type
+                updateDeliveryType(newDeliveryType, locationId, customerId);
                 bsChangeModal.hide();
             });
         });
     }
 
-   // Function to update delivery type in cart
-function updateDeliveryType(newDeliveryType) {
-  // Update delivery type via AJAX
+    // Function to update delivery type in cart
+    function updateDeliveryType(newDeliveryType, locationId, customerId) {
+        // Show loading state
+        const changeBtn = document.getElementById('changeDeliveryType');
+        if (changeBtn) {
+            changeBtn.disabled = true;
+            changeBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Updating...';
+        }
+
+        // Update delivery type via AJAX
         fetch('/cart/update-delivery-type', {
             method: 'POST',
             headers: {
@@ -215,47 +225,77 @@ function updateDeliveryType(newDeliveryType) {
                 customer_id: customerId
             })
         })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showToast(`✓ Order type changed to ${newDeliveryType}`, 'success');
-            
-            // ============ ADD THIS CODE ============
-            // Update the display immediately
-            const deliveryTypeSpan = document.getElementById('selected-delivery-type');
-            if (deliveryTypeSpan) {
-                deliveryTypeSpan.textContent = newDeliveryType;
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(`✓ Order type changed to ${newDeliveryType}`, 'success');
+                
+                // Update session storage FIRST
+                sessionStorage.setItem('delivery_type', newDeliveryType);
+                
+                // Update all add-to-cart buttons
+                document.querySelectorAll('.add-to-cart').forEach(btn => {
+                    btn.dataset.deliveryType = newDeliveryType;
+                });
+                
+                // Update the display immediately
+                const deliveryTypeSpan = document.getElementById('selected-delivery-type');
+                if (deliveryTypeSpan) {
+                    deliveryTypeSpan.textContent = newDeliveryType;
+                }
+                
+                // Update the delivery info section visibility
+                const deliveryInfoSection = document.getElementById('deliveryInfoSection');
+                if (deliveryInfoSection) {
+                    deliveryInfoSection.classList.remove('d-none');
+                }
+                
+                // Update form sections based on delivery type
+                updateDeliveryTypeDisplay(newDeliveryType);
+                
+                // Clear and reset form fields based on delivery type
+                if (newDeliveryType === 'Doorstep Delivery') {
+                    if (tableNumberInput) tableNumberInput.value = '';
+                    // Load saved address if available
+                    loadCustomerAddress();
+                } else if (newDeliveryType === 'Restaurant Dine-in') {
+                    if (customerAddressInput) customerAddressInput.value = '';
+                } else {
+                    // Counter Pickup
+                    if (tableNumberInput) tableNumberInput.value = '';
+                    if (customerAddressInput) customerAddressInput.value = '';
+                }
+                
+                // Reload cart to reflect changes
+                loadCart();
+                
+                // Re-enable button
+                if (changeBtn) {
+                    changeBtn.disabled = false;
+                    changeBtn.innerHTML = '<i class="bx bx-edit"></i> Change';
+                }
+            } else {
+                showToast(data.message || 'Failed to update delivery type', 'danger');
+                
+                // Re-enable button
+                if (changeBtn) {
+                    changeBtn.disabled = false;
+                    changeBtn.innerHTML = '<i class="bx bx-edit"></i> Change';
+                }
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error changing delivery type', 'danger');
             
-            // Update the delivery info section visibility
-            const deliveryInfoSection = document.getElementById('deliveryInfoSection');
-            if (deliveryInfoSection) {
-                deliveryInfoSection.classList.remove('d-none');
+            // Re-enable button
+            if (changeBtn) {
+                changeBtn.disabled = false;
+                changeBtn.innerHTML = '<i class="bx bx-edit"></i> Change';
             }
-            
-            // Update form sections based on delivery type
-            updateDeliveryTypeDisplay(newDeliveryType);
-            // ============ END OF ADDED CODE ============
-            
-            // Update session storage
-            sessionStorage.setItem('delivery_type', newDeliveryType);
-            
-            // Update all add-to-cart buttons
-            document.querySelectorAll('.add-to-cart').forEach(btn => {
-                btn.dataset.deliveryType = newDeliveryType;
-            });
-            
-            // Reload cart to reflect changes
-            loadCart();
-        } else {
-            showToast(data.message, 'danger');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showToast('Error changing delivery type', 'danger');
-    });
-}
+        });
+    }
+
     // ================== CART FUNCTIONS ==================
     function loadCart() {
         fetch('/cart/get', {
@@ -269,6 +309,11 @@ function updateDeliveryType(newDeliveryType) {
         .then(data => {
             if (data.success) {
                 displayCart(data.cart_items, data.total_amount, data.cart_count, data.delivery_type, data.currency);
+                
+                // Update session storage with current delivery type
+                if (data.delivery_type) {
+                    sessionStorage.setItem('delivery_type', data.delivery_type);
+                }
             }
         })
         .catch(error => {
@@ -394,16 +439,15 @@ function updateDeliveryType(newDeliveryType) {
             if (tableNumberSection) tableNumberSection.classList.add('d-none');
             if (addressSection) addressSection.classList.remove('d-none');
             if (cashNote) cashNote.classList.remove('d-none');
-            if (tableNumberInput) tableNumberInput.value = '';
         } else if (deliveryType === 'Restaurant Dine-in') {
             if (tableNumberSection) tableNumberSection.classList.remove('d-none');
             if (addressSection) addressSection.classList.add('d-none');
             if (cashNote) cashNote.classList.remove('d-none');
         } else {
+            // Counter Pickup
             if (tableNumberSection) tableNumberSection.classList.add('d-none');
             if (addressSection) addressSection.classList.add('d-none');
             if (cashNote) cashNote.classList.remove('d-none');
-            if (tableNumberInput) tableNumberInput.value = '';
         }
     }
 
