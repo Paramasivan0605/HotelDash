@@ -288,7 +288,37 @@ class PublicController extends Controller
             'cart_count' => Cart::where('user_id', $customerId)->sum('quantity')
         ]);
     }
+    public function updateDeliveryType(Request $request)
+    {
+        try {
+            $customerId = session('customer_id');
+            $deliveryType = $request->input('delivery_type');
+            $locationId = $request->input('location_id');
 
+            if (!$customerId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Customer not logged in'
+                ]);
+            }
+
+            // Update delivery type for all cart items
+            Cart::where('user_id', $customerId)
+                ->where('location_id', $locationId)
+                ->update(['delivery_type' => $deliveryType]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Delivery type updated successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating delivery type: ' . $e->getMessage()
+            ]);
+        }
+    }
     public function removeFromCart(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -427,7 +457,7 @@ public function getCart(): JsonResponse
         $normalizedStatus = strtolower($statusValue);
         
         switch ($normalizedStatus) {
-            case 'ordered':
+            case 'Ordered':
                 return 'status-ordered';
             case 'preparing':
                 return 'status-preparing';
@@ -468,7 +498,7 @@ public function getCart(): JsonResponse
         $currentStatus = strtolower($currentStatus);
         
         $statuses = [
-            'ordered' => 'Order Placed',
+            'Ordered' => 'Order Placed',
             'preparing' => 'Preparing',
             'ready_to_deliver' => 'Ready',
             'delivery_on_the_way' => 'On the Way',
@@ -598,12 +628,11 @@ public function getCart(): JsonResponse
             $price = $foodPrice ? $foodPrice->pivot->price : 0;
             $totalPrice += $price * $cartItem->quantity;
         }
-
         // Create order
         $order = CustomerOrder::create([
             'customer_id' => $customerId,
             'dining_table_id' => $tableId,
-            'order_total_price' => $totalPrice,
+            'order_total_price' => $request->input('total_amount', $totalPrice),
             'delivery_type' => $deliveryType,
             'payment_type' => $paymentType,
             'isPaid' => false,

@@ -1,26 +1,22 @@
 /*
-*  ------------------- Scrolling Top Bar ----------------------
-*/
-document.addEventListener('DOMContentLoaded', () => {
-    const topbar = document.querySelector('.topbar');
-
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 0) {
-            topbar.classList.add('scrolled');
-        } else {
-            topbar.classList.remove('scrolled');
-        }
-    });
-});
-
-/*
-*  ---------------------------- Choose Delivery Option ------------------------------
+*  ------------------- MAIN SCRIPT ----------------------
 */
 document.addEventListener('DOMContentLoaded', function() {
+    // ================== SCROLLING TOP BAR ==================
+    const topbar = document.querySelector('.topbar');
+    if (topbar) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 0) {
+                topbar.classList.add('scrolled');
+            } else {
+                topbar.classList.remove('scrolled');
+            }
+        });
+    }
+
+    // ================== INITIAL DELIVERY OPTION SELECTION ==================
     const deliveryModal = document.getElementById('deliveryOptionModal');
     const menuSection = document.getElementById('menuSection');
-    let selectedOption = null;
-    let selectedLocationId = null;
     
     if (deliveryModal) {
         const bsDeliveryModal = new bootstrap.Modal(deliveryModal);
@@ -34,8 +30,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 menuSection.style.display = 'block';
             }
 
-            selectedOption = sessionStorage.getItem('delivery_type');
-            selectedLocationId = sessionStorage.getItem('location_id');
+            const selectedOption = sessionStorage.getItem('delivery_type');
+            const selectedLocationId = sessionStorage.getItem('location_id');
             
             if (selectedOption) {
                 document.querySelectorAll('.add-to-cart').forEach(btn => {
@@ -47,8 +43,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         document.querySelectorAll('.delivery-option-card').forEach(button => {
             button.addEventListener('click', function() {
-                selectedOption = this.dataset.option;
-                selectedLocationId = this.dataset.locationId;
+                const selectedOption = this.dataset.option;
+                const selectedLocationId = this.dataset.locationId;
 
                 sessionStorage.setItem('delivery_type', selectedOption);
                 sessionStorage.setItem('location_id', selectedLocationId);
@@ -65,15 +61,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-});
 
-/*
-*  ---------------------------- Cart Management - DATABASE DRIVEN ------------------------------
-*/
-document.addEventListener('DOMContentLoaded', (event) => {
+    // ================== CART MANAGEMENT ==================
     const cartList = document.querySelector('.cart-list');
     const addProduct = document.querySelectorAll('.add-to-cart');
-
     const tableNumberInput = document.querySelector('input[name="table_number"]');
     const customerContactInput = document.querySelector('input[name="customer_contact"]');
     const additionalContactInput = document.querySelector('input[name="additional_contact"]');
@@ -81,7 +72,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const confirmOrderBtn = document.querySelector('.confirm-order');
     const cartBadge = document.getElementById('cart-quantity');
 
-    // Initialize
+    // Initialize cart
     loadCustomerAddress();
     loadCart();
 
@@ -186,7 +177,86 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
-    // ================== LOAD CART FROM DATABASE ==================
+    // ================== CHANGE DELIVERY TYPE FUNCTIONALITY ==================
+    const changeDeliveryBtn = document.getElementById('changeDeliveryType');
+    const changeDeliveryModal = document.getElementById('changeDeliveryModal');
+    const locationId = sessionStorage.getItem('location_id');
+    const customerId = document.body.getAttribute('data-customer-id');
+    if (changeDeliveryBtn && changeDeliveryModal) {
+        const bsChangeModal = new bootstrap.Modal(changeDeliveryModal);
+        
+        // Open change delivery modal
+        changeDeliveryBtn.addEventListener('click', function() {
+            bsChangeModal.show();
+        });
+        
+        // Handle delivery option selection
+        document.querySelectorAll('.btn-delivery-option').forEach(button => {
+            button.addEventListener('click', function() {
+                const newDeliveryType = this.getAttribute('data-option');
+                updateDeliveryType(newDeliveryType);
+                bsChangeModal.hide();
+            });
+        });
+    }
+
+   // Function to update delivery type in cart
+function updateDeliveryType(newDeliveryType) {
+  // Update delivery type via AJAX
+        fetch('/cart/update-delivery-type', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                delivery_type: newDeliveryType,
+                location_id: locationId,
+                customer_id: customerId
+            })
+        })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(`✓ Order type changed to ${newDeliveryType}`, 'success');
+            
+            // ============ ADD THIS CODE ============
+            // Update the display immediately
+            const deliveryTypeSpan = document.getElementById('selected-delivery-type');
+            if (deliveryTypeSpan) {
+                deliveryTypeSpan.textContent = newDeliveryType;
+            }
+            
+            // Update the delivery info section visibility
+            const deliveryInfoSection = document.getElementById('deliveryInfoSection');
+            if (deliveryInfoSection) {
+                deliveryInfoSection.classList.remove('d-none');
+            }
+            
+            // Update form sections based on delivery type
+            updateDeliveryTypeDisplay(newDeliveryType);
+            // ============ END OF ADDED CODE ============
+            
+            // Update session storage
+            sessionStorage.setItem('delivery_type', newDeliveryType);
+            
+            // Update all add-to-cart buttons
+            document.querySelectorAll('.add-to-cart').forEach(btn => {
+                btn.dataset.deliveryType = newDeliveryType;
+            });
+            
+            // Reload cart to reflect changes
+            loadCart();
+        } else {
+            showToast(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Error changing delivery type', 'danger');
+    });
+}
+    // ================== CART FUNCTIONS ==================
     function loadCart() {
         fetch('/cart/get', {
             method: 'GET',
@@ -206,8 +276,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     }
 
-    // ================== DISPLAY CART ==================
-    function displayCart(cartItems, totalAmount, cartCount, deliveryType , currency) {
+    function displayCart(cartItems, totalAmount, cartCount, deliveryType, currency) {
+        if (!cartList) return;
+        
         cartList.innerHTML = '';
 
         if (cartItems.length === 0) {
@@ -232,13 +303,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
                                 
                                 <div class="col">
                                     <h6 class="mb-1 fw-semibold">${item.name}</h6>
-                                        <small class="text-muted d-block mb-2">
+                                    <small class="text-muted d-block mb-2">
                                         ${item.currency} ${parseFloat(item.price).toFixed(2)} each
-                                        </small>
-                                        <div class="fw-bold text-primary">
+                                    </small>
+                                    <div class="fw-bold text-primary">
                                         ${item.currency} ${parseFloat(item.total).toFixed(2)}
-                                        </div>
-
+                                    </div>
                                 </div>
                             </div>
                             
@@ -274,8 +344,15 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
 
         // Update Summary
-        document.getElementById('cart-total-amount').textContent = `${currency} ${parseFloat(totalAmount).toFixed(2)}`;
-        document.getElementById('cart-item-count').textContent = `${cartCount} item${cartCount !== 1 ? 's' : ''}`;
+        const cartTotalAmount = document.getElementById('cart-total-amount');
+        const cartItemCount = document.getElementById('cart-item-count');
+        
+        if (cartTotalAmount) {
+            cartTotalAmount.textContent = `${currency} ${parseFloat(totalAmount).toFixed(2)}`;
+        }
+        if (cartItemCount) {
+            cartItemCount.textContent = `${cartCount} item${cartCount !== 1 ? 's' : ''}`;
+        }
         
         // Update Badge
         if (cartBadge) {
@@ -289,42 +366,47 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
 
         // Update Delivery Type Display
+        updateDeliveryTypeDisplay(deliveryType);
+        updateConfirmButtonState();
+    }
+
+    function updateDeliveryTypeDisplay(deliveryType) {
         const deliveryInfoSection = document.getElementById('deliveryInfoSection');
         const deliveryTypeSpan = document.getElementById('selected-delivery-type');
         const tableNumberSection = document.getElementById('tableNumberSection');
         const addressSection = document.getElementById('addressSection');
         const cashNote = document.getElementById('cashNote');
 
-        if (cartItems.length > 0 && deliveryType) {
-            if (deliveryTypeSpan) deliveryTypeSpan.textContent = deliveryType;
-            if (deliveryInfoSection) deliveryInfoSection.classList.remove('d-none');
-
-            if (deliveryType === 'Doorstep Delivery') {
-                if (tableNumberSection) tableNumberSection.classList.add('d-none');
-                if (addressSection) addressSection.classList.remove('d-none');
-                if (cashNote) cashNote.classList.remove('d-none');
-                if (tableNumberInput) tableNumberInput.value = '';
-            } else if (deliveryType === 'Restaurant Dine-in') {
-                if (tableNumberSection) tableNumberSection.classList.remove('d-none');
-                if (addressSection) addressSection.classList.add('d-none');
-                if (cashNote) cashNote.classList.remove('d-none');
-            } else {
-                if (tableNumberSection) tableNumberSection.classList.add('d-none');
-                if (addressSection) addressSection.classList.add('d-none');
-                if (cashNote) cashNote.classList.remove('d-none');
-                if (tableNumberInput) tableNumberInput.value = '';
-            }
-        } else {
-            if (deliveryInfoSection) deliveryInfoSection.classList.add('d-none');
-            if (tableNumberSection) tableNumberSection.classList.add('d-none');
-            if (addressSection) addressSection.classList.add('d-none');
-            if (cashNote) cashNote.classList.add('d-none');
+        if (deliveryTypeSpan) {
+            deliveryTypeSpan.textContent = deliveryType || '';
         }
 
-        updateConfirmButtonState();
+        if (deliveryInfoSection) {
+            if (deliveryType) {
+                deliveryInfoSection.classList.remove('d-none');
+            } else {
+                deliveryInfoSection.classList.add('d-none');
+            }
+        }
+
+        // Show/hide sections based on delivery type
+        if (deliveryType === 'Doorstep Delivery') {
+            if (tableNumberSection) tableNumberSection.classList.add('d-none');
+            if (addressSection) addressSection.classList.remove('d-none');
+            if (cashNote) cashNote.classList.remove('d-none');
+            if (tableNumberInput) tableNumberInput.value = '';
+        } else if (deliveryType === 'Restaurant Dine-in') {
+            if (tableNumberSection) tableNumberSection.classList.remove('d-none');
+            if (addressSection) addressSection.classList.add('d-none');
+            if (cashNote) cashNote.classList.remove('d-none');
+        } else {
+            if (tableNumberSection) tableNumberSection.classList.add('d-none');
+            if (addressSection) addressSection.classList.add('d-none');
+            if (cashNote) cashNote.classList.remove('d-none');
+            if (tableNumberInput) tableNumberInput.value = '';
+        }
     }
 
-    // ================== UPDATE CART QUANTITY ==================
     function updateCartQuantity(foodId, quantity) {
         fetch('/cart/update', {
             method: 'POST',
@@ -351,7 +433,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     }
 
-    // ================== REMOVE FROM CART ==================
     function removeFromCart(foodId) {
         fetch('/cart/remove', {
             method: 'POST',
@@ -378,7 +459,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     }
 
-    // Update Confirm Button State
     function updateConfirmButtonState() {
         if (!confirmOrderBtn) return;
 
@@ -405,7 +485,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         confirmOrderBtn.disabled = !isEnabled;
     }
 
-    // Load Customer Address and Contact
     function loadCustomerAddress() {
         const customerId = document.body.getAttribute('data-customer-id');
         if (customerId && customerId.trim() !== '') {
@@ -456,35 +535,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     updateConfirmButtonState();
                 });
         }
-    }
-
-    // Toast Notification
-    function showToast(message, type) {
-        const toastContainer = document.querySelector('.toast-container') || createToastContainer();
-        
-        const toast = document.createElement('div');
-        toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'danger'} border-0`;
-        toast.setAttribute('role', 'alert');
-        toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        `;
-        
-        toastContainer.appendChild(toast);
-        const bsToast = new bootstrap.Toast(toast);
-        bsToast.show();
-        
-        toast.addEventListener('hidden.bs.toast', () => toast.remove());
-    }
-
-    function createToastContainer() {
-        const container = document.createElement('div');
-        container.className = 'toast-container position-fixed top-0 end-0 p-3';
-        container.style.zIndex = '9999';
-        document.body.appendChild(container);
-        return container;
     }
 
     // ================== PAYMENT AND CONFIRMATION FLOW ==================
@@ -576,6 +626,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const customer_address = customerAddressInput ? customerAddressInput.value : '';
         const additional_contact = additionalContactInput ? additionalContactInput.value : '';
 
+        const totalAmountElement = document.getElementById('cart-total-amount');
+        let totalAmountText = totalAmountElement ? totalAmountElement.textContent : '0.00';
+    
+        const totalAmount = totalAmountText.replace(/[^\d.]/g, '');
+
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
         fetch('/menu/create-order', {
@@ -589,7 +644,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 customer_contact,
                 customer_address,
                 additional_contact,
-                payment_type: paymentType 
+                payment_type: paymentType,
+                total_amount: totalAmount,
             }),
         })
         .then(res => res.ok ? res.json() : Promise.reject('Network error'))
@@ -630,5 +686,34 @@ document.addEventListener('DOMContentLoaded', (event) => {
             console.error('Error:', error);
             showToast('An error occurred while placing your order. Please try again.', 'danger');
         });
+    }
+
+    // ================== UTILITY FUNCTIONS ==================
+    function showToast(message, type) {
+        const toastContainer = document.querySelector('.toast-container') || createToastContainer();
+        
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'danger'} border-0`;
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        
+        toastContainer.appendChild(toast);
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        toast.addEventListener('hidden.bs.toast', () => toast.remove());
+    }
+
+    function createToastContainer() {
+        const container = document.createElement('div');
+        container.className = 'toast-container position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '9999';
+        document.body.appendChild(container);
+        return container;
     }
 });

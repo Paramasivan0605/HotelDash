@@ -52,6 +52,7 @@ Route::middleware(['customer.auth'])->group(function () {
     // Cart Management Routes
     Route::post('/cart/add', [PublicController::class, 'addToCart'])->name('cart.add');
     Route::post('/cart/update', [PublicController::class, 'updateCartQuantity'])->name('cart.update');
+    Route::post('/cart/update-delivery-type', [PublicController::class, 'updateDeliveryType'])->name('cart.update-delivery-type');
     Route::post('/cart/remove', [PublicController::class, 'removeFromCart'])->name('cart.remove');
     Route::post('/cart/clear', [PublicController::class, 'clearCart'])->name('cart.clear');
     Route::get('/cart/get', [PublicController::class, 'getCart'])->name('cart.get');
