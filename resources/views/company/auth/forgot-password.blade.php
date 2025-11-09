@@ -22,24 +22,8 @@
             </div>
 
             <div class="text">
-                Enter your email address and and the password reset link will be sent to your email.
-                Please check your email to set a new password.
+                Please Contact the admin to reset the Password.
             </div>
-
-            <form action="/forgot-password" method="POST">
-
-                @csrf
-
-                <div class="forgot-field">
-                    <span class="details">Email</span>
-                    <input type="email" placeholder="Enter your email" required>
-                </div>
-
-                <div class="forgot-button">
-                    <input type="submit" value="Send Reset Link">
-                </div>
-
-            </form>
         </div>
     </div>
 
