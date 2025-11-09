@@ -2,6 +2,21 @@
 
 @section('title', 'Staff Login')
 
+@php
+    // This will hide the header and footer
+    $hideLayout = true;
+@endphp
+
+@section('styles')
+<style>
+    body {
+        background: url('{{ asset('images/frontpageW (1).jpg') }}') center/cover no-repeat fixed !important;
+        background-color: #e20006 !important; /* fallback if image fails */
+    }
+</style>
+@endsection
+
+
 @section('content')
 
     <div class="login">

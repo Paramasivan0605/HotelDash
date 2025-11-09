@@ -8,6 +8,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Home')</title>
     
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800;900&family=Cinzel:wght@400;500;600;700;800;900&family=Great+Vibes&display=swap" rel="stylesheet">
+    
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -15,110 +20,179 @@
     <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 <style>
-    /* Custom Styles */
+    /* Modern Design Variables */
     :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --success-gradient: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        --cart-primary: #2dd4bf;
-        --cart-secondary: #0ea5e9;
-        --cart-gradient: linear-gradient(135deg, #0ea5e9 0%, #2dd4bf 100%);
+        --primary-color: #e20006;
+        --primary-dark: #b80005;
+        --secondary-color: #ff1a1f;
+        --accent-color: #14b8a6;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --dark-bg: #1e293b;
+        --light-bg: #f8fafc;
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
     }
 
     body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-family: 'Raleway', sans-serif;
         background-image: url('{{ asset('images/bg-image.jpeg') }}');
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
         background-repeat: no-repeat;
+        min-height: 100vh;
+        overflow-x: hidden;
     }
 
-    /* Top Navigation Bar */
+    /* ============ MODERN NAVIGATION ============ */
     .topbar {
-        background:rgb(216 23 23 / 95%) !important;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        background: rgba(226, 0, 6, 0.95) !important;
+        backdrop-filter: blur(20px);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         position: sticky;
         top: 0;
-        z-index: 1000;
-        transition: all 0.3s ease;
+        z-index: 1030;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-bottom: 1px solid rgba(226, 0, 6, 0.3);
     }
 
     .topbar.scrolled {
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        background: rgba(220, 38, 38, 1) !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        background: rgba(226, 0, 6, 1) !important;
     }
 
     .logo-section {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
+        transition: transform 0.3s ease;
+    }
+
+    .logo-section:hover {
+        transform: scale(1.02);
     }
 
     .logo-section img {
-        height: 90px;
+        height: 50px;
         width: auto;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
     }
 
     .logo-section span {
         font-size: 1.5rem;
-        font-weight: 700;
+        font-weight: 800;
         color: white !important;
+        font-family: 'Cinzel', serif;
+        letter-spacing: 1px;
     }
 
-    /* Navbar Links */
+    /* Modern Nav Links */
     .navbar-nav .nav-link {
         color: rgba(255, 255, 255, 0.9) !important;
+        font-weight: 600;
+        font-size: 0.95rem;
+        padding: 0.6rem 1.2rem !important;
+        border-radius: 12px;
         transition: all 0.3s ease;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
+        position: relative;
+        font-family: 'Raleway', sans-serif;
+        letter-spacing: 0.5px;
     }
 
     .navbar-nav .nav-link:hover {
         color: white !important;
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
     }
 
     .navbar-nav .nav-link.active {
         color: white !important;
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
     .navbar-nav .nav-link.disabled {
-        color: rgba(255, 255, 255, 0.5) !important;
+        color: rgba(255, 255, 255, 0.4) !important;
+        opacity: 0.5;
     }
 
-    /* Mobile Menu Background */
+    /* Mobile Navigation */
     @media (max-width: 991.98px) {
         .navbar-collapse {
-            background: rgba(220, 38, 38, 0.98);
+            background: rgba(226, 0, 6, 0.98);
             margin-top: 1rem;
-            border-radius: 12px;
-            padding: 1rem;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo-section img {
+            height: 45px;
+        }
+
+        .logo-section span {
+            font-size: 1.25rem;
         }
     }
 
-    /* Cart Badge */
+    /* Modern Cart Button */
+    .cart-btn {
+        position: relative;
+        background: linear-gradient(135deg, #14b8a6 0%, #0ea5e9 100%);
+        color: white !important;
+        border: none;
+        padding: 0.6rem 1rem;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+        font-family: 'Raleway', sans-serif;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .cart-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(20, 184, 166, 0.4);
+    }
+
     .cart-badge {
         position: absolute;
-        top: -5px;
-        right: -5px;
+        top: -8px;
+        right: -8px;
+        min-width: 22px;
+        height: 22px;
         font-size: 0.7rem;
-        min-width: 20px;
-        height: 20px;
-        display: inline-flex;
+        display: flex;
         align-items: center;
         justify-content: center;
-        background: #fbbf24 !important;
+        background: #fbbf24;
         color: #000;
         font-weight: 700;
+        border-radius: 11px;
+        border: 2px solid white;
+        box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
     }
 
     /* Mobile Cart Wrapper */
     .mobile-cart-wrapper {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.75rem;
     }
 
     @media (min-width: 992px) {
@@ -127,31 +201,23 @@
         }
     }
 
-    /* ============ MOBILE NAVIGATION FIXES ============ */
-    
-    /* Mobile: Show cart next to hamburger */
-    @media (max-width: 991.98px) {
-        /* Mobile cart icon visible */
-        .mobile-cart-wrapper {
-            display: flex !important;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        /* Hide desktop cart and My Orders on mobile */
-        .navbar-collapse .d-flex.align-items-center {
-            display: none !important;
-        }
-        
-        /* Ensure menu collapses properly */
-        .navbar-collapse {
-            background: rgba(220, 38, 38, 0.98);
-        }
+    /* Hamburger Icon Modern Style */
+    .navbar-toggler {
+        border: none;
+        padding: 0.5rem;
+        border-radius: 10px;
+        transition: all 0.3s ease;
     }
 
-    /* ============ MOBILE CART FIXES ============ */
-    
-    /* Cart Offcanvas Responsive Width */
+    .navbar-toggler:focus {
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+    }
+
+    .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2.5' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+
+    /* ============ CART OFFCANVAS (ORIGINAL DESIGN) ============ */
     .offcanvas-cart {
         width: 100% !important;
     }
@@ -164,9 +230,15 @@
 
     /* Cart Header */
     .cart-header {
-        background: var(--cart-gradient) !important;
+        background: linear-gradient(135deg, #0ea5e9 0%, #2dd4bf 100%) !important;
         color: white;
         flex-shrink: 0;
+    }
+
+    .cart-header .offcanvas-title {
+        font-family: 'Cinzel', serif;
+        font-weight: 700;
+        letter-spacing: 1px;
     }
 
     /* Delivery Info Section */
@@ -179,7 +251,7 @@
     /* Cart Summary */
     .cart-summary {
         flex-shrink: 0;
-        background: var(--cart-gradient);
+        background: linear-gradient(135deg, #0ea5e9 0%, #2dd4bf 100%);
         color: white;
     }
 
@@ -197,7 +269,7 @@
     .cart-item {
         background: white;
         border: 1px solid #e9ecef;
-        border-left: 3px solid var(--cart-primary);
+        border-left: 3px solid #2dd4bf;
         border-radius: 0.5rem;
         margin-bottom: 0.75rem;
         transition: all 0.2s ease;
@@ -240,7 +312,7 @@
         align-items: center;
         justify-content: center;
         border-radius: 0.375rem;
-        background: var(--cart-primary);
+        background: #2dd4bf;
         color: white;
         border: none;
         font-size: 1rem;
@@ -249,7 +321,7 @@
     }
 
     .qty-btn:hover {
-        background: var(--cart-secondary);
+        background: #0ea5e9;
         transform: scale(1.05);
     }
 
@@ -277,9 +349,12 @@
 
     /* Buttons */
     .gradient-button {
-        background: var(--success-gradient);
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
         border: none;
         transition: all 0.3s ease;
+        font-family: 'Raleway', sans-serif;
+        font-weight: 700;
+        letter-spacing: 0.5px;
     }
 
     .gradient-button:hover:not(:disabled) {
@@ -293,14 +368,17 @@
     }
 
     .btn-change-delivery {
-        background: var(--cart-primary);
+        background: #2dd4bf;
         border: none;
         color: white;
         transition: all 0.2s ease;
+        font-family: 'Raleway', sans-serif;
+        font-weight: 600;
+        letter-spacing: 0.3px;
     }
 
     .btn-change-delivery:hover {
-        background: var(--cart-secondary);
+        background: #0ea5e9;
     }
 
     /* Empty Cart */
@@ -315,13 +393,6 @@
 
     /* Mobile Optimizations */
     @media (max-width: 576px) {
-        .logo-section {
-            height: 40px;
-        }
-        .logo-section img{
-            height: 50px;
-        }
-        
         .cart-item .card-body {
             padding: 0.75rem !important;
         }
@@ -348,77 +419,237 @@
         }
     }
 
-    /* Footer */
-    .footer {
-        background:rgb(216 23 23 / 95%) !important;
-        color: white;
-        margin-top: 240px;
+    /* ============ MODERN MODALS ============ */
+    .modal-content {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        font-family: 'Raleway', sans-serif;
     }
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
+    .modal-header {
+        border: none;
+        padding: 2rem;
     }
- 
+
+    .modal-header .modal-title {
+        font-family: 'Cinzel', serif;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        border: none;
+        padding: 1.5rem 2rem;
+        background: var(--light-bg);
+    }
+
+    /* Delivery Option Cards */
+    .delivery-card .card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+
+    .delivery-card .card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .delivery-card.active .card {
+        border-color: var(--primary-color) !important;
+        border-width: 3px !important;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+
+    .delivery-card.active .delivery-check i {
+        display: block !important;
+    }
+
+    /* ============ MODERN FOOTER ============ */
+    .footer {
+        background: rgba(226, 0, 6, 0.95);
+        color: white;
+        margin-top: 4rem;
+        padding: 3rem 0 1.5rem;
+        box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+        font-family: 'Raleway', sans-serif;
+    }
+
+    .footer h5 {
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: white;
+        font-family: 'Cinzel', serif;
+        letter-spacing: 1px;
+    }
+
+    .footer a {
+        color: rgba(255, 255, 255, 0.7);
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .footer a:hover {
+        color: white;
+        transform: translateX(4px);
+        display: inline-block;
+    }
+
+    .footer .social-icon {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    .footer .social-icon:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Responsive Utilities */
+    @media (max-width: 576px) {
+        .order-details-section {
+            padding: 1rem;
+        }
+
+        .gradient-button {
+            padding: 0.875rem 1.5rem;
+            font-size: 1rem;
+        }
+
+        .cart-header {
+            padding: 1.25rem;
+        }
+
+        .cart-header .offcanvas-title {
+            font-size: 1.25rem;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .cart-item {
+        animation: fadeIn 0.3s ease forwards;
+    }
+
+    /* Scrollbar Styling */
+    .cart-items-container::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .cart-items-container::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+
+    .cart-items-container::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #0ea5e9 0%, #2dd4bf 100%);
+        border-radius: 10px;
+    }
+
+    .cart-items-container::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #0284c7 0%, #14b8a6 100%);
+    }
+
+    /* My Orders Button */
+    .btn-orders {
+        background: linear-gradient(135deg, #e20006 0%, #ff1a1f 100%);
+        color: white;
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(226, 0, 6, 0.3);
+        font-family: 'Raleway', sans-serif;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-orders:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(226, 0, 6, 0.4);
+        color: white;
+    }
 </style>
     @yield('styles')
 </head>
 
 <body data-customer-id="{{ session('customer_id') ?? '' }}">
 
-    <!-- Top Navigation Bar - FIXED VERSION -->
-    <nav class="topbar navbar navbar-expand-lg navbar-dark py-3">
+   <!-- Modern Navigation Bar - Only show if not hiding layout -->
+    @if(!isset($hideLayout) || !$hideLayout)
+    <nav class="topbar navbar navbar-expand-lg navbar-light py-2">
         <div class="container">
             <!-- Logo -->
             <a class="navbar-brand logo-section" href="#">
                 <img src="{{ asset('images/logo.jpeg') }}" alt="MadrasDarbar">
+                <span class="d-none d-sm-inline"></span>
             </a>
 
-            <!-- Mobile: Cart + Hamburger Toggle -->
+            <!-- Mobile: Cart + Hamburger -->
             <div class="mobile-cart-wrapper d-lg-none">
-                <!-- Mobile Cart Icon -->
-                <button class="btn btn-link text-white position-relative p-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
-                    <i class='bx bx-cart fs-4'></i>
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge" id="cart-quantity-mobile">0</span>
+                <button class="btn cart-btn position-relative" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
+                    <i class='bx bx-cart fs-5'></i>
+                    <span class="cart-badge" id="cart-quantity-mobile">0</span>
                 </button>
                 
-                <!-- Hamburger Toggle -->
-                <button class="navbar-toggler border-0 p-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
             </div>
 
             <!-- Navigation Links -->
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mx-auto p-2">
+                <ul class="navbar-nav mx-auto">
                     @if (session()->has('location_id'))
                         <li class="nav-item">
-                            <a class="nav-link text-white {{ request()->routeIs(['location.menu', 'search']) ? 'active fw-bold' : '' }}"
+                            <a class="nav-link {{ request()->routeIs(['location.menu', 'search']) ? 'active' : '' }}"
                                href="{{ route('location.menu', ['id' => session('location_id')]) }}">
-                               <i class="bi bi-book"></i> Menu
+                               <i class="bi bi-book me-1"></i> Menu
                             </a>
                         </li>
                     @else
                         <li class="nav-item">
-                            <a class="nav-link disabled text-white-50" href="#">
-                                <i class="bi bi-book"></i> Menu
+                            <a class="nav-link disabled" href="#">
+                                <i class="bi bi-book me-1"></i> Menu
                             </a>
                         </li>
                     @endif
 
                     @if(session('customer_id'))
                     <li class="nav-item d-lg-none">
-                        <a class="nav-link text-white {{ request()->routeIs(['orders.*']) ? 'active fw-bold' : '' }}" href="{{ route('orders.history') }}">
-                            <i class="bi bi-clock-history"></i> My Orders
+                        <a class="nav-link {{ request()->routeIs(['orders.*']) ? 'active' : '' }}" href="{{ route('orders.history') }}">
+                            <i class="bi bi-clock-history me-1"></i> My Orders
                         </a>
                     </li>
                     @endif
                     
                     <li class="nav-item">
-                        <a class="nav-link text-white {{ request()->routeIs('customer.logout') ? 'active fw-bold' : '' }}"
+                        <a class="nav-link"
                         href="{{ route('customer.logout') }}"
                         onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                            <i class="bi bi-box-arrow-right"></i> Logout
+                            <i class="bi bi-box-arrow-right me-1"></i> Logout
                         </a>
                         <form id="logout-form" action="{{ route('customer.logout') }}" method="POST" class="d-none">
                             @csrf
@@ -426,18 +657,16 @@
                     </li>
                 </ul>
 
-                <!-- Right Side Icons (Desktop Only) -->
-                <div class="d-flex align-items-center gap-3">
-                    <!-- Cart (Desktop) -->
-                    <button class="btn btn-link text-white position-relative" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
-                        <i class='bx bx-cart fs-4'></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge" id="cart-quantity">0</span>
+                <!-- Desktop Actions -->
+                <div class="d-none d-lg-flex align-items-center gap-2">
+                    <button class="btn cart-btn position-relative" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
+                        <i class='bx bx-cart fs-5 me-1'></i> Cart
+                        <span class="cart-badge" id="cart-quantity">0</span>
                     </button>
 
-                    <!-- My Orders (Desktop) -->
                     @if(session('customer_id'))
-                    <a href="{{ route('orders.history') }}" class="btn btn-outline-light d-none d-lg-inline-block">
-                        <i class="bi bi-clock-history"></i> My Orders
+                    <a href="{{ route('orders.history') }}" class="btn btn-orders">
+                        <i class="bi bi-clock-history me-1"></i> My Orders
                     </a>
                     @endif
                 </div>
@@ -445,99 +674,99 @@
         </div>
     </nav>
 
-    <!-- Cart Offcanvas - FIXED MOBILE VERSION -->
+
+   <!-- Modern Cart Offcanvas -->
     <div class="offcanvas offcanvas-end offcanvas-cart" tabindex="-1" id="cartOffcanvas">
         <!-- Header -->
         <div class="offcanvas-header cart-header">
-            <h5 class="offcanvas-title fw-bold mb-0">
-                <i class="bi bi-cart-check"></i> Your Cart
+            <h5 class="offcanvas-title mb-0">
+                <i class="bi bi-cart-check-fill me-2"></i> Your Cart
             </h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
         </div>
 
-        <!-- Body with Flexbox Layout -->
+        <!-- Body -->
         <div class="offcanvas-body p-0 d-flex flex-column">
             
-            <!-- Delivery Type Info -->
-            <div class="delivery-info-section p-2 d-none" id="deliveryInfoSection">
+            <!-- Delivery Info -->
+            <div class="delivery-info-section d-none" id="deliveryInfoSection">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <small class="text-muted d-block mb-1">Order Type</small>
-                        <strong id="selected-delivery-type" class="text-primary"></strong>
+                        <strong id="selected-delivery-type" class="text-primary fs-6"></strong>
                     </div>
-                    <button type="button" class="btn btn-sm btn-change-delivery" id="changeDeliveryType">
-                        <i class='bx bx-edit'></i> Change
+                    <button type="button" class="btn btn-change-delivery" id="changeDeliveryType">
+                        <i class='bx bx-edit me-1'></i> Change
                     </button>
                 </div>
             </div>
 
             <!-- Cart Summary -->
-            <div class="cart-summary p-2">
-                <div class="row g-2 text-center">
+            <div class="cart-summary">
+                <div class="row g-0 text-center">
                     <div class="col-6">
-                        <small class="d-block opacity-75 mb-1">Total Items</small>
-                        <h5 class="mb-0 fw-bold" id="cart-item-count">0 items</h5>
+                        <small class="d-block text-muted mb-1">Total Items</small>
+                        <h5 class="mb-0 fw-bold text-dark" id="cart-item-count">0 items</h5>
                     </div>
                     <div class="col-6">
-                        <small class="d-block opacity-75 mb-1">Total Amount</small>
-                        <h4 class="mb-0 fw-bold" id="cart-total-amount">RM 0.00</h4>
+                        <small class="d-block text-muted mb-1">Total Amount</small>
+                        <h4 class="mb-0 fw-bold text-primary" id="cart-total-amount">RM 0.00</h4>
                     </div>
                 </div>
             </div>
 
-            <!-- Cart Items - SCROLLABLE -->
+            <!-- Cart Items -->
             <div class="cart-items-container">
                 <ul class="cart-list list-unstyled mb-0">
                     <li class="empty-cart">
-                        <i class="bi bi-cart-x" style="font-size: 3rem;"></i>
-                        <p class="mt-3 mb-0">No items in cart</p>
+                        <i class="bi bi-cart-x"></i>
+                        <p class="mt-2 mb-0">Your cart is empty</p>
+                        <small class="text-muted">Add items to get started</small>
                     </li>
                 </ul>
             </div>
 
-            <!-- Order Details Form - FIXED AT BOTTOM -->
-            <div class="order-details-section p-3">
-                <!-- Table Number -->
+            <!-- Order Details -->
+            <div class="order-details-section">
                 <div class="mb-3 d-none" id="tableNumberSection">
-                    <label class="form-label fw-semibold small mb-2">
-                        <i class="bi bi-table"></i> Table Number <span class="text-danger">*</span>
+                    <label class="form-label">
+                        <i class="bi bi-table me-1"></i> Table Number <span class="text-danger">*</span>
                     </label>
                     <input type="text" name="table_number" class="form-control" placeholder="Enter table number">
                 </div>
 
-                <!-- Contact Number -->
                 <div class="mb-3">
-                    <label class="form-label fw-semibold small mb-2">
-                        <i class="bi bi-telephone"></i> Contact Number <span class="text-danger">*</span>
+                    <label class="form-label">
+                        <i class="bi bi-telephone me-1"></i> Contact Number <span class="text-danger">*</span>
                     </label>
                     <input type="tel" name="customer_contact" class="form-control" placeholder="0123456789" required>
                 </div>
                 
                 <!-- Optional Contact Number -->
                 <div class="mb-3">
-                    <label class="form-label fw-semibold small mb-2">
-                        <i class="bi bi-telephone-plus"></i> Additional Contact Number <span class="text-muted">(Optional)</span>
+                    <label class="form-label">
+                        <i class="bi bi-telephone-plus me-1"></i> Additional Contact Number <span class="text-muted">(Optional)</span>
                     </label>
                     <input type="tel" name="additional_contact" class="form-control" placeholder="Optional second contact number">
                     <small class="text-muted d-block mt-1">
-                        <i class="bi bi-info-circle"></i> In case we need to reach you at another number
+                        <i class="bi bi-info-circle me-1"></i> In case we need to reach you at another number
                     </small>
                 </div>
 
                 <!-- Delivery Address -->
                 <div class="mb-3 d-none" id="addressSection">
-                    <label class="form-label fw-semibold small mb-2">
-                        <i class="bi bi-geo-alt"></i> Delivery Address <span class="text-danger">*</span>
+                    <label class="form-label">
+                        <i class="bi bi-geo-alt me-1"></i> Delivery Address <span class="text-danger">*</span>
                     </label>
                     <textarea name="customer_address" class="form-control" rows="3" placeholder="Enter your full delivery address" required></textarea>
                     <small class="text-muted d-block mt-1">
-                        <i class="bi bi-info-circle"></i> This address will be saved to your profile
+                        <i class="bi bi-info-circle me-1"></i> This address will be saved to your profile
                     </small>
                 </div>
 
                 <!-- Cash Note -->
                 <div class="alert alert-warning py-2 mb-3 d-none" id="cashNote">
-                    <small><i class="bi bi-cash-coin"></i> <strong>Note:</strong> Cash payment only</small>
+                    <small><i class="bi bi-cash-coin me-1"></i> <strong>Note:</strong> Cash payment only</small>
                 </div>
 
                 <!-- Confirm Button -->
@@ -546,7 +775,7 @@
                         Please review your order before confirming
                     </small>
                     <button type="button" class="btn btn-success btn-lg w-100 gradient-button confirm-order" disabled>
-                        <i class="bi bi-check-circle"></i> Confirm Order
+                        <i class="bi bi-check-circle me-1"></i> Confirm Order
                     </button>
                 </div>
             </div>
@@ -558,7 +787,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg">
                 <!-- Header -->
-                <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #0ea5e9 0%, #2dd4bf 100%);">
                     <div class="w-100 text-center py-3">
                         <div class="mb-2">
                             <i class="bi bi-arrow-left-right-circle text-white" style="font-size: 3rem;"></i>
@@ -637,11 +866,11 @@
     <div class="modal fade" id="paymentConfirmationModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title"><i class="bi bi-credit-card"></i> Payment Method</h5>
+                <div class="modal-header" style="background: linear-gradient(135deg, #0ea5e9 0%, #2dd4bf 100%);">
+                    <h5 class="modal-title text-white"><i class="bi bi-credit-card me-2"></i> Payment Method</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body text-center">
+                <div class="modal-body text-center py-4">
                     <p class="fs-5 mb-4">How would you like to pay?</p>
                     
                     <div class="row g-3 mb-4">
@@ -670,8 +899,8 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="confirmPayment">
-                        <i class="bi bi-check-circle"></i> Confirm Payment
+                    <button type="button" class="btn btn-primary" id="confirmPayment" style="background: linear-gradient(135deg, #0ea5e9 0%, #2dd4bf 100%); border: none;">
+                        <i class="bi bi-check-circle me-1"></i> Confirm Payment
                     </button>
                 </div>
             </div>
@@ -683,17 +912,17 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-warning">
-                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle"></i> Confirm Order</h5>
+                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i> Confirm Order</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body text-center">
+                <div class="modal-body text-center py-4">
                     <i class="bi bi-cart-check-fill fs-1 text-warning d-block mb-3"></i>
                     <p id="finalConfirmationMessage" class="fs-6 text-start" style="white-space: pre-line;"></p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-warning" id="finalConfirmOrder">
-                        <i class="bi bi-check-circle"></i> Yes, Confirm Order
+                        <i class="bi bi-check-circle me-1"></i> Yes, Confirm Order
                     </button>
                 </div>
             </div>
@@ -705,7 +934,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title"><i class="bi bi-check-circle-fill"></i> Success!</h5>
+                    <h5 class="modal-title"><i class="bi bi-check-circle-fill me-2"></i> Success!</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body text-center py-5">
@@ -714,49 +943,72 @@
                 </div>
                 <div class="modal-footer justify-content-center">
                     <button type="button" class="btn btn-success" id="closeSuccessModal" data-bs-dismiss="modal">
-                        <i class="bi bi-check"></i> OK
+                        <i class="bi bi-check me-1"></i> OK
                     </button>
                 </div>
             </div>
         </div>
     </div>
+    @endif
 
     @yield('content')
 
     <!-- Footer -->
-    <footer class="footer py-5">
+    @if(!isset($hideLayout) || !$hideLayout)
+    <footer class="footer text-white py-5">
         <div class="container">
-            <div class="row g-4">
-                <div class="col-md-4">
-                     <a class="navbar-brand logo-section" href="#">
-                        <img src="{{ asset('images/logo.jpeg') }}" alt="MadrasDarbar">
-                    </a>
+            <div class="row gy-4 justify-content-between">
+
+                <!-- Logo -->
+                <div class="col-md-3 text-center text-md-start">
+                    <img src="{{ asset('images/logo.jpeg') }}" alt="MadrasDarbar" class="img-fluid mb-3" style="max-height: 120px; border-radius: 15px;">
                 </div>
-                <div class="col-md-4 ">
-                    <h5 class="mb-3">Quick Links</h5>
+
+                <!-- Our Locations -->
+                <div class="col-md-3">
+                    <h5 class="fw-bold mb-3">Our Locations</h5>
                     <ul class="list-unstyled">
-                        <li><a href="#" class="text-light text-decoration-none">About Us</a></li>
-                        <li><a href="#" class="text-light text-decoration-none">Ask Question</a></li>
-                        <li><a href="#" class="text-light text-decoration-none">Contact Us</a></li>
+                        <li class="mb-2"><a href="" class="text-white-50 text-decoration-none">Pattaya</a></li>
+                        <li class="mb-2"><a href="" class="text-white-50 text-decoration-none">Bangkok</a></li>
+                        <li class="mb-2"><a href="" class="text-white-50 text-decoration-none">Phuket</a></li>
+                        <li><a href="" class="text-white-50 text-decoration-none">Colombo</a></li>
                     </ul>
                 </div>
-                <div class="col-md-4">
-                    <h5 class="mb-3">Follow Us</h5>
+
+                <!-- Contact Us -->
+                <div class="col-md-3">
+                    <h5 class="fw-bold mb-3">Contact Us</h5>
+                    <p class="text-white-50 mb-2">
+                        <i class="bi bi-envelope-fill me-2"></i>
+                        <a href="mailto:madrasdarbar@gmail.com" class="text-white-50 text-decoration-none">madrasdarbar@gmail.com</a>
+                    </p>
+                    <p class="text-white-50 mb-4">
+                        <i class="bi bi-envelope-fill me-2"></i>
+                        <a href="mailto:info@madrasdarbar.org" class="text-white-50 text-decoration-none">info@madrasdarbar.org</a>
+                    </p>
+
+                    <!-- Social Icons -->
                     <div class="d-flex gap-3">
-                        <a href="#" class="text-light fs-4"><i class='bx bxl-whatsapp'></i></a>
-                        <a href="#" class="text-light fs-4"><i class='bx bxl-facebook-circle'></i></a>
-                        <a href="#" class="text-light fs-4"><i class='bx bxl-twitter'></i></a>
-                        <a href="#" class="text-light fs-4"><i class='bx bxl-instagram-alt'></i></a>
+                        <a href="https://www.facebook.com/madrasdarbarsrilanka" target="_blank" class="social-icon text-white text-decoration-none">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+                        <a href="https://www.instagram.com/madrasdarbarsrilanka?igsh=MWRjZGV2bnN6NzNtdA==" target="_blank" class="social-icon text-white text-decoration-none">
+                            <i class="bi bi-instagram"></i>
+                        </a>
                     </div>
                 </div>
             </div>
-            <hr class="bg-light my-4">
-            <p class="text-center text-light mb-0">© 2025 Hash Restaurant. All rights reserved.</p>
+
+            <!-- Footer Bottom -->
+            <div class="text-center mt-4 border-top pt-3 border-light">
+                <small class="text-white-50">© {{ date('Y') }} Madras Darbar. All Rights Reserved.</small>
+            </div>
         </div>
     </footer>
+    @endif
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/public.js') }}"></script>
 
 </body>
-</html
+</html>

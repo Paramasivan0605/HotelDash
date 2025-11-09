@@ -20,7 +20,7 @@
                             Welcome To
                         </h1>
                         <h1 class="display-1 fw-bold" style="font-size: clamp(2.5rem, 8vw, 5rem); line-height: 1.1;">
-                            Hash Restaurant
+                            Madarsdarbar
                         </h1>
                     </div>
 
