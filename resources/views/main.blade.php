@@ -468,54 +468,288 @@
     .delivery-card.active .delivery-check i {
         display: block !important;
     }
+/* ============ MODERN FOOTER - MOBILE FIXED ============ */
+.modern-footer {
+    background: linear-gradient(135deg, #e20006 0%, #b80005bd 100%) !important;    color: white;
+    padding: 2rem 0 1rem;
+    font-family: 'Raleway', sans-serif;
+    width: 100%;
+    position: relative;
+}
 
-    /* ============ MODERN FOOTER ============ */
-    .footer {
-        background: rgba(226, 0, 6, 0.95);
-        color: white;
-        margin-top: 4rem;
-        padding: 3rem 0 1.5rem;
-        box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
-        font-family: 'Raleway', sans-serif;
+.modern-footer .container {
+    max-width: 100%;
+    padding: 0 15px;
+}
+
+/* Header Section */
+.footer-header {
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.footer-title {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: white;
+    margin: 0;
+}
+
+/* Footer Sections */
+.footer-section {
+    text-align: center;
+    padding: 1rem;
+}
+
+.section-title {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin-bottom: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.section-divider {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    margin: 0.5rem auto 1rem;
+    max-width: 100px;
+}
+
+/* Locations */
+.locations-list {
+    margin-bottom: 1rem;
+}
+
+.location-item {
+    color: rgba(255, 255, 255, 0.9);
+    padding: 0.5rem 0;
+    font-size: 1rem;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.location-item:last-child {
+    border-bottom: none;
+}
+
+.location-item:hover {
+    color: white;
+    transform: translateX(5px);
+}
+
+/* Contact Info */
+.contact-info {
+    margin-bottom: 1rem;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.8rem;
+    padding: 0.5rem 0;
+}
+
+.contact-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.contact-link:hover {
+    color: white !important;
+    text-decoration: underline;
+}
+
+/* Copyright */
+.copyright {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    font-weight: 400;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Social Icons */
+.social-icons {
+    margin-top: 1rem;
+}
+
+.social-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.social-icon:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* ============ MOBILE RESPONSIVE STYLES ============ */
+@media (max-width: 768px) {
+    .modern-footer {
+        padding: 1.5rem 0 1rem;
     }
-
-    .footer h5 {
-        font-weight: 700;
-        margin-bottom: 1.5rem;
-        color: white;
-        font-family: 'Cinzel', serif;
-        letter-spacing: 1px;
+    
+    .footer-header {
+        padding-bottom: 0.8rem;
+        margin-bottom: 1rem;
     }
-
-    .footer a {
-        color: rgba(255, 255, 255, 0.7);
-        transition: all 0.3s ease;
-        text-decoration: none;
+    
+    .footer-title {
+        font-size: 1.5rem;
     }
-
-    .footer a:hover {
-        color: white;
-        transform: translateX(4px);
-        display: inline-block;
+    
+    .restaurant-name {
+        font-size: 1.2rem;
     }
+    
+    .restaurant-subtitle {
+        font-size: 0.9rem;
+    }
+    
+    .footer-section {
+        padding: 0.8rem 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.6rem;
+    }
+    
+    .location-item {
+        font-size: 0.95rem;
+        padding: 0.4rem 0;
+    }
+    
+    .contact-item {
+        font-size: 0.95rem;
+        margin-bottom: 0.6rem;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .contact-item i {
+        margin-bottom: 0.3rem;
+        margin-right: 0;
+        font-size: 1.1rem;
+    }
+    
+    .copyright {
+        font-size: 0.85rem;
+        padding-top: 0.8rem;
+    }
+    
+    .social-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .social-icon i {
+        font-size: 1.1rem;
+    }
+}
 
-    .footer .social-icon {
-        width: 45px;
-        height: 45px;
-        display: flex;
+/* Extra Small Devices */
+@media (max-width: 576px) {
+    .modern-footer {
+        padding: 1rem 0 0.5rem;
+    }
+    
+    .modern-footer .container {
+        padding: 0 10px;
+    }
+    
+    .footer-title {
+        font-size: 1.3rem;
+    }
+    
+    .restaurant-name {
+        font-size: 1.1rem;
+    }
+    
+    .restaurant-subtitle {
+        font-size: 0.85rem;
+    }
+    
+    .section-title {
+        font-size: 1rem;
+    }
+    
+    .location-item {
+        font-size: 0.9rem;
+        padding: 0.35rem 0;
+    }
+    
+    .contact-item {
+        font-size: 0.9rem;
+    }
+    
+    .contact-link {
+        font-size: 0.9rem;
+    }
+    
+    .copyright {
+        font-size: 0.8rem;
+    }
+    
+    .social-icon {
+        width: 38px;
+        height: 38px;
+    }
+    
+    .social-icons {
+        gap: 1.5rem !important;
+    }
+}
+
+/* Large Screens */
+@media (min-width: 992px) {
+    .footer-section {
+        text-align: left;
+    }
+    
+    .contact-item {
+        justify-content: flex-start;
+    }
+    
+    .social-icons {
+        justify-content: flex-start !important;
+    }
+    
+    .locations-list {
+        text-align: left;
+    }
+}
+
+/* Ensure proper stacking on mobile */
+@media (max-width: 768px) {
+    .modern-footer .row {
+        flex-direction: column;
         align-items: center;
-        justify-content: center;
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        transition: all 0.3s ease;
     }
-
-    .footer .social-icon:hover {
-        background: rgba(255, 255, 255, 0.25);
-        transform: translateY(-4px);
-        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+    
+    .modern-footer .col-12 {
+        width: 100%;
+        max-width: 400px;
     }
+}
 
     /* Responsive Utilities */
     @media (max-width: 576px) {
@@ -954,58 +1188,67 @@
     @yield('content')
 
     <!-- Footer -->
-    @if(!isset($hideLayout) || !$hideLayout)
-    <footer class="footer text-white py-5">
-        <div class="container">
-            <div class="row gy-4 justify-content-between">
+  <!-- Footer - Based on Your Image Content -->
+@if(!isset($hideLayout) || !$hideLayout)
+<footer class="modern-footer text-white py-4">
+    <div class="container">
+        <!-- Header Section -->
+        <div class="footer-header text-center mb-4">
+            <img src="{{ asset('images/logo.jpeg') }}" alt="MadrasDarbar" class="img-fluid mb-3" style="max-height: 90px; border-radius: 15px;">
+        </div>
 
-                <!-- Logo -->
-                <div class="col-md-3 text-center text-md-start">
-                    <img src="{{ asset('images/logo.jpeg') }}" alt="MadrasDarbar" class="img-fluid mb-3" style="max-height: 120px; border-radius: 15px;">
-                </div>
-
-                <!-- Our Locations -->
-                <div class="col-md-3">
-                    <h5 class="fw-bold mb-3">Our Locations</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="" class="text-white-50 text-decoration-none">Pattaya</a></li>
-                        <li class="mb-2"><a href="" class="text-white-50 text-decoration-none">Bangkok</a></li>
-                        <li class="mb-2"><a href="" class="text-white-50 text-decoration-none">Phuket</a></li>
-                        <li><a href="" class="text-white-50 text-decoration-none">Colombo</a></li>
-                    </ul>
-                </div>
-
-                <!-- Contact Us -->
-                <div class="col-md-3">
-                    <h5 class="fw-bold mb-3">Contact Us</h5>
-                    <p class="text-white-50 mb-2">
-                        <i class="bi bi-envelope-fill me-2"></i>
-                        <a href="mailto:madrasdarbar@gmail.com" class="text-white-50 text-decoration-none">madrasdarbar@gmail.com</a>
-                    </p>
-                    <p class="text-white-50 mb-4">
-                        <i class="bi bi-envelope-fill me-2"></i>
-                        <a href="mailto:info@madrasdarbar.org" class="text-white-50 text-decoration-none">info@madrasdarbar.org</a>
-                    </p>
-
-                    <!-- Social Icons -->
-                    <div class="d-flex gap-3">
-                        <a href="https://www.facebook.com/madrasdarbarsrilanka" target="_blank" class="social-icon text-white text-decoration-none">
-                            <i class="bi bi-facebook"></i>
-                        </a>
-                        <a href="https://www.instagram.com/madrasdarbarsrilanka?igsh=MWRjZGV2bnN6NzNtdA==" target="_blank" class="social-icon text-white text-decoration-none">
-                            <i class="bi bi-instagram"></i>
-                        </a>
+        <div class="row justify-content-center">
+            
+            <!-- Locations Section -->
+            <div class="col-12 col-md-6 col-lg-5 mb-4">
+                <div class="footer-section">
+                    <h4 class="section-title" style="color:white; font-size:1.2rem">OUR LOCATIONS</h4>
+                    <div class="section-divider"></div>
+                    <div class="locations-list">
+                        <div class="location-item">Pattaya</div>
+                        <div class="location-item">Bangkok</div>
+                        <div class="location-item">Phuket</div>
+                        <div class="location-item">Colombo</div>
+                    </div>
+                    <div class="copyright mt-3">
+                        © 2025 Madras Darbar. All Rights Reserved.
                     </div>
                 </div>
             </div>
 
-            <!-- Footer Bottom -->
-            <div class="text-center mt-4 border-top pt-3 border-light">
-                <small class="text-white-50">© {{ date('Y') }} Madras Darbar. All Rights Reserved.</small>
+            <!-- Contact Section -->
+            <div class="col-12 col-md-6 col-lg-5 mb-4">
+                <div class="footer-section">
+                    <h4 class="section-title" style="color:white; font-size:1.2rem">CONTACT US</h4>
+                    <div class="section-divider"></div>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <i class="bi bi-envelope me-2"></i>
+                            <a href="mailto:madrasdarbar@gmail.com" class="contact-link">madrasdarbar@gmail.com</a>
+                        </div>
+                        <div class="contact-item">
+                            <i class="bi bi-envelope me-2"></i>
+                            <a href="mailto:info@madrasdarbar.org" class="contact-link">info@madrasdarbar.org</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Social Media -->
+                    <div class="social-section mt-4">
+                        <div class="social-icons d-flex justify-content-center gap-3">
+                            <a href="https://www.facebook.com/madrasdarbarsrilanka" target="_blank" class="social-icon">
+                                <i class="bi bi-facebook"></i>
+                            </a>
+                            <a href="https://www.instagram.com/madrasdarbarsrilanka?igsh=MWRjZGV2bnN6NzNtdA==" target="_blank" class="social-icon">
+                                <i class="bi bi-instagram"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </footer>
-    @endif
+    </div>
+</footer>
+@endif
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/public.js') }}"></script>
