@@ -3,165 +3,169 @@
 @section('title', 'Order Details')
 
 @section('content')
-<div class="container mt-4">
+<div class="container mt-4 mb-5">
     <div class="row">
-        <div class="col-12 mt-5">
-            <div class="mt-4">
-                <a href="{{ route('orders.history') }}" class="btn btn-outline-secondary">
-                    ← Back to Orders
+        <div class="col-12">
+            <!-- Back Button -->
+            <div class="mb-4">
+                <a href="{{ route('orders.history') }}" class="btn btn-dark rounded-pill shadow-sm px-4 py-2">
+                    <i class="bi bi-arrow-left me-2"></i> Back to Orders
                 </a>
             </div>
 
-            <div class="row mt-2">
-                <div class="col-md-8">
-                    <div class="card">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">Order Items</h5>
+            <!-- Order Header Card -->
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
+                <div class="bg-dark text-white p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="mb-2 fw-bold">
+                                <i class="bi bi-receipt me-2"></i>Order #{{ $order->id }}
+                            </h2>
+                            <p class="mb-2">
+                                <i class="bi bi-calendar3 me-2"></i>{{ $order->created_at->format('M d, Y h:i A') }}
+                            </p>
+                            <p class="mb-0">
+                                <i class="bi bi-phone me-2"></i>{{ $order->customer_contact }}
+                            </p>
                         </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Item</th>
-                                            <th>Quantity</th>
-                                            <th>Price</th>
-                                            <th>Total</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($order->customerOrderDetail as $detail)
-                                        @php
-                                            // Get the first food location price (you might want to store location_id in order details)
-                                            $foodPrice = $detail->foodMenu->foodLocations->first()->price ?? $detail->foodMenu->price ?? 0;
-                                            $itemTotal = $foodPrice * $detail->quantity;
-                                        @endphp
-                                        <tr>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    @if($detail->foodMenu && $detail->foodMenu->image)
-                                                        <img src="{{ asset('storage/' . $detail->foodMenu->image) }}" 
-                                                             alt="{{ $detail->foodMenu->name }}" 
-                                                             class="img-thumbnail me-3" 
-                                                             style="width: 50px; height: 50px; object-fit: cover;">
-                                                    @else
-                                                        <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" 
-                                                             style="width: 50px; height: 50px;">
-                                                            <i class="bi bi-image text-muted"></i>
-                                                        </div>
-                                                    @endif
-                                                    <div>
-                                                        <strong>{{ $detail->foodMenu->name ?? 'N/A' }}</strong>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>{{ $detail->quantity }}</td>
-                                            <td>RM {{ number_format($foodPrice, 2) }}</td>
-                                            <td>RM {{ number_format($itemTotal, 2) }}</td>
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            @php
+                                if ($order->order_status instanceof \App\Enums\OrderStatusEnum) {
+                                    $currentStatus = $order->order_status->value;
+                                } else {
+                                    $currentStatus = $order->order_status;
+                                }
+                            @endphp
+                            <span class="badge {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusClass($order->order_status) }} px-4 py-3 rounded-pill fs-5 fw-semibold d-inline-block mb-2">
+                                {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusDisplay($order->order_status) }}
+                            </span>
+                            <br>
+                            @if($order->isPaid)
+                                <span class="badge bg-success px-4 py-2 rounded-pill fs-6">
+                                    <i class="bi bi-check-circle me-1"></i>Paid
+                                </span>
+                            @else
+                                <span class="badge bg-danger px-4 py-2 rounded-pill fs-6">
+                                    <i class="bi bi-x-circle me-1"></i>Not Paid
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+
+            <div class="row g-4">
+                <!-- Order Items Section -->
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                        <div class="card-header bg-primary text-white border-0 p-4">
+                            <h4 class="mb-0 fw-bold">
+                                <i class="bi bi-basket3 me-2"></i>Order Items
+                            </h4>
+                        </div>
+                        <div class="card-body p-0">
+                            @foreach($order->customerOrderDetail as $detail)
+                            @php
+                                $foodPrice = $detail->foodMenu->foodLocations->first()->price ?? $detail->foodMenu->price ?? 0;
+                                $itemTotal = $foodPrice * $detail->quantity;
+                            @endphp
+                            <div class="border-bottom p-4">
+                                <div class="row align-items-center g-3">
+                                    <!-- Food Image -->
+                                    <div class="col-auto">
+                                        @if($detail->foodMenu && $detail->foodMenu->image)
+                                            <img src="{{ asset('storage/' . $detail->foodMenu->image) }}" 
+                                                 alt="{{ $detail->foodMenu->name }}" 
+                                                 class="rounded-3 shadow-sm" 
+                                                 style="width: 80px; height: 80px; object-fit: cover;">
+                                        @else
+                                            <div class="bg-light rounded-3 d-flex align-items-center justify-content-center shadow-sm" 
+                                                 style="width: 80px; height: 80px;">
+                                                <i class="bi bi-image text-muted fs-2"></i>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    
+                                    <!-- Food Details -->
+                                    <div class="col">
+                                        <h5 class="mb-1 fw-bold text-dark">{{ $detail->foodMenu->name ?? 'N/A' }}</h5>
+                                        <p class="mb-0 text-muted">
+                                            <span class="badge bg-secondary rounded-pill me-2">
+                                                Qty: {{ $detail->quantity }}
+                                            </span>
+                                            <span class="fw-semibold">RM {{ number_format($foodPrice, 2) }}</span> each
+                                        </p>
+                                    </div>
+                                    
+                                    <!-- Item Total -->
+                                    <div class="col-auto text-end">
+                                        <h4 class="mb-0 text-primary fw-bold">RM {{ number_format($itemTotal, 2) }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                            
+                            <!-- Total Section -->
+                            <div class="p-4 bg-light">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h4 class="mb-0 fw-bold text-dark">Total Amount</h4>
+                                    <h3 class="mb-0 text-success fw-bold">RM {{ number_format($order->order_total_price, 2) }}</h3>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-4">
-                    {{-- <div class="card">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="mb-0">Order Summary</h5>
+                <!-- Order Progress Timeline -->
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                        <div class="card-header bg-success text-white border-0 p-4">
+                            <h5 class="mb-0 fw-bold">
+                                <i class="bi bi-hourglass-split me-2"></i>Order Progress
+                            </h5>
                         </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <strong>Order ID:</strong> #{{ $order->id }}
-                            </div>
-                            <div class="mb-3">
-                                <strong>Order Date:</strong> 
-                                {{ $order->created_at->format('M d, Y h:i A') }}
-                            </div>
-                            <div class="mb-3">
-                                <strong>Delivery Type:</strong>
-                                <span class="badge bg-info">{{ $order->delivery_type }}</span>
-                            </div>
-                            @if($order->diningTable)
-                            <div class="mb-3">
-                                <strong>Table:</strong> {{ $order->diningTable->table_name }}
-                            </div>
-                            @endif
-                            <div class="mb-3">
-                                <strong>Payment Method:</strong>
-                                <span class="badge bg-{{ $order->payment_type == 'cash' ? 'success' : 'primary' }}">
-                                    {{ ucfirst($order->payment_type) }}
-                                </span>
-                            </div>
-                            <div class="mb-3">
-                                <strong>Payment Status:</strong>
-                                <span class="payment-badge {{ $order->isPaid ? 'payment-paid' : 'payment-not-paid' }}">
-                                    {{ $order->isPaid ? 'Paid' : 'Not Paid' }}
-                                </span>
-                            </div>
-                            <div class="mb-3">
-                                <strong>Order Status:</strong>
-                                <span class="status-badge {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusClass($order->order_status) }}">
-                                    {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusDisplay($order->order_status) }}
-                                </span>
-                            </div>
-                            <div class="mb-3">
-                                <strong>Contact:</strong> {{ $order->customer_contact }}
-                            </div>
-                            <hr>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <strong>Total Amount:</strong>
-                                <span class="h5 text-primary mb-0">RM {{ number_format($order->order_total_price, 2) }}</span>
-                            </div>
-                        </div>
-                    </div> --}}
+                        <div class="card-body p-4">
+                            @php
+                                $statuses = [
+                                    'ordered' => ['label' => 'Order Placed', 'icon' => 'bi-receipt-cutoff'],
+                                    'preparing' => ['label' => 'Preparing', 'icon' => 'bi-clock-history'],
+                                    'ready_to_deliver' => ['label' => 'Ready', 'icon' => 'bi-check2-circle'],
+                                    'delivery_on_the_way' => ['label' => 'On the Way', 'icon' => 'bi-truck'],
+                                    'delivered' => ['label' => 'Delivered', 'icon' => 'bi-house-check'],
+                                    'completed' => ['label' => 'Completed', 'icon' => 'bi-check-circle-fill']
+                                ];
 
-                    <!-- Order Status Timeline -->
-                    <div class="card">
-                        <div class="card-header bg-secondary text-white">
-                            <h5 class="mb-0">Order Progress</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="order-timeline">
-                                @php
-                                    $statuses = [
-                                        'ordered' => 'Order Placed',
-                                        'preparing' => 'Preparing',
-                                        'ready_to_deliver' => 'Ready',
-                                        'delivery_on_the_way' => 'On the Way',
-                                        'delivered' => 'Delivered',
-                                        'completed' => 'Completed'
-                                    ];
-
-                                    // Handle both string and OrderStatusEnum cases
-                                    if ($order->order_status instanceof \App\Enums\OrderStatusEnum) {
-                                        $currentStatus = $order->order_status->value;
-                                    } else {
-                                        $currentStatus = $order->order_status;
-                                    }
-                                    $currentStatus = strtolower($currentStatus);
-                                @endphp
-                                
-                                @foreach($statuses as $status => $label)
+                                $currentStatus = strtolower($currentStatus);
+                                $currentIndex = array_search($currentStatus, array_keys($statuses));
+                            @endphp
+                            
+                            <div class="timeline">
+                                @foreach($statuses as $status => $info)
                                     @php
+                                        $statusIndex = array_search($status, array_keys($statuses));
                                         $isActive = $currentStatus === $status;
-                                        $isCompleted = array_search($currentStatus, array_keys($statuses)) > array_search($status, array_keys($statuses));
-                                        $isFuture = array_search($currentStatus, array_keys($statuses)) < array_search($status, array_keys($statuses));
+                                        $isCompleted = $statusIndex < $currentIndex;
+                                        $isFuture = $statusIndex > $currentIndex;
                                     @endphp
-                                    <div class="timeline-step {{ $isActive ? 'active' : ($isCompleted ? 'completed' : '') }}">
-                                        <div class="timeline-icon">
-                                            @if($isActive)
-                                                <i class="bi bi-arrow-right-circle-fill text-primary"></i>
-                                            @elseif($isCompleted)
-                                                <i class="bi bi-check-circle-fill text-success"></i>
+                                    
+                                    <div class="timeline-item {{ $isActive ? 'active' : ($isCompleted ? 'completed' : 'pending') }}">
+                                        <div class="timeline-marker">
+                                            @if($isCompleted)
+                                                <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                                            @elseif($isActive)
+                                                <i class="bi bi-arrow-right-circle-fill text-primary fs-4"></i>
                                             @else
-                                                <i class="bi bi-circle text-muted"></i>
+                                                <i class="bi bi-circle text-muted fs-5"></i>
                                             @endif
                                         </div>
-                                        <div class="timeline-label">
-                                            <strong>{{ $label }}</strong>
+                                        <div class="timeline-content">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi {{ $info['icon'] }} me-2 {{ $isActive ? 'text-primary' : ($isCompleted ? 'text-success' : 'text-muted') }}"></i>
+                                                <span class="fw-bold {{ $isActive ? 'text-primary' : ($isCompleted ? 'text-success' : 'text-muted') }}">
+                                                    {{ $info['label'] }}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 @endforeach
@@ -175,113 +179,74 @@
 </div>
 
 <style>
-    /* Status Badge Styles */
-    .status-badge {
-        display: inline-block;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        text-align: center;
-        min-width: 120px;
-        border: 1px solid transparent;
-    }
-
-    /* Status Colors */
+    /* Status Badge Styles with Gradients */
     .status-ordered {
-        background-color: #e3f2fd;
-        color: #1976d2;
-        border-color: #bbdefb;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
     }
 
     .status-preparing {
-        background-color: #fff3e0;
-        color: #f57c00;
-        border-color: #ffe0b2;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+        color: white !important;
     }
 
     .status-ready {
-        background-color: #e8f5e8;
-        color: #388e3c;
-        border-color: #c8e6c9;
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+        color: white !important;
     }
 
     .status-delivery {
-        background-color: #e3f2fd;
-        color: #0288d1;
-        border-color: #b3e5fc;
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
+        color: white !important;
     }
 
     .status-delivered {
-        background-color: #e8f5e8;
-        color: #2e7d32;
-        border-color: #a5d6a7;
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
+        color: white !important;
     }
 
     .status-completed {
-        background-color: #e8f5e8;
-        color: #1b5e20;
-        border-color: #81c784;
+        background: linear-gradient(135deg, #30cfd0 0%, #330867 100%) !important;
+        color: white !important;
     }
 
     .status-cancelled {
-        background-color: #ffebee;
-        color: #c62828;
-        border-color: #ffcdd2;
+        background: linear-gradient(135deg, #ff6b6b 0%, #c92a2a 100%) !important;
+        color: white !important;
     }
 
-    /* Payment Badge Styles */
-    .payment-badge {
-        display: inline-block;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        text-align: center;
-        min-width: 80px;
-        border: 1px solid transparent;
-    }
-
-    .payment-paid {
-        background-color: #e8f5e8;
-        color: #2e7d32;
-        border-color: #a5d6a7;
-    }
-
-    .payment-not-paid {
-        background-color: #ffebee;
-        color: #c62828;
-        border-color: #ffcdd2;
-    }
-
-    /* Order Timeline Styles */
-    .order-timeline {
+    /* Timeline Styles */
+    .timeline {
         position: relative;
-        padding-left: 30px;
+        padding-left: 40px;
     }
 
-    .order-timeline::before {
+    .timeline::before {
         content: '';
         position: absolute;
-        left: 15px;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background-color: #e9ecef;
+        left: 20px;
+        top: 10px;
+        bottom: 10px;
+        width: 3px;
+        background: linear-gradient(to bottom, #28a745 0%, #28a745 50%, #dee2e6 50%, #dee2e6 100%);
     }
 
-    .timeline-step {
+    .timeline-item {
         position: relative;
-        margin-bottom: 20px;
+        margin-bottom: 30px;
         display: flex;
         align-items: center;
     }
 
-    .timeline-icon {
+    .timeline-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .timeline-marker {
         position: absolute;
-        left: -30px;
-        width: 30px;
-        height: 30px;
+        left: -40px;
+        width: 40px;
+        height: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -290,25 +255,35 @@
         z-index: 2;
     }
 
-    .timeline-step.completed .timeline-icon {
-        color: #28a745 !important;
+    .timeline-content {
+        flex: 1;
+        padding: 12px 16px;
+        background: rgba(248, 249, 250, 0.5);
+        border-radius: 12px;
+        transition: all 0.3s ease;
     }
 
-    .timeline-step.active .timeline-icon {
-        color: #007bff !important;
+    .timeline-item.active .timeline-content {
+        background: rgba(13, 110, 253, 0.1);
+        border: 2px solid rgba(13, 110, 253, 0.3);
     }
 
-    .timeline-label {
-        margin-left: 10px;
+    .timeline-item.completed .timeline-content {
+        background: rgba(25, 135, 84, 0.1);
+        border: 2px solid rgba(25, 135, 84, 0.2);
     }
 
-    .timeline-step.completed .timeline-label {
-        color: #28a745;
-    }
-
-    .timeline-step.active .timeline-label {
-        color: #007bff;
-        font-weight: bold;
+    /* Responsive Adjustments */
+    @media (max-width: 991.98px) {
+        .timeline {
+            padding-left: 35px;
+        }
+        
+        .timeline-marker {
+            left: -35px;
+            width: 35px;
+            height: 35px;
+        }
     }
 </style>
 @endsection

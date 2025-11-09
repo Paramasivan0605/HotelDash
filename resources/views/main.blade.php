@@ -26,11 +26,17 @@
 
     body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-image: url('{{ asset('images/bg-image.jpeg') }}');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
     }
 
     /* Top Navigation Bar */
     .topbar {
-        background: white;
+        background:rgb(216 23 23 / 95%) !important;
+        backdrop-filter: blur(10px);
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         position: sticky;
         top: 0;
@@ -40,6 +46,7 @@
 
     .topbar.scrolled {
         box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        background: rgba(220, 38, 38, 1) !important;
     }
 
     .logo-section {
@@ -49,16 +56,46 @@
     }
 
     .logo-section img {
-        height: 40px;
+        height: 90px;
         width: auto;
     }
 
     .logo-section span {
         font-size: 1.5rem;
         font-weight: 700;
-        background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: white !important;
+    }
+
+    /* Navbar Links */
+    .navbar-nav .nav-link {
+        color: rgba(255, 255, 255, 0.9) !important;
+        transition: all 0.3s ease;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+    }
+
+    .navbar-nav .nav-link:hover {
+        color: white !important;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .navbar-nav .nav-link.active {
+        color: white !important;
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .navbar-nav .nav-link.disabled {
+        color: rgba(255, 255, 255, 0.5) !important;
+    }
+
+    /* Mobile Menu Background */
+    @media (max-width: 991.98px) {
+        .navbar-collapse {
+            background: rgba(220, 38, 38, 0.98);
+            margin-top: 1rem;
+            border-radius: 12px;
+            padding: 1rem;
+        }
     }
 
     /* Cart Badge */
@@ -72,7 +109,44 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        background: var(--cart-primary) !important;
+        background: #fbbf24 !important;
+        color: #000;
+        font-weight: 700;
+    }
+
+    /* Mobile Cart Wrapper */
+    .mobile-cart-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    @media (min-width: 992px) {
+        .mobile-cart-wrapper {
+            display: none !important;
+        }
+    }
+
+    /* ============ MOBILE NAVIGATION FIXES ============ */
+    
+    /* Mobile: Show cart next to hamburger */
+    @media (max-width: 991.98px) {
+        /* Mobile cart icon visible */
+        .mobile-cart-wrapper {
+            display: flex !important;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Hide desktop cart and My Orders on mobile */
+        .navbar-collapse .d-flex.align-items-center {
+            display: none !important;
+        }
+        
+        /* Ensure menu collapses properly */
+        .navbar-collapse {
+            background: rgba(220, 38, 38, 0.98);
+        }
     }
 
     /* ============ MOBILE CART FIXES ============ */
@@ -199,7 +273,6 @@
         background: #f8f9fa;
         border-top: 2px solid #dee2e6;
         max-height: 35vh;
-        /* overflow-y: auto; */
     }
 
     /* Buttons */
@@ -242,8 +315,11 @@
 
     /* Mobile Optimizations */
     @media (max-width: 576px) {
-        .logo-section span {
-            font-size: 1.2rem;
+        .logo-section {
+            height: 40px;
+        }
+        .logo-section img{
+            height: 50px;
         }
         
         .cart-item .card-body {
@@ -274,9 +350,9 @@
 
     /* Footer */
     .footer {
-        background: #2c3e50;
+        background:rgb(216 23 23 / 95%) !important;
         color: white;
-        margin-top: 80px;
+        margin-top: 240px;
     }
 
     @keyframes fadeIn {
@@ -290,58 +366,56 @@
 
 <body data-customer-id="{{ session('customer_id') ?? '' }}">
 
-    <!-- Top Navigation Bar -->
-    <nav class="topbar navbar navbar-expand-lg navbar-light bg-white py-3">
+    <!-- Top Navigation Bar - FIXED VERSION -->
+    <nav class="topbar navbar navbar-expand-lg navbar-dark py-3">
         <div class="container">
             <!-- Logo -->
-            <a class="navbar-brand logo-section" href="{{ route('home') }}">
-                <img src="{{ asset('images/logo.png') }}" alt="Hash Logo">
-                <span class="d-none d-md-inline">Hash Restaurant</span>
+            <a class="navbar-brand logo-section" href="#">
+                <img src="{{ asset('images/logo.jpeg') }}" alt="MadrasDarbar">
             </a>
 
-            <!-- Mobile Toggle -->
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <!-- Mobile: Cart + Hamburger Toggle -->
+            <div class="mobile-cart-wrapper d-lg-none">
+                <!-- Mobile Cart Icon -->
+                <button class="btn btn-link text-white position-relative p-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
+                    <i class='bx bx-cart fs-4'></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge" id="cart-quantity-mobile">0</span>
+                </button>
+                
+                <!-- Hamburger Toggle -->
+                <button class="navbar-toggler border-0 p-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
 
             <!-- Navigation Links -->
-            <div class="collapse navbar-collapse bg-white" id="navbarNav">
+            <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto p-2">
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs(['home']) ? 'active fw-bold' : '' }}" href="{{ route('home') }}">
-                            <i class="bi bi-house-door"></i> Home
-                        </a>
-                    </li>
                     @if (session()->has('location_id'))
-                        <a class="nav-link {{ request()->routeIs(['location.menu', 'search']) ? 'active fw-bold' : '' }}"
-                           href="{{ route('location.menu', ['id' => session('location_id')]) }}">
-                           <i class="bi bi-book"></i> Menu
-                        </a>
+                        <li class="nav-item">
+                            <a class="nav-link text-white {{ request()->routeIs(['location.menu', 'search']) ? 'active fw-bold' : '' }}"
+                               href="{{ route('location.menu', ['id' => session('location_id')]) }}">
+                               <i class="bi bi-book"></i> Menu
+                            </a>
+                        </li>
                     @else
-                        <a class="nav-link disabled" href="#">
-                            <i class="bi bi-book"></i> Menu
-                        </a>
+                        <li class="nav-item">
+                            <a class="nav-link disabled text-white-50" href="#">
+                                <i class="bi bi-book"></i> Menu
+                            </a>
+                        </li>
                     @endif
 
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs(['promotion']) ? 'active fw-bold' : '' }}" href="{{ route('promotion') }}">
-                            <i class="bi bi-percent"></i> Promotions
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs(['reservation']) ? 'active fw-bold' : '' }}" href="{{ route('reservation') }}">
-                            <i class="bi bi-calendar-check"></i> Reservation
-                        </a>
-                    </li>
                     @if(session('customer_id'))
                     <li class="nav-item d-lg-none">
-                        <a class="nav-link {{ request()->routeIs(['orders.*']) ? 'active fw-bold' : '' }}" href="{{ route('orders.history') }}">
+                        <a class="nav-link text-white {{ request()->routeIs(['orders.*']) ? 'active fw-bold' : '' }}" href="{{ route('orders.history') }}">
                             <i class="bi bi-clock-history"></i> My Orders
                         </a>
                     </li>
                     @endif
+                    
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('customer.logout') ? 'active fw-bold' : '' }}"
+                        <a class="nav-link text-white {{ request()->routeIs('customer.logout') ? 'active fw-bold' : '' }}"
                         href="{{ route('customer.logout') }}"
                         onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                             <i class="bi bi-box-arrow-right"></i> Logout
@@ -352,39 +426,17 @@
                     </li>
                 </ul>
 
-                <!-- Right Side Icons -->
+                <!-- Right Side Icons (Desktop Only) -->
                 <div class="d-flex align-items-center gap-3">
-                    <!-- Search -->
-                    <div class="dropdown">
-                        <button class="btn btn-link text-dark" type="button" id="searchDropdown" data-bs-toggle="dropdown">
-                            <i class='bx bx-search fs-4'></i>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-end p-3" style="min-width: 300px;">
-                            <form action="{{ route('search') }}" method="GET">
-                                <div class="input-group">
-                                    <input type="text" name="search" class="form-control" placeholder="Search menu..." value="{{ old('search') }}">
-                                    <button class="btn btn-primary" type="submit">
-                                        <i class='bx bx-search'></i>
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Cart -->
-                    <button class="btn btn-link text-dark position-relative" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
+                    <!-- Cart (Desktop) -->
+                    <button class="btn btn-link text-white position-relative" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
                         <i class='bx bx-cart fs-4'></i>
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge" id="cart-quantity">0</span>
                     </button>
 
-                    <!-- Company Login -->
-                    <a href="{{ route('login') }}" class="btn btn-link text-dark">
-                        <i class='bx bx-buildings fs-4'></i>
-                    </a>
-
                     <!-- My Orders (Desktop) -->
                     @if(session('customer_id'))
-                    <a href="{{ route('orders.history') }}" class="btn btn-outline-primary d-none d-lg-inline-block">
+                    <a href="{{ route('orders.history') }}" class="btn btn-outline-light d-none d-lg-inline-block">
                         <i class="bi bi-clock-history"></i> My Orders
                     </a>
                     @endif
@@ -460,6 +512,7 @@
                     </label>
                     <input type="tel" name="customer_contact" class="form-control" placeholder="0123456789" required>
                 </div>
+                
                 <!-- Optional Contact Number -->
                 <div class="mb-3">
                     <label class="form-label fw-semibold small mb-2">
@@ -675,10 +728,11 @@
         <div class="container">
             <div class="row g-4">
                 <div class="col-md-4">
-                    <h5 class="mb-3">Hash Restaurant</h5>
-                    <p class="text-light">Delicious food delivered to your doorstep</p>
+                     <a class="navbar-brand logo-section" href="#">
+                        <img src="{{ asset('images/logo.jpeg') }}" alt="MadrasDarbar">
+                    </a>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4 ">
                     <h5 class="mb-3">Quick Links</h5>
                     <ul class="list-unstyled">
                         <li><a href="#" class="text-light text-decoration-none">About Us</a></li>
@@ -705,4 +759,4 @@
     <script src="{{ asset('js/public.js') }}"></script>
 
 </body>
-</html>
+</html

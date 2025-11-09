@@ -406,13 +406,13 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.05)"/></svg>');
+        background-image: url('{{ asset('images/bg-image.jpeg') }}');
         background-size: 100px 100px;
         opacity: 0.3;
     }
 
     .location-info-card {
-        background: rgba(255, 255, 255, 0.15);
+        background: var(--red-gradient);
         backdrop-filter: blur(20px);
         border-radius: 24px;
         padding: 2rem;
@@ -498,7 +498,7 @@
 
     /* Menu Section */
     .menu-container {
-        background: linear-gradient(180deg, #fafafa 0%, #ffffff 100%);
+        background-image: url('{{ asset('images/bg-image.jpeg') }}');
         min-height: 100vh;
     }
 
@@ -1185,8 +1185,5 @@
         }
     }
 </style>
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 @endsection

@@ -33,8 +33,11 @@ class PublicController extends Controller
         return view('public.login', compact('locations'));
     }
 
+    // Customer Login / Submit Function
+
     public function submit(Request $request): RedirectResponse
     {
+        // ✅ Validate incoming request
         $validator = Validator::make($request->all(), [
             'name' => 'required|max:255',
             'mobile' => 'required|numeric',
@@ -47,6 +50,7 @@ class PublicController extends Controller
 
         $validated = $validator->validated();
 
+        // ✅ Find or create customer
         $customer = Customer::where('mobile', $validated['mobile'])->first();
 
         if (!$customer) {
@@ -59,37 +63,49 @@ class PublicController extends Controller
             Log::info('Customer logged in: ' . $customer->name . ' (ID: ' . $customer->id . ')');
         }
 
+        // ✅ Handle cart restoration & pending order for EXISTING customers
         if ($customer->wasRecentlyCreated === false) {
-            // ✅ Check if cart exists for THIS customer AND THIS location
+
+            // --- Check for existing cart at this location ---
             $cartCount = Cart::where('user_id', $customer->id)
                 ->where('location_id', $validated['location'])
                 ->count();
-                
+
             if ($cartCount > 0) {
                 session(['restore_cart' => true]);
+            } else {
+                session()->forget('restore_cart'); // clear stale session
             }
 
+            // --- Check for pending orders ---
             $lastOrder = CustomerOrder::where('customer_id', $customer->id)
                 ->orderBy('created_at', 'desc')
                 ->first();
 
             if ($lastOrder && !in_array($lastOrder->order_status, ['completed', 'cancelled'])) {
                 session(['pending_order' => $lastOrder->id]);
+            } else {
+                session()->forget('pending_order'); // clear stale session
             }
+
         } else {
+            // New customer — no restore or pending order
             session()->forget(['restore_cart', 'pending_order']);
         }
 
+        // ✅ Store login info in session
         session([
-            'customer_id' => $customer->id,
-            'customer_name' => $customer->name,
+            'customer_id'     => $customer->id,
+            'customer_name'   => $customer->name,
             'customer_mobile' => $customer->mobile,
-            'location_id' => $validated['location'],
+            'location_id'     => $validated['location'],
         ]);
 
         Log::info('Login submitted for customer: ' . $customer->name . ' (ID: ' . $customer->id . ') at location: ' . $validated['location']);
 
-        return redirect()->route('location.menu', ['id' => $validated['location']])
+        // ✅ Redirect to menu page
+        return redirect()
+            ->route('location.menu', ['id' => $validated['location']])
             ->with('success-message', 'Welcome, ' . $customer->name . '!');
     }
 
@@ -108,52 +124,63 @@ class PublicController extends Controller
         return view('public.menu', compact('menu', 'category', 'locations'));
     }
 
+    // Location Menu Page Function
     public function locationMenuPage($locationId)
     {
+        // ✅ Get location details
         $location = Location::findOrFail($locationId);
 
+        // ✅ Get food menu with price for this location
         $foodMenu = FoodMenu::select('food_menus.*', 'food_price.price')
             ->join('food_price', 'food_price.food_id', '=', 'food_menus.id')
             ->where('food_price.location_id', $locationId)
             ->get();
 
-        // Get cart items for this customer and location
+        // ✅ Initialize cart variables
         $cartItems = [];
         $cartTotal = 0;
         $cartCount = 0;
-        $currency = $location->currency;
-        
+        $currency  = $location->currency;
+
+        // ✅ Only load cart if customer logged in
         if (session('customer_id')) {
-            // ✅ ONLY get cart items that match BOTH customer_id AND location_id
             $carts = Cart::where('user_id', session('customer_id'))
-                ->where('location_id', $locationId)  // THIS IS THE KEY FILTER
+                ->where('location_id', $locationId)
                 ->with(['food.locations', 'location'])
                 ->get();
 
             foreach ($carts as $cart) {
                 $price = $cart->getPrice();
-                
+
                 $cartItems[] = [
-                    'id' => $cart->food_id,
-                    'name' => $cart->food->name,
-                    'image' => $cart->food->image ? asset($cart->food->image) : asset('images/placeholder.jpg'),
-                    'price' => $price,
-                    'quantity' => $cart->quantity,
+                    'id'            => $cart->food_id,
+                    'name'          => $cart->food->name,
+                    'image'         => $cart->food->image ? asset($cart->food->image) : asset('images/placeholder.jpg'),
+                    'price'         => $price,
+                    'quantity'      => $cart->quantity,
                     'delivery_type' => $cart->delivery_type,
-                    'total' => $cart->getTotalPrice()
+                    'total'         => $cart->getTotalPrice(),
                 ];
-                
+
                 $cartTotal += $cart->getTotalPrice();
                 $cartCount += $cart->quantity;
             }
         }
 
-        return view('public.locationMenu', compact('foodMenu', 'location', 'cartItems', 'cartTotal', 'cartCount', 'currency'))
-            ->with([
-                'restore_cart' => session('restore_cart'),
-                'pending_order' => session('pending_order')
-            ]);
+        // ✅ Return view with correct session flags
+        return view('public.locationMenu', compact(
+            'foodMenu',
+            'location',
+            'cartItems',
+            'cartTotal',
+            'cartCount',
+            'currency'
+        ))->with([
+            'restore_cart'  => session('restore_cart', false),
+            'pending_order' => session('pending_order', null),
+        ]);
     }
+
     public function about(): View
     {
         return view('public.about');
