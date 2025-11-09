@@ -651,7 +651,7 @@ input::-webkit-inner-spin-button {
     align-items: center;
     padding: 20px 0 0 0;
     flex-direction: column;
-    background: linear-gradient(135deg, #71B7E6, #9B59B6);
+    /* background: linear-gradient(135deg, #71B7E6, #9B59B6); */
 }
 
 .login .error-message {
