@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Contracts\View\View as ViewView;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,7 +11,7 @@ use Illuminate\View\View;
 
 class LoginController extends Controller
 {
-    public function index() : View
+    public function index()
     {
         if (Auth::check()) {
             if (Auth::user()->role == 1) {

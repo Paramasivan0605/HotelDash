@@ -284,109 +284,6 @@
         to { opacity: 1; transform: translateY(0); }
     }
  
-/* Enhanced Delivery Modal Styles */
-.delivery-card {
-    background: transparent;
-    transition: transform 0.2s ease;
-}
-
-.delivery-card:hover .card {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
-}
-
-.delivery-card:active .card {
-    transform: translateY(-1px);
-}
-
-.delivery-card.active .card,
-.delivery-card.selected-delivery .card {
-    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-    border-color: #10b981 !important;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
-}
-
-.delivery-card.active .delivery-check i,
-.delivery-card.selected-delivery .delivery-check i {
-    display: block !important;
-}
-
-.delivery-card.active .delivery-check,
-.delivery-card.selected-delivery .delivery-check {
-    background: #10b981;
-    border-color: #10b981 !important;
-}
-
-.delivery-card.active .delivery-check i,
-.delivery-card.selected-delivery .delivery-check i {
-    color: white !important;
-}
-
-/* Counter Pickup Active State */
-.delivery-card[data-option="Counter Pickup"].active .card,
-.delivery-card[data-option="Counter Pickup"].selected-delivery .card {
-    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-    border-color: #f59e0b !important;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2) !important;
-}
-
-.delivery-card[data-option="Counter Pickup"].active .delivery-check,
-.delivery-card[data-option="Counter Pickup"].selected-delivery .delivery-check {
-    background: #f59e0b;
-    border-color: #f59e0b !important;
-}
-
-/* Animation */
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-#changeDeliveryModal .modal-content {
-    animation: slideInUp 0.3s ease-out;
-    overflow: hidden;
-    border-radius: 20px;
-}
-
-#changeDeliveryModal .card {
-    border-radius: 15px;
-    overflow: hidden;
-}
-
-/* Mobile Responsive */
-@media (max-width: 576px) {
-    #changeDeliveryModal .modal-body {
-        padding: 1.5rem 1rem;
-    }
-    
-    #changeDeliveryModal .delivery-icon {
-        width: 50px !important;
-        height: 50px !important;
-    }
-    
-    #changeDeliveryModal .delivery-icon i {
-        font-size: 1.5rem !important;
-    }
-    
-    #changeDeliveryModal h5 {
-        font-size: 1rem;
-    }
-    
-    #changeDeliveryModal .card-body {
-        padding: 1rem !important;
-    }
-}
-
-/* Toast Info Style */
-.toast.bg-info {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
-}
 </style>
     @yield('styles')
 </head>
@@ -415,12 +312,17 @@
                             <i class="bi bi-house-door"></i> Home
                         </a>
                     </li>
-                    <li class="nav-item">
+                    @if (session()->has('location_id'))
                         <a class="nav-link {{ request()->routeIs(['location.menu', 'search']) ? 'active fw-bold' : '' }}"
-                            href="{{ route('location.menu', ['id' => session('location_id')]) }}">
-                                <i class="bi bi-book"></i> Menu
+                           href="{{ route('location.menu', ['id' => session('location_id')]) }}">
+                           <i class="bi bi-book"></i> Menu
                         </a>
-                    </li>
+                    @else
+                        <a class="nav-link disabled" href="#">
+                            <i class="bi bi-book"></i> Menu
+                        </a>
+                    @endif
+
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs(['promotion']) ? 'active fw-bold' : '' }}" href="{{ route('promotion') }}">
                             <i class="bi bi-percent"></i> Promotions
