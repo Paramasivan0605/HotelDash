@@ -11,7 +11,6 @@
 <style>
     body {
         background: url('{{ asset('images/frontpageW (1).jpg') }}') center/cover no-repeat fixed !important;
-        background-color: #e20006 !important; /* fallback if image fails */
     }
 </style>
 @endsection

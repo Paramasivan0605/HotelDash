@@ -1,9 +1,16 @@
 @extends('main')
 
 @section('title', 'Staff Registration')
-
+@php
+    // This will hide the header and footer
+    $hideLayout = true;
+@endphp
 @section('content')
-
+<style>
+    body {
+        background: url('{{ asset('images/frontpageW (1).jpg') }}') center/cover no-repeat fixed !important;
+    }
+</style>
     <div class="registration">
 
         <!-- Displaying success message -->

@@ -2,8 +2,17 @@
 
 @section('title', 'Forgot Password')
 
-@section('content')
+@php
+    // This will hide the header and footer
+    $hideLayout = true;
+@endphp
 
+@section('content')
+<style>
+    body {
+        background: url('{{ asset('images/frontpageW (1).jpg') }}') center/cover no-repeat fixed !important;
+    }
+</style>
     <div class="forgot-password">
 
         <div class="container">
