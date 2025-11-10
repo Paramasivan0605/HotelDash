@@ -124,16 +124,26 @@ class PublicController extends Controller
         return view('public.menu', compact('menu', 'category', 'locations'));
     }
 
-    // Location Menu Page Function
+   // Location Menu Page Function
     public function locationMenuPage($locationId)
     {
         // ✅ Get location details
         $location = Location::findOrFail($locationId);
 
-        // ✅ Get food menu with price for this location
-        $foodMenu = FoodMenu::select('food_menus.*', 'food_price.price')
+        // ✅ Get all categories that have food items in this location
+        $categories = FoodCategory::select('food_categories.*')
+            ->join('food_menus', 'food_menus.category_id', '=', 'food_categories.id')
             ->join('food_price', 'food_price.food_id', '=', 'food_menus.id')
             ->where('food_price.location_id', $locationId)
+            ->distinct()
+            ->get();
+
+        // ✅ Get food menu with price for this location, grouped by category
+        $foodMenu = FoodMenu::select('food_menus.*', 'food_price.price', 'food_categories.name as category')
+            ->join('food_price', 'food_price.food_id', '=', 'food_menus.id')
+            ->leftJoin('food_categories', 'food_categories.id', '=', 'food_menus.category_id')
+            ->where('food_price.location_id', $locationId)
+            ->orderBy('food_categories.name')
             ->get();
 
         // ✅ Initialize cart variables
@@ -167,10 +177,11 @@ class PublicController extends Controller
             }
         }
 
-        // ✅ Return view with correct session flags
+        // ✅ Return view with categories
         return view('public.locationMenu', compact(
             'foodMenu',
             'location',
+            'categories',
             'cartItems',
             'cartTotal',
             'cartCount',

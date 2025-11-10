@@ -6,12 +6,11 @@
 <script>
     window.locationCurrency = "{{ $currency ?? 'RM' }}";
 </script>
+
+<!-- Keep all existing modals and alerts -->
 @if(session('restore_cart'))
     <script>
-        // Logic to restore the user's cart from backend or local storage
         alert("Welcome back! We've restored your cart.");
-
-        // TODO: fetch cart items for this user via AJAX, or load from localStorage
     </script>
 @endif
 
@@ -23,7 +22,7 @@
     </div>
 @endif
 
-<!-- Delivery Option Modal -->
+<!-- Delivery Option Modal (keep existing) -->
 <div class="modal fade" id="deliveryOptionModal" data-bs-backdrop="static" data-bs-keyboard="false">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content border-0 shadow-lg" style="border-radius: 24px; overflow: hidden;">
@@ -86,6 +85,35 @@
     </div>
 </div>
 
+{{-- Categories Section --}}
+@if(!$categories->isEmpty())
+<div class="categories-section">
+    <div class="container py-4">
+        <div class="categories-scroll-container">
+            <div class="categories-grid">
+                <button class="category-card active" data-category="all">
+                    <div class="category-icon">🍽️</div>
+                    <h4>All Items</h4>
+                </button>
+                
+                @foreach($categories as $category)
+                    <button class="category-card" data-category="{{ $category->id }}">
+                        <div class="category-icon">
+                            @if($category->image)
+                                <img src="{{ asset($category->image) }}" alt="{{ $category->name }}">
+                            @else
+                                🍴
+                            @endif
+                        </div>
+                        <h4>{{ $category->name }}</h4>
+                    </button>
+                @endforeach
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 {{-- Food Menu Section --}}
 <div id="menuSection" class="menu-container" style="display:none;">
     <div class="container py-5">
@@ -93,14 +121,9 @@
             <div class="section-title-wrapper">
                 <h2 class="section-title">
                     <span class="title-icon">🍽️</span>
-                    Our Delicious Menu
+                    <span id="categoryTitle">Our Delicious Menu</span>
                 </h2>
                 <p class="section-subtitle">Handcrafted with love, served with passion</p>
-            </div>
-            <div class="menu-filters">
-                <button class="filter-btn active" data-filter="all">
-                    <i class='bx bx-grid-alt'></i> All Items
-                </button>
             </div>
         </div>
         
@@ -109,14 +132,11 @@
                 <div class="empty-icon">🍽️</div>
                 <h3>No Menu Items Available</h3>
                 <p>Check back soon for delicious options!</p>
-                {{-- <a href="{{ route('menu') }}" class="btn-primary-custom">
-                    Browse Other Locations
-                </a> --}}
             </div>
         @else
             <div class="food-menu-grid">
                 @foreach($foodMenu as $item)
-                    <div class="food-item-card" data-aos="fade-up">
+                    <div class="food-item-card" data-aos="fade-up" data-category="{{ $item->category_id ?? 'uncategorized' }}">
                         <div class="card-image-wrapper" data-bs-toggle="modal" data-bs-target="#itemModal{{ $item->id }}">
                             <img src="{{ $item->image ? asset($item->image) : asset('images/placeholder.jpg') }}" 
                                  alt="{{ $item->name }}" 
@@ -227,7 +247,7 @@
                                                     data-food-image="{{ asset($item->image) }}" 
                                                     data-food-name="{{ $item->name }}" 
                                                     data-food-price="{{ $item->price }}"
-                                                    data-delivery-type="{{ $item->delivery_type }}"
+                                                    data-delivery-type="{{ $item->delivery_type ?? '' }}"
                                                     data-location-id="{{ $location->location_id }}"
                                                     data-bs-dismiss="modal">
                                                 <i class='bx bx-cart'></i>
@@ -245,7 +265,150 @@
     </div>
 </div>
 
-<style>
+<style>    
+    /* Categories Section */
+    .categories-section {
+        background: white;
+        border-bottom: 2px solid #f3f4f6;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .categories-scroll-container {
+        overflow-x: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary-red) #f3f4f6;
+    }
+
+    .categories-scroll-container::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .categories-scroll-container::-webkit-scrollbar-track {
+        background: #f3f4f6;
+        border-radius: 10px;
+    }
+
+    .categories-scroll-container::-webkit-scrollbar-thumb {
+        background: var(--red-gradient);
+        border-radius: 10px;
+    }
+
+    .categories-grid {
+        display: flex;
+        gap: 1rem;
+        padding: 0.5rem 0;
+        min-width: min-content;
+    }
+
+    .category-card {
+        background: white;
+        border: 3px solid #e5e7eb;
+        border-radius: 20px;
+        padding: 1.25rem 1.75rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        white-space: nowrap;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .category-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: var(--red-gradient);
+        transition: left 0.3s ease;
+        z-index: 0;
+    }
+
+    .category-card:hover::before,
+    .category-card.active::before {
+        left: 0;
+    }
+
+    .category-card:hover,
+    .category-card.active {
+        border-color: var(--primary-red);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(220, 38, 38, 0.25);
+    }
+
+    .category-card:hover *,
+    .category-card.active * {
+        color: white;
+        position: relative;
+        z-index: 1;
+    }
+
+    .category-icon {
+        font-size: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .category-icon img {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .category-card:hover .category-icon,
+    .category-card.active .category-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .category-card h4 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1f2937;
+        transition: color 0.3s ease;
+    }
+
+    /* Animation for filtered items */
+    .food-item-card {
+        transition: all 0.4s ease;
+    }
+
+    .food-item-card.hidden {
+        display: none;
+    }
+
+    @media (max-width: 768px) {
+        .categories-grid {
+            gap: 0.75rem;
+        }
+
+        .category-card {
+            padding: 1rem 1.25rem;
+            gap: 0.5rem;
+        }
+
+        .category-icon {
+            font-size: 1.5rem;
+        }
+
+        .category-icon img {
+            width: 30px;
+            height: 30px;
+        }
+
+        .category-card h4 {
+            font-size: 0.9rem;
+        }
+    }
     /* Modern Red Color Palette */
     :root {
         --primary-red: #dc2626;
@@ -1185,5 +1348,48 @@
         }
     }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const categoryCards = document.querySelectorAll('.category-card');
+    const foodItems = document.querySelectorAll('.food-item-card');
+    const categoryTitle = document.getElementById('categoryTitle');
+    
+    categoryCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const selectedCategory = this.getAttribute('data-category');
+            
+            // Update active state
+            categoryCards.forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Filter food items
+            foodItems.forEach(item => {
+                const itemCategory = item.getAttribute('data-category');
+                
+                if (selectedCategory === 'all') {
+                    item.classList.remove('hidden');
+                    categoryTitle.textContent = 'Our Delicious Menu';
+                } else {
+                    if (itemCategory === selectedCategory) {
+                        item.classList.remove('hidden');
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                    // Update title with category name
+                    const categoryName = this.querySelector('h4').textContent;
+                    categoryTitle.textContent = categoryName;
+                }
+            });
+            
+            // Smooth scroll to menu section
+            document.getElementById('menuSection').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        });
+    });
+});
+</script>
 
 @endsection
