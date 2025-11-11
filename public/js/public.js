@@ -399,16 +399,18 @@ document.addEventListener('DOMContentLoaded', function() {
             cartItemCount.textContent = `${cartCount} item${cartCount !== 1 ? 's' : ''}`;
         }
         
-        // Update Badge
-        if (cartBadge) {
+        // Update Both Cart Badges (Desktop + Mobile)
+        const cartBadges = document.querySelectorAll('#cart-quantity, #cart-quantity-mobile');
+        
+        cartBadges.forEach(badge => {
             if (cartCount > 0) {
-                cartBadge.textContent = cartCount;
-                cartBadge.style.display = 'inline-flex';
+                badge.textContent = cartCount;
+                badge.style.display = 'inline-flex';
             } else {
-                cartBadge.textContent = '0';
-                cartBadge.style.display = 'none';
+                badge.textContent = '0';
+                badge.style.display = 'none';
             }
-        }
+        });
 
         // Update Delivery Type Display
         updateDeliveryTypeDisplay(deliveryType);
