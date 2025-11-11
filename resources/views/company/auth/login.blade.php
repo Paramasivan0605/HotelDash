@@ -11,7 +11,6 @@
 <style>
     body {
         background: url('{{ asset('images/frontpageW (1).jpg') }}') center/cover no-repeat fixed !important;
-        background-color: #e20006 !important; /* fallback if image fails */
     }
 </style>
 @endsection
@@ -42,7 +41,17 @@
 
                 <div class="login-field">
                     <span class="details">Password</span>
-                    <input type="password" name="password" placeholder="Enter your password" required>
+                    <input type="password" name="password" placeholder="Enter your password" value="{{ old('password') }}" required>
+                </div>
+
+                <div class="login-field">
+                    <span class="details">Location</span>
+                    <select name="location" class="form-control" >
+                        <option value="">Select Location</option>
+                        @foreach ($locations as $loc )
+                        <option value="{{ $loc->location_id }}">{{ $loc->location_name }}</option>                            
+                        @endforeach
+                    </select>
                 </div>
 
                 <div class="remember">

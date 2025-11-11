@@ -681,6 +681,7 @@ class PublicController extends Controller
             'order_status' => OrderStatusEnum::Ordered,
             'customer_contact' => $additionalContact ? $additionalContact : $contact,
             'delivery_address' => $deliveryType === 'Doorstep Delivery' ? $address : null,
+            'location_id' => $locationId,
         ]);
 
         // Create order details from cart

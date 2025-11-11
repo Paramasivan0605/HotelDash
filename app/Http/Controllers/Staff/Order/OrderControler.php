@@ -15,25 +15,36 @@ use Illuminate\View\View;
 
 class OrderControler extends Controller
 {
-    public function index() : View
+     public function index() : View
     {
+        // Get the location_id from session (set during staff login)
+        $locationId = session('location_id');
+        
+        // Query orders filtered by location
         $order = CustomerOrder::with(['customer','diningTable', 'customerOrderDetail.foodMenu'])
-        ->orderByRaw("
-            CASE 
-                WHEN order_status = 'Ordered' THEN 1
-                WHEN order_status = 'preparing' THEN 2
-                WHEN order_status = 'ready_to_deliver' THEN 3
-                WHEN order_status = 'delivery_on_the_way' THEN 4
-                WHEN order_status = 'delivered' THEN 5
-                WHEN order_status = 'completed' THEN 6
-                WHEN order_status = 'cancelled' THEN 7
-                ELSE 8
-            END
-        ")
-        ->orderBy('created_at', 'asc')
-        ->get();
+            ->when($locationId, function($query) use ($locationId) {
+                // Filter by location if staff is assigned to a specific location
+                return $query->where('location_id', $locationId);
+            })
+            ->orderByRaw("
+                CASE 
+                    WHEN order_status = 'Ordered' THEN 1
+                    WHEN order_status = 'preparing' THEN 2
+                    WHEN order_status = 'ready_to_deliver' THEN 3
+                    WHEN order_status = 'delivery_on_the_way' THEN 4
+                    WHEN order_status = 'delivered' THEN 5
+                    WHEN order_status = 'completed' THEN 6
+                    WHEN order_status = 'cancelled' THEN 7
+                    ELSE 8
+                END
+            ")
+            ->orderBy('created_at', 'asc')
+            ->get();
 
-        return view('company.staff.order.index', ['customerOrder' => $order]);
+        return view('company.staff.order.index', [
+            'customerOrder' => $order,
+            'currentLocationId' => $locationId
+        ]);
     }
 
     /*

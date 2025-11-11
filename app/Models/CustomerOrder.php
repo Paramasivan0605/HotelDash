@@ -22,6 +22,7 @@ class CustomerOrder extends Model
         'isPaid',
         'order_status',
         'customer_contact',
+        'location_id'
     ];
 
     protected $casts = [
@@ -41,6 +42,11 @@ class CustomerOrder extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class, 'customer_id', 'id');
+    }
+
+    public function location() : BelongsTo
+    {
+        return $this->belongsTo(Location::class, 'location_id', 'location_id');
     }
 
 }
