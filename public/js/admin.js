@@ -78,42 +78,87 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 /*
-*  ------------------------------ Dropdown Function to Select ---------------------
+/*
+*  ------------------------------ Fixed Dropdown Function ---------------------
 */
-document.addEventListener('DOMContentLoaded', () => {
-    const dropdowns = document.querySelectorAll('.dropdown');
-    const categoryIdInput = document.querySelector('input[name="category_id"]');
+/*
+*  ------------------------------ Fully Fixed Dropdown Function ---------------------
+*/
+    document.addEventListener('DOMContentLoaded', () => {
+        const dropdowns = document.querySelectorAll('.dropdown');
 
-    dropdowns.forEach(dropdown => {
-        const select = dropdown.querySelector('.select');
-        const caret = dropdown.querySelector('.caret');
-        const menu = dropdown.querySelector('.menu');
-        const options = dropdown.querySelectorAll('.menu li');
-        const selected = dropdown.querySelector('.selected');
+        dropdowns.forEach(dropdown => {
+            const select = dropdown.querySelector('.select');
+            const caret = dropdown.querySelector('.caret');
+            const menu = dropdown.querySelector('.menu');
+            const options = dropdown.querySelectorAll('.menu li');
+            const selected = dropdown.querySelector('.selected');
+            const hiddenInput = dropdown.querySelector('input[type="hidden"]');
 
-        select.addEventListener('click', () => {
-            select.classList.toggle('select-clicked');
-            caret.classList.toggle('caret-rotate');
-            menu.classList.toggle('menu-open');
+            if (!select || !caret || !menu || !selected || !hiddenInput) return;
+
+            // Toggle dropdown open/close
+            select.addEventListener('click', (e) => {
+                e.stopPropagation();
+
+                // Close other dropdowns
+                dropdowns.forEach(dd => {
+                    if (dd !== dropdown) {
+                        dd.querySelector('.menu')?.classList.remove('menu-open');
+                        dd.querySelector('.caret')?.classList.remove('caret-rotate');
+                        dd.querySelector('.select')?.classList.remove('select-clicked');
+                        dd.classList.remove('active');
+                    }
+                });
+
+                // Toggle this dropdown
+                select.classList.toggle('select-clicked');
+                caret.classList.toggle('caret-rotate');
+                menu.classList.toggle('menu-open');
+                dropdown.classList.toggle('active');
+            });
+
+            // Select an option
+            options.forEach(option => {
+                option.addEventListener('click', (e) => {
+                    e.stopPropagation();
+
+                    const value = option.getAttribute('data-value');
+                    const text = option.textContent.trim();
+
+                    // Set selected text and hidden input value
+                    selected.textContent = text;
+                    hiddenInput.value = value;
+
+                    // Close dropdown
+                    select.classList.remove('select-clicked');
+                    caret.classList.remove('caret-rotate');
+                    menu.classList.remove('menu-open');
+                    dropdown.classList.remove('active');
+
+                    // Highlight selected option
+                    options.forEach(opt => opt.classList.remove('active'));
+                    option.classList.add('active');
+                });
+            });
         });
 
-        options.forEach(option => {
-            option.addEventListener('click', () => {
-                const categoryId = option.getAttribute('data-value');
-                const categoryName = option.textContent;
-
-                categoryIdInput.value = categoryId;
-                selected.textContent = categoryName;
-                select.classList.remove('select-clicked');
-                caret.classList.remove('caret-rotate');
-                menu.classList.remove('menu-open');
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            dropdowns.forEach(dropdown => {
+                if (!dropdown.contains(e.target)) {
+                    dropdown.querySelector('.menu')?.classList.remove('menu-open');
+                    dropdown.querySelector('.caret')?.classList.remove('caret-rotate');
+                    dropdown.querySelector('.select')?.classList.remove('select-clicked');
+                    dropdown.classList.remove('active');
+                }
             });
         });
     });
-});
 /*
-*  --------------------- End of Dropdown Function to Select ------------------------
+*  --------------------- End of Fully Fixed Dropdown Function ------------------------
 */
+
 
 
 

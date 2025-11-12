@@ -34,21 +34,38 @@ class FoodLocationController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        dd($request->all());
-        $request->validate([
-            'food_menu_id' => 'required|exists:food_menus,id',
-            'location_id' => 'required|exists:locations,id',
-        ]);
+ public function store(Request $request)
+{
+    $request->validate([
+        'food_id' => 'required|exists:food_menus,id',
+        'location_id' => 'required|exists:location,location_id',
+        'price' => 'required|numeric',
+    ]);
 
-        $foodLocation = new FoodLocation();
-        $foodLocation->food_menu_id = $request->input('food_menu_id');
-        $foodLocation->location_id = $request->input('location_id');
-        $foodLocation->save();
+    // Check if combination already exists
+    $exists = FoodLocation::where('food_id', $request->food_id)
+                ->where('location_id', $request->location_id)
+                ->exists();
 
-        return redirect()->route('food-location')->with('success', 'Food Location created successfully.');
+    if ($exists) {
+        // Redirect back with duplicate warning message
+        return redirect()
+            ->back()
+            ->with('warning-message', 'This food and location combination already exists.')
+            ->withInput();
     }
+
+    // Create new record
+    FoodLocation::create([
+        'food_id' => $request->food_id,
+        'location_id' => $request->location_id,
+        'price' => $request->price,
+    ]);
+
+   return redirect()->back()->with('success-message', 'Food Location created successfully.');
+
+}
+
 
     /**
      * Display the specified resource.
