@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\StaffAccount;
 use App\Http\Controllers\Controller;
 use App\Models\StaffAccount;
 use App\Models\User;
+use App\Models\Location;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -13,16 +14,12 @@ use Illuminate\View\View;
 
 class StaffAccountController extends Controller
 {
+
     public function index() : View
     {
-        // Only show user that is not admin
-        // Paginate user table to 8
-        $staff = User::where('role', 2)->paginate(10);
-
+        $staff = User::where('role', 2)->with('location')->orderBy('created_at','DESC')->paginate(10);
         return view('company.admin.staff-account.index', ['staff' => $staff]);
     }
-
-
 
 
     /*
@@ -53,9 +50,10 @@ class StaffAccountController extends Controller
     */
     public function create() : View
     {
-        $staffid = StaffAccount::paginate(5);
+        $staffid = StaffAccount::Orderby('created_at','DESC')->with('location')->paginate(5);
+        $location = Location::get();
 
-        return view('company.admin.staff-account.create', ['staffid' => $staffid]);
+        return view('company.admin.staff-account.create', ['staffid' => $staffid,'locations' => $location]);
     }
 
 
@@ -87,8 +85,11 @@ class StaffAccountController extends Controller
     */
     public function store(Request $request) : RedirectResponse
     {
-        $validator = Validator::make($request->only('new_staff_id'), [
-            'new_staff_id' => 'required|min:10|max:12'
+        $validator = Validator::make($request->only('new_staff_id','location_id'), [
+            'new_staff_id' => 'required|min:10|max:12',
+            'location_id' => 'required'
+        ],[
+            'location_id.required' => 'Please select a location.',
         ]);
 
         if ($validator->fails()) {
@@ -111,6 +112,7 @@ class StaffAccountController extends Controller
         else {
             $id = StaffAccount::create([
                 'staff_account_id' => $validated['new_staff_id'],
+                'location_id' => $request->location_id
             ]);
 
             Log::info([$id]);

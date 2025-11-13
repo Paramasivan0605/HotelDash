@@ -43,11 +43,11 @@
                             'tableId' => 'CompanyStaffAccountIndex',
                             'tableAllCheckBoxId' => 'StaffAccountIndexAllCheckBox',
                             'tableCheckboxName' => 'StaffAccountIndexAllCheckBox',
-                            'tableHeaders' => ['Staff ID', 'Name', 'Email', 'Phone'],
+                            'tableHeaders' => ['Staff ID', 'Name', 'Email', 'Location', 'Phone'],
                             'tableBodyCheckBoxId' => 'StaffAccountIndexCheckBox_',
                             'tableBodyCheckBoxName' => 'StaffAccountIndexCheckBox',
                             'tableDatas' => $staff,
-                            'tableFields' => ['staff_id', 'name', 'email', 'phone'],
+                            'tableFields' => ['staff_id', 'name', 'email', 'location.location_name', 'phone'],
                             'buttonLink' => fn($td) => route('staff-account-show', ['staff_account' => $td->id]),
                         ])
 

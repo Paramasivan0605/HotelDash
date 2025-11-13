@@ -19,8 +19,8 @@
             <ul>
                 <li>
                     <a href="#" class="logo">
-                        <img src="{{ asset('images/logo.png') }}" alt="Hash Logo">
-                        <span>Hash Restaurant</span>
+                        <img src="{{ asset('images/logo.jpeg') }}" alt="Madras Darbar">
+                        {{-- <span>Hash Restaurant</span> --}}
                     </a>
                 </li>
                 <li class="{{ request()->routeIs(['staff-dashboard', 'login']) ? 'active' : '' }}">
@@ -35,28 +35,16 @@
                         <span>Orders</span>
                     </a>
                 </li>
-                <li class="{{ request()->routeIs(['customer-reservation']) ? 'active' : '' }}">
+                {{-- <li class="{{ request()->routeIs(['customer-reservation']) ? 'active' : '' }}">
                     <a href="{{ route('customer-reservation') }}">
                         <i class='bx bxs-book'></i>
                         <span>Reservation</span>
                     </a>
-                </li>
+                </li> --}}
                 <li>
                     <a href="#">
                         <i class='bx bxs-message-alt-error'></i>
                         <span>Complaint</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#">
-                        <i class='bx bxs-dollar-circle'></i>
-                        <span>Money Float</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#">
-                        <i class='bx bxs-dashboard'></i>
-                        <span>Test4</span>
                     </a>
                 </li>
             </ul>

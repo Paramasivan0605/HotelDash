@@ -22,6 +22,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'staff_id',
+        'location_id',
         'phone',
         'address',
         'photo',
@@ -54,5 +55,10 @@ class User extends Authenticatable
     public function staffAccount() : BelongsTo
     {
         return $this->belongsTo(StaffAccount::class, 'staff_id');
+    }
+    
+    public function location() : BelongsTo
+    {
+        return $this->belongsTo(Location::class, 'location_id', 'location_id');
     }
 }

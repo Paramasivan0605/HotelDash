@@ -44,16 +44,6 @@
                     <input type="password" name="password" placeholder="Enter your password" value="{{ old('password') }}" required>
                 </div>
 
-                <div class="login-field">
-                    <span class="details">Location</span>
-                    <select name="location" class="form-control" >
-                        <option value="">Select Location</option>
-                        @foreach ($locations as $loc )
-                        <option value="{{ $loc->location_id }}">{{ $loc->location_name }}</option>                            
-                        @endforeach
-                    </select>
-                </div>
-
                 <div class="remember">
                     <label>
                         <input type="checkbox">Remember me

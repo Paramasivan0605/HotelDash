@@ -12,15 +12,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class OrderControler extends Controller
 {
      public function index() : View
     {
-        // Get the location_id from session (set during staff login)
-        $locationId = session('location_id');
-        
-        // Query orders filtered by location
+        $user = Auth::user();
+
+        if (!$user || !$user->location_id) {
+            return view('company.auth.login')->withErrors('User is not authenticated or location is not assigned.');
+        }
+        $locationId = $user->location_id;  
+              
         $order = CustomerOrder::with(['customer','diningTable', 'customerOrderDetail.foodMenu'])
             ->when($locationId, function($query) use ($locationId) {
                 // Filter by location if staff is assigned to a specific location

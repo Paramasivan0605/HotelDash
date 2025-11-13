@@ -53,6 +53,7 @@ class RegistrationController extends Controller
                     'phone' => $request->phone,
                     'gender' => $request->gender,
                     'staff_id' => $staffid->staff_account_id,
+                    'location_id'=> $staffid->location_id,
                     'password' => Hash::make($request->password),
                 ]);
 

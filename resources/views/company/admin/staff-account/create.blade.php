@@ -1,7 +1,40 @@
 @extends('company.admin.main')
 
 @section('title', 'Create')
+<style>
+    /* Custom style for the location select dropdown */
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #333;
+    appearance: none; /* remove default arrow */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='10' viewBox='0 0 14 10'%3E%3Cpath fill='none' stroke='%23999' stroke-width='2' d='M1 1l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
 
+.form-control:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+    outline: none;
+}
+
+/* Optional: style validation error messages */
+.validation-error-message {
+    color: #e74c3c;
+    font-size: 14px;
+    margin-top: 4px;
+}
+</style>
 @section('content')
 
     <div class="staff-account-create">
@@ -48,6 +81,19 @@
                                 <div class="validation-error-message">{{ $id }}</div>
                             @endforeach
 
+                            <label>Location</label>
+                            <select name="location_id" class="form-control" required>
+                                <option value="">Choose Location</option>
+                                @foreach ($locations as $loc )
+                                    <option value="{{ $loc->location_id }}" {{ old('location_id') == $loc->location_id ? 'selected' : '' }}>
+                                        {{ $loc->location_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @foreach ($errors->get('location_id') as $locid)
+                                <div class="validation-error-message">{{ $locid }}</div>
+                            @endforeach
+
                             <div class="button">
                                 <input type="submit" value="Create">
                                 <a href="{{ route('staff-account') }}"><span>Cancel</span></a>
@@ -82,6 +128,7 @@
                                 <tr>
                                     <th>No.</th>
                                     <th>ID</th>
+                                    <th>Location</th>
                                     <th>Created At</th>
                                     <th></th>
                                 </tr>
@@ -92,6 +139,7 @@
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $id->staff_account_id }}</td>
+                                        <td>{{ @$id->location->location_name }}</td>
                                         <td>{{ $id->created_at }}</td>
                                         <td>
                                             <form action="/" method="POST" id="deleteForm">

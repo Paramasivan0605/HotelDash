@@ -15,7 +15,6 @@ class LoginController extends Controller
 {
     public function index()
     {
-        $locations = Location::get();
         if (Auth::check()) {
             if (Auth::user()->role == 1) {
                 return view('company.admin.dashboard');
@@ -26,7 +25,7 @@ class LoginController extends Controller
             }
         }
         else {
-            return view('company.auth.login',compact('locations'));
+            return view('company.auth.login');
         }
     }
     
@@ -41,17 +40,11 @@ class LoginController extends Controller
         ]);
         
         $user = User::where('staff_id', $credentials['staff_id'])->first();
-
-        // If user exists and is staff (role 2), validate location
-        if ($user && $user->role == 2) {  
-            // Then check if it exists
-            $locationExists = Location::where('location_id', $request->location)->exists();
-            if (!$locationExists) {
+        if (($user->role == 2) && (empty($user->location_id))) {
                 return back()->withErrors([
-                    'error-message' => 'Please Choose Location.'
-                ])->withInput();
+                    'error-message' => 'Location is not allocated to you, please contact your manager.'
+                ])->onlyInput('staff_id');
             }
-        }
 
         if (Auth::attempt($credentials)) {
 
@@ -61,7 +54,6 @@ class LoginController extends Controller
             }
             
             if (Auth::user()->role == 2) {
-                session(['location_id' => $request->location]);          
                 $request->session()->regenerate();
                 return redirect()->route('staff-dashboard')->with('success-message', 'Login Successful.');
             }
