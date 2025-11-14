@@ -22,7 +22,8 @@ class CustomerOrder extends Model
         'isPaid',
         'order_status',
         'customer_contact',
-        'location_id'
+        'location_id',
+        'assigned_staff_id' // Add this
     ];
 
     protected $casts = [
@@ -49,4 +50,33 @@ class CustomerOrder extends Model
         return $this->belongsTo(Location::class, 'location_id', 'location_id');
     }
 
+    // New relationships
+    public function assignedStaff(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_staff_id');
+    }
+
+    public function histories(): HasMany
+    {
+        return $this->hasMany(OrderHistory::class, 'order_id');
+    }
+
+    // Scopes
+    public function scopeVisibleToStaff($query, $staffId)
+    {
+        return $query->where(function($q) use ($staffId) {
+            $q->where('assigned_staff_id', $staffId)
+              ->orWhereNull('assigned_staff_id');
+        });
+    }
+
+    public function scopeAssignedToMe($query, $staffId)
+    {
+        return $query->where('assigned_staff_id', $staffId);
+    }
+
+    public function scopeUnassigned($query)
+    {
+        return $query->whereNull('assigned_staff_id');
+    }
 }

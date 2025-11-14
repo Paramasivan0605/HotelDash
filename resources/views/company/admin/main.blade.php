@@ -37,8 +37,8 @@
             <li class="{{ request()->routeIs(['promotion-discount', 'promotion-discount-create', 'promotion-discount-show', 'promotion-discount-edit']) ? 'active' : '' }}">
                 <a href="{{ route('promotion-discount') }}"><i class='bx bxs-offer'></i>Promotions & Discounts</a>
             </li>
-            <li>
-                <a href="#"><i class='bx bxs-truck' ></i>Delivery Management</a>
+            <li class="{{ request()->routeIs('delivery-management') ? 'active' : '' }}">
+                <a href="{{ route('delivery-management') }}"><i class='bx bxs-truck'></i>Delivery Management</a>
             </li>
             <li>
                 <a href="#"><i class='bx bxs-receipt'></i>Billing & Invoices</a>

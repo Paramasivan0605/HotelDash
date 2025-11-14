@@ -5,11 +5,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ asset('css/staff-style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
     <title>@yield('title', 'Staff')</title>
 </head>
+<style>
+    /* Prevent Bootstrap from overriding sidebar */
+    .sidebar *, 
+    .topbar * {
+        box-sizing: border-box;
+        font-family: inherit;
+        margin: 0;
+        padding: 0;
+    }
 
+    /* Prevent Bootstrap nav styles */
+    .sidebar ul {
+        list-style: none !important;
+        padding-left: 0 !important;
+        margin: 0 !important;
+    }
+
+    .sidebar a {
+        text-decoration: none !important;
+    }
+
+    /* Prevent Bootstrap button styles */
+    .sidebar button,
+    .topbar button {
+        all: unset;
+        cursor: pointer;
+    }
+
+    /* Prevent image resizing from Bootstrap */
+    .sidebar img,
+    .topbar img {
+        max-width: none !important;
+        height: auto;
+    }
+</style>
 <body>
 
     <!-- Sidebar -->
@@ -108,6 +144,7 @@
 
     @yield('content')
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/staff.js') }}"></script>
 
 </body>

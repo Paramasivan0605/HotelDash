@@ -37,8 +37,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [PublicController::class, 'login'])->name('welcome');
 Route::post('/login/submit', [PublicController::class, 'submit'])->name('login.submit');
 
-// Protected Routes - Require customer login
-// routes/web.php
+
 Route::middleware(['customer.auth'])->group(function () {
     Route::get('/home', [PublicController::class, 'home'])->name('home');
     Route::get('/menu', [PublicController::class, 'menu'])->name('menu');
@@ -71,11 +70,6 @@ Route::middleware(['customer.auth'])->group(function () {
     Route::get('/orders/{orderId}', [PublicController::class, 'orderDetails'])->name('orders.details');
 });
 
-// // Logout route
-// Route::post('/logout', function () {
-//     session()->forget(['customer_id', 'customer_name', 'customer_mobile']);
-//     return redirect()->route('welcome')->with('success', 'Logged out successfully.');
-// })->name('logout');
 
 // Route for login
 Route::get('/login', [LoginController::class, 'index'])->name('login');
@@ -93,6 +87,7 @@ Route::get('/forgot-password', [ForgotPasswordController::class, 'index'])->name
 // Route for admin
 Route::prefix('admin')->middleware('auth', 'isAdmin')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('admin-dashboard');
+    Route::get('/delivery-management', [AdminController::class, 'DeliveryManagement'])->name('delivery-management');
 
     // Staff account module
     Route::resource('/staff-account', StaffAccountController::class)->names([
@@ -153,7 +148,6 @@ Route::prefix('admin')->middleware('auth', 'isAdmin')->group(function () {
 
     Route::post('/promotion-discount/create', [PromotionEventController::class, 'store'])->name('promotion-event');
 
-    // Setting Profile
     Route::get('/settings', [AdminProfileController::class, 'adminProfile'])->name('admin-profile');
     Route::put('/settings/update-profile/{id}', [AdminProfileController::class, 'updateProfile'])->name('update-admin-profile');
     Route::put('/settings/update-password/{id}', [AdminProfileController::class, 'updatePassword'])->name('update-admin-password');
@@ -173,13 +167,16 @@ Route::prefix('staff')->middleware('auth', 'isStaff')->group(function () {
     Route::resource('/customer-order', OrderControler::class)->names([
         'index' => 'customer-order',
         'create' => 'customer-order-create',
-        'show' => 'customer-order-show',      // Not used yet
-        'edit' => 'customer-order-edit',      // Not used yet
+        'show' => 'customer-order-show',
+        'edit' => 'customer-order-edit',
     ]);
     
     Route::prefix('customer-order')->group(function () {
         Route::put('/update-order/{id}', [OrderControler::class, 'updateStatus'])->name('update-order');
         Route::put('/update-order-payment/{id}', [OrderControler::class, 'updatePaymentStatus'])->name('update-order-payment');
+        Route::post('/{id}/accept', [OrderControler::class, 'acceptOrder'])->name('order.accept');
+        Route::post('/{id}/unaccept', [OrderControler::class, 'unacceptOrder'])->name('order.unaccept');
+        Route::get('/{id}/history/json', [OrderControler::class, 'getOrderHistoryJson'])->name('order.history.json');
     });
 
     // Reservation module

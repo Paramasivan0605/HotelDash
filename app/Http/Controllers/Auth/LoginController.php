@@ -40,6 +40,12 @@ class LoginController extends Controller
         ]);
         
         $user = User::where('staff_id', $credentials['staff_id'])->first();
+        if (!$user) {
+            return back()->withErrors([
+                'error-message' => 'Staff ID is incorrect.',
+            ])->onlyInput('staff_id');
+        }
+        
         if (($user->role == 2) && (empty($user->location_id))) {
                 return back()->withErrors([
                     'error-message' => 'Location is not allocated to you, please contact your manager.'

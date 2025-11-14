@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CustomerOrder;
 use App\Models\DiningTable;
 use App\Models\RestaurantItem;
+use App\Models\OrderHistory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -16,20 +17,22 @@ use Illuminate\Support\Facades\Auth;
 
 class OrderControler extends Controller
 {
-     public function index() : View
+    public function index(): View
     {
         $user = Auth::user();
 
         if (!$user || !$user->location_id) {
             return view('company.auth.login')->withErrors('User is not authenticated or location is not assigned.');
         }
-        $locationId = $user->location_id;  
-              
-        $order = CustomerOrder::with(['customer','diningTable', 'customerOrderDetail.foodMenu'])
+
+        $locationId = $user->location_id;
+        $staffId = $user->id;
+
+        $orders = CustomerOrder::with(['customer', 'diningTable', 'customerOrderDetail.foodMenu', 'assignedStaff'])
             ->when($locationId, function($query) use ($locationId) {
-                // Filter by location if staff is assigned to a specific location
                 return $query->where('location_id', $locationId);
             })
+            ->visibleToStaff($staffId)
             ->orderByRaw("
                 CASE 
                     WHEN order_status = 'Ordered' THEN 1
@@ -45,9 +48,27 @@ class OrderControler extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
+        $myAssignedCount = CustomerOrder::where('location_id', $locationId)
+            ->where('assigned_staff_id', $staffId)
+            ->count();
+
+        $availableCount = CustomerOrder::where('location_id', $locationId)
+            ->whereNull('assigned_staff_id')
+            ->count();
+
+        $totalCount = CustomerOrder::where('location_id', $locationId)
+            ->where('assigned_staff_id', $staffId)
+            ->where('order_status', 'completed')
+            ->count();
+
+
         return view('company.staff.order.index', [
-            'customerOrder' => $order,
-            'currentLocationId' => $locationId
+            'customerOrder' => $orders,
+            'currentLocationId' => $locationId,
+            'currentStaffId' => $staffId,
+            'myAssignedCount' => $myAssignedCount,
+            'availableCount' => $availableCount,
+            'totalCount' => $totalCount
         ]);
     }
 
@@ -115,6 +136,66 @@ class OrderControler extends Controller
     }
 
     /*
+    *  Function to accept order (assign to current staff)
+    */
+    public function acceptOrder($id): RedirectResponse
+    {
+        $staffId = Auth::id();
+        $order = CustomerOrder::findOrFail($id);
+
+        // Check if order is already assigned to someone else
+        if ($order->assigned_staff_id && $order->assigned_staff_id != $staffId) {
+            return back()->withErrors(['error-message' => 'This order is already accepted by another staff member.']);
+        }
+
+        $order->update([
+            'assigned_staff_id' => $staffId
+        ]);
+
+        // Log history
+        OrderHistory::create([
+            'order_id' => $order->id,
+            'staff_id' => $staffId,
+            'action' => 'accepted',
+            'notes' => 'Order accepted by staff'
+        ]);
+
+        Log::info("Order {$order->id} accepted by staff {$staffId}");
+
+        return back()->with('success-message', 'Order successfully accepted.');
+    }
+
+    /*
+    *  Function to unaccept/cancel assignment
+    */
+    public function unacceptOrder($id): RedirectResponse
+    {
+        $staffId = Auth::id();
+        $order = CustomerOrder::findOrFail($id);
+
+        // Check if the order is assigned to current staff
+        if ($order->assigned_staff_id != $staffId) {
+            return back()->withErrors(['error-message' => 'You can only unaccept orders assigned to you.']);
+        }
+
+        $order->update([
+            'assigned_staff_id' => null
+        ]);
+
+        // Log history
+        OrderHistory::create([
+            'order_id' => $order->id,
+            'staff_id' => $staffId,
+            'action' => 'unaccepted',
+            'notes' => 'Order unaccepted by staff'
+        ]);
+
+        Log::info("Order {$order->id} unaccepted by staff {$staffId}");
+
+        return back()->with('success-message', 'Order successfully unaccepted.');
+    }
+
+    /*
     *  Function to update order status resource
     */
     public function updateStatus(Request $request, $id): RedirectResponse
@@ -123,8 +204,22 @@ class OrderControler extends Controller
             'order_status' => 'required|in:Ordered,preparing,ready_to_deliver,delivery_on_the_way,delivered,completed,cancelled'
         ]);
 
+        $staffId = Auth::id();
         $order = CustomerOrder::findOrFail($id);
+
+        $oldStatus = $order->order_status;
+        
         $order->update(['order_status' => $validated['order_status']]);
+
+        // Log history
+        OrderHistory::create([
+            'order_id' => $order->id,
+            'staff_id' => $staffId,
+            'action' => 'status_changed',
+            'old_status' => $oldStatus,
+            'new_status' => $validated['order_status'],
+            'notes' => 'Order status updated'
+        ]);
 
         return back()->with('success-message', 'Order status updated successfully to ' . ucwords(str_replace('_', ' ', $validated['order_status'])) . '.');
     }
@@ -165,6 +260,7 @@ class OrderControler extends Controller
 
         return ucwords(str_replace('_', ' ', $statusValue));
     }
+
     /*
     *  Function to update payment status resource
     */
@@ -180,5 +276,28 @@ class OrderControler extends Controller
         $statusText = $validated['is_paid'] == '1' ? 'Paid' : 'Not Paid';
 
         return back()->with('success-message', 'Payment status updated successfully to ' . $statusText . '.');
+    }
+
+    /*
+    *  Function to get order history as JSON
+    */
+    public function getOrderHistoryJson($id)
+    {
+        $histories = OrderHistory::with('staff')
+            ->where('order_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function($history) {
+                return [
+                    'action' => $history->action,
+                    'old_status' => $history->old_status,
+                    'new_status' => $history->new_status,
+                    'staff_name' => $history->staff->name ?? 'System',
+                    'created_at' => $history->created_at->format('j M Y, g:i A'),
+                    'notes' => $history->notes
+                ];
+            });
+
+        return response()->json(['histories' => $histories]);
     }
 }
