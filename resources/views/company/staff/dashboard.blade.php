@@ -49,7 +49,75 @@
             </main>
 
         </div>
-
+        <style>
+            /* Mobile Responsive Styles */
+            @media (max-width: 768px) {
+                .dashboard {
+                    padding: 15px 10px;
+                    margin: 0;
+                }
+                
+                .content {
+                    margin: 0;
+                    padding: 0;
+                }
+                
+                .header h1 {
+                    font-size: 1.8rem;
+                    text-align: center;
+                    margin-bottom: 20px;
+                }
+                
+                .statistic {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 15px;
+                    padding: 0 10px;
+                }
+                
+                .statistic > div {
+                    width: 100%;
+                    padding: 25px 20px;
+                    margin: 0;
+                    text-align: center;
+                }
+                
+                .statistic i {
+                    font-size: 2rem;
+                    margin-bottom: 10px;
+                }
+                
+                .statistic span {
+                    font-size: 1.1rem;
+                }
+                
+                .success-message {
+                    margin: 10px;
+                    padding: 15px;
+                    font-size: 0.9rem;
+                }
+                
+                .success-message .text {
+                    flex-direction: column;
+                    gap: 5px;
+                }
+            }
+            
+            /* Small Mobile Devices */
+            @media (max-width: 480px) {
+                .header h1 {
+                    font-size: 1.5rem;
+                }
+                
+                .statistic > div {
+                    padding: 20px 15px;
+                }
+                
+                .statistic i {
+                    font-size: 1.8rem;
+                }
+            }
+        </style>
     </section>
 
 @endsection

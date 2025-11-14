@@ -983,7 +983,441 @@
             margin: 20px;
         }
     }
+        /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+        .customer-order-index {
+            padding: 10px 5px;
+        }
+
+        .content {
+            margin: 0;
+            padding: 0;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Statistic Cards - Mobile */
+        .row.g-3.mb-4 {
+            margin: 0 -5px 20px -5px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .col-md-4 {
+            padding: 0 5px;
+            margin-bottom: 0;
+        }
+
+        .border.rounded.p-3.bg-white.shadow-sm {
+            padding: 15px !important;
+        }
+
+        /* Card Header - Mobile */
+        .card-header.bg-white.py-3 {
+            padding: 15px !important;
+        }
+
+        .d-flex.justify-content-between.align-items-center {
+            flex-direction: column;
+            gap: 15px;
+            align-items: flex-start !important;
+        }
+
+        .card-title.mb-0.fw-semibold {
+            font-size: 1.1rem;
+        }
+
+        .d-flex {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .form-control.form-control-sm.me-2 {
+            width: 70%;
+            margin-right: 10px !important;
+        }
+
+        .btn.btn-sm.btn-outline-primary {
+            white-space: nowrap;
+        }
+
+        /* Bottom Section - Mobile */
+        .bottom-section {
+            margin: 0;
+            padding: 0;
+        }
+
+        .table-top {
+            flex-direction: column;
+            gap: 15px;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .table-top h3 {
+            font-size: 1.2rem;
+        }
+
+        .button .add {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+
+        /* Table - Mobile - IMPROVED FOR MULTIPLE DATA */
+        table {
+            display: none; /* Hide original table on mobile */
+        }
+
+        .mobile-table {
+            display: block;
+        }
+
+        .mobile-order-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .order-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .order-row:last-child {
+            border-bottom: none;
+        }
+
+        .order-label {
+            font-weight: 600;
+            color: #333;
+            min-width: 100px;
+            font-size: 0.8rem;
+        }
+
+        .order-value {
+            flex: 1;
+            text-align: right;
+            font-size: 0.8rem;
+            word-break: break-word;
+        }
+
+        /* Special handling for multiple food items */
+        .food-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            justify-content: flex-end;
+        }
+
+        .food-item {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            border: 1px solid #e9ecef;
+        }
+
+        /* Status and Payment badges on mobile */
+        .mobile-status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        /* Action buttons on mobile */
+        .mobile-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .btn-mobile {
+            padding: 6px 10px !important;
+            font-size: 0.75rem !important;
+            border: none !important;
+            border-radius: 6px !important;
+            text-decoration: none !important;
+            display: inline-block !important;
+            text-align: center !important;
+            min-width: 80px !important;
+        }
+
+        .btn-mobile-accept {
+            background: #4caf50 !important;
+            color: white !important;
+        }
+
+        .btn-mobile-unaccept {
+            background: #f44336 !important;
+            color: white !important;
+        }
+
+        .btn-mobile-history {
+            background: #2196f3 !important;
+            color: white !important;
+        }
+
+        /* Contact info styling */
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            align-items: flex-end;
+        }
+
+        /* Modals - Mobile */
+        .modal-content {
+            width: 95%;
+            margin: 10px;
+            max-height: 90vh;
+        }
+
+        .modal-header {
+            padding: 15px;
+        }
+
+        .modal-header h3 {
+            font-size: 1.1rem;
+        }
+
+        .modal-body {
+            padding: 15px;
+            max-height: 50vh;
+        }
+
+        .status-options, .payment-options {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .status-option, .payment-option {
+            padding: 10px;
+            font-size: 0.9rem;
+        }
+
+        .modal-footer {
+            padding: 15px;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .cancel-btn, .confirm-btn, .cancel-payment-btn, .confirm-payment-btn, .close-history-btn {
+            width: 100%;
+            padding: 12px !important;
+        }
+
+        /* Success/Error Messages - Mobile */
+        .success-message, .error-message {
+            margin: 10px 5px;
+            padding: 10px;
+            flex-direction: column;
+            text-align: center;
+            gap: 8px;
+        }
+
+        .success-message .text, .error-message .text {
+            align-items: center;
+        }
+    }
+
+    /* Small Mobile Devices */
+    @media (max-width: 480px) {
+        .header h1 {
+            font-size: 1.3rem;
+        }
+
+        .table-top h3 {
+            font-size: 1.1rem;
+        }
+
+        .card-title.mb-0.fw-semibold {
+            font-size: 1rem;
+        }
+
+        .form-control.form-control-sm.me-2 {
+            width: 60%;
+        }
+
+        .mobile-order-card {
+            padding: 12px;
+        }
+
+        .order-label {
+            min-width: 80px;
+            font-size: 0.75rem;
+        }
+
+        .order-value {
+            font-size: 0.75rem;
+        }
+
+        .btn-mobile {
+            min-width: 70px !important;
+            padding: 5px 8px !important;
+        }
+    }
+
+    /* Hide mobile table on desktop */
+    @media (min-width: 769px) {
+        .mobile-table {
+            display: none;
+        }
+    }
 </style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function createMobileTable() {
+        if (window.innerWidth <= 768) {
+            const table = document.querySelector('.customer-order-index table');
+            const tbody = table.querySelector('tbody');
+            const rows = tbody.querySelectorAll('tr');
+            
+            // Create mobile container
+            let mobileTable = document.querySelector('.mobile-table');
+            if (!mobileTable) {
+                mobileTable = document.createElement('div');
+                mobileTable.className = 'mobile-table';
+                table.parentNode.insertBefore(mobileTable, table);
+            }
+            
+            mobileTable.innerHTML = '';
+            
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const orderCard = document.createElement('div');
+                orderCard.className = 'mobile-order-card';
+                
+                // Order ID
+                const orderIdRow = createOrderRow('Order ID', cells[0].innerHTML);
+                
+                // Food Order - handle multiple items
+                const foodItems = Array.from(cells[1].querySelectorAll('span, a')).map(item => item.textContent).filter(Boolean);
+                const foodItemsHTML = foodItems.length > 0 ? 
+                    `<div class="food-items">${foodItems.map(item => `<span class="food-item">${item.trim()}</span>`).join('')}</div>` : 
+                    'No items';
+                const foodOrderRow = createOrderRow('Food Order', foodItemsHTML);
+                
+                // Assigned To
+                const assignedRow = createOrderRow('Assigned To', cells[2].innerHTML);
+                
+                // Order Status
+                const statusBadge = cells[3].querySelector('.status-badge');
+                const statusRow = createOrderRow('Order Status', statusBadge ? statusBadge.outerHTML : cells[3].innerHTML);
+                
+                // Paid Status
+                const paymentBadge = cells[4].querySelector('.payment-badge');
+                const paymentRow = createOrderRow('Payment', paymentBadge ? paymentBadge.outerHTML : cells[4].innerHTML);
+                
+                // Total Price
+                const priceRow = createOrderRow('Total Price', cells[5].innerHTML);
+                
+                // Customer Contact
+                const contactRow = createOrderRow('Contact', `<div class="contact-info">${cells[6].innerHTML}</div>`);
+                
+                // Actions
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'mobile-actions';
+                
+                // Copy action buttons
+                const actionButtons = cells[7].querySelectorAll('form, .taken, .btn-history');
+                actionButtons.forEach(button => {
+                    if (button.tagName === 'FORM') {
+                        const submitBtn = button.querySelector('button');
+                        if (submitBtn) {
+                            const mobileBtn = document.createElement('button');
+                            mobileBtn.className = `btn-mobile ${submitBtn.className.includes('btn-accept') ? 'btn-mobile-accept' : 'btn-mobile-unaccept'}`;
+                            mobileBtn.textContent = submitBtn.textContent;
+                            mobileBtn.type = 'button';
+                            mobileBtn.onclick = () => button.submit();
+                            actionsDiv.appendChild(mobileBtn);
+                        }
+                    } else if (button.classList.contains('btn-history')) {
+                        const mobileBtn = document.createElement('button');
+                        mobileBtn.className = 'btn-mobile btn-mobile-history';
+                        mobileBtn.innerHTML = '<i class="bi bi-clock"></i> History';
+                        mobileBtn.onclick = button.onclick;
+                        actionsDiv.appendChild(mobileBtn);
+                    } else if (button.classList.contains('taken')) {
+                        const span = document.createElement('span');
+                        span.className = 'taken';
+                        span.textContent = button.textContent;
+                        actionsDiv.appendChild(span);
+                    }
+                });
+                
+                const actionsRow = createOrderRow('Actions', actionsDiv.outerHTML);
+                
+                // Ordered At
+                const dateRow = createOrderRow('Ordered At', cells[9].innerHTML);
+                
+                // Append all rows to card
+                orderCard.appendChild(orderIdRow);
+                orderCard.appendChild(foodOrderRow);
+                orderCard.appendChild(assignedRow);
+                orderCard.appendChild(statusRow);
+                orderCard.appendChild(paymentRow);
+                orderCard.appendChild(priceRow);
+                orderCard.appendChild(contactRow);
+                orderCard.appendChild(actionsRow);
+                orderCard.appendChild(dateRow);
+                
+                mobileTable.appendChild(orderCard);
+            });
+            
+            // Hide original table
+            table.style.display = 'none';
+        } else {
+            // Show original table on desktop
+            const table = document.querySelector('.customer-order-index table');
+            if (table) table.style.display = '';
+            const mobileTable = document.querySelector('.mobile-table');
+            if (mobileTable) mobileTable.style.display = 'none';
+        }
+    }
+    
+    function createOrderRow(label, value) {
+        const row = document.createElement('div');
+        row.className = 'order-row';
+        row.innerHTML = `
+            <div class="order-label">${label}</div>
+            <div class="order-value">${value}</div>
+        `;
+        return row;
+    }
+    
+    // Initial creation
+    createMobileTable();
+    
+    // Update on resize
+    window.addEventListener('resize', createMobileTable);
+    
+    // Recreate when modals are closed (in case status changed)
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('close-modal') || 
+            e.target.classList.contains('close-payment-modal') ||
+            e.target.classList.contains('cancel-btn') ||
+            e.target.classList.contains('cancel-payment-btn')) {
+            setTimeout(createMobileTable, 100);
+        }
+    });
+});
+</script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     // Order Status Modal
