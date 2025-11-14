@@ -138,14 +138,14 @@
                                                 <span class="unassigned">Available</span>
                                             @endif
                                         </td>
-                                        <td class="order-status-cell" data-order-id="{{ $order->id }}">
+                                        <td class="order-status-cell" data-order-id="{{ $order->id }}" data-update-url="{{ route('update-order', $order->id) }}">
                                             <div class="status-badge {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusClass($order->order_status) }}" 
                                                  data-status="{{ $order->order_status }}"
                                                  data-current-status="{{ $order->order_status }}">
                                                 {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusDisplay($order->order_status) }}
                                             </div>
                                         </td>
-                                        <td class="payment-status-cell" data-order-id="{{ $order->id }}">
+                                        <td class="payment-status-cell" data-order-id="{{ $order->id }}"  data-update-payment-url="{{ route('update-order-payment', $order->id) }}">
                                             <div class="payment-badge {{ $order->isPaid ? 'payment-paid' : 'payment-not-paid' }}" 
                                                  data-is-paid="{{ $order->isPaid }}"
                                                  data-current-paid="{{ $order->isPaid }}">
@@ -985,300 +985,282 @@
     }
 </style>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Order Status Modal - Check if elements exist
-        const statusModal = document.getElementById('statusModal');
-        const statusBadges = document.querySelectorAll('.status-badge');
-        const closeModalBtn = document.querySelector('.close-modal');
-        const cancelBtn = document.querySelector('.cancel-btn');
-        const confirmBtn = document.querySelector('.confirm-btn');
-        const statusOptions = document.querySelectorAll('.status-option');
-        const currentStatusSpan = document.getElementById('currentStatus');
-        const statusForm = document.getElementById('statusForm');
-        
-        // Payment Status Modal - Check if elements exist
-        const paymentModal = document.getElementById('paymentModal');
-        const paymentBadges = document.querySelectorAll('.payment-badge');
-        const closePaymentModalBtn = document.querySelector('.close-payment-modal');
-        const cancelPaymentBtn = document.querySelector('.cancel-payment-btn');
-        const confirmPaymentBtn = document.querySelector('.confirm-payment-btn');
-        const paymentOptions = document.querySelectorAll('.payment-option');
-        const currentPaymentStatusSpan = document.getElementById('currentPaymentStatus');
-        const paymentForm = document.getElementById('paymentForm');
-        
-        // History Modal - Check if elements exist
-        const historyModal = document.getElementById('historyModal');
-        const closeHistoryBtn = document.querySelector('.close-history-modal');
-        const closeHistoryBtn2 = document.querySelector('.close-history-btn');
-        
-        let currentOrderId = null;
-        let selectedStatus = null;
-        let currentStatus = null;
-        let selectedPaymentStatus = null;
-        let currentPaymentStatus = null;
+  document.addEventListener('DOMContentLoaded', function() {
+    // Order Status Modal
+    const statusModal = document.getElementById('statusModal');
+    const statusBadges = document.querySelectorAll('.status-badge');
+    const closeModalBtn = document.querySelector('.close-modal');
+    const cancelBtn = document.querySelector('.cancel-btn');
+    const confirmBtn = document.querySelector('.confirm-btn');
+    const statusOptions = document.querySelectorAll('.status-option');
+    const currentStatusSpan = document.getElementById('currentStatus');
+    const statusForm = document.getElementById('statusForm');
+    
+    // Payment Status Modal
+    const paymentModal = document.getElementById('paymentModal');
+    const paymentBadges = document.querySelectorAll('.payment-badge');
+    const closePaymentModalBtn = document.querySelector('.close-payment-modal');
+    const cancelPaymentBtn = document.querySelector('.cancel-payment-btn');
+    const confirmPaymentBtn = document.querySelector('.confirm-payment-btn');
+    const paymentOptions = document.querySelectorAll('.payment-option');
+    const currentPaymentStatusSpan = document.getElementById('currentPaymentStatus');
+    const paymentForm = document.getElementById('paymentForm');
+    
+    // History Modal
+    const historyModal = document.getElementById('historyModal');
+    const closeHistoryBtn = document.querySelector('.close-history-modal');
+    const closeHistoryBtn2 = document.querySelector('.close-history-btn');
+    
+    let currentOrderId = null;
+    let selectedStatus = null;
+    let currentStatus = null;
+    let selectedPaymentStatus = null;
+    let currentPaymentStatus = null;
 
-        // Helper functions...
-        function getStatusClass(status) {
-            const statusClasses = {
-                'ordered': 'status-ordered',
-                'preparing': 'status-preparing',
-                'ready_to_deliver': 'status-ready',
-                'delivery_on_the_way': 'status-delivery',
-                'delivered': 'status-delivered',
-                'completed': 'status-completed',
-                'cancelled': 'status-cancelled'
-            };
-            return statusClasses[status] || 'status-ordered';
-        }
-
-        function formatStatusDisplay(status) {
-            return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        }
-
-        function getPaymentClass(isPaid) {
-            return isPaid === '1' ? 'payment-paid' : 'payment-not-paid';
-        }
-
-        function getPaymentDisplay(isPaid) {
-            return isPaid === '1' ? 'Paid' : 'Not Paid';
-        }
-
-        // Only add event listeners if elements exist
-        if (statusBadges.length > 0 && statusModal && closeModalBtn && cancelBtn && confirmBtn && statusOptions.length > 0 && currentStatusSpan && statusForm) {
-            // Open order status modal when clicking on status badge
-            statusBadges.forEach(badge => {
-                badge.addEventListener('click', function() {
-                    const orderId = this.closest('.order-status-cell').getAttribute('data-order-id');
-                    currentStatus = this.getAttribute('data-status');
-                    
-                    currentOrderId = orderId;
-                    
-                    // Update current status display with badge styling
-                    currentStatusSpan.textContent = formatStatusDisplay(currentStatus);
-                    currentStatusSpan.className = 'current-status-badge ' + getStatusClass(currentStatus);
-                    
-                    // Reset selection
-                    statusOptions.forEach(option => {
-                        option.classList.remove('selected');
-                        if (option.getAttribute('data-status') === currentStatus) {
-                            option.classList.add('selected');
-                        }
-                    });
-                    
-                    confirmBtn.disabled = true;
-                    selectedStatus = null;
-                    
-                    // Update form action
-                    statusForm.action = 'http://hoteldash.test/staff/customer-order/update-order/:id'.replace(':id', orderId);
-                    
-                    // Show modal
-                    statusModal.classList.add('active');
-                });
-            });
-
-            // Select order status option
-            statusOptions.forEach(option => {
-                option.addEventListener('click', function() {
-                    const newStatus = this.getAttribute('data-status');
-                    
-                    // Don't allow selecting current status
-                    if (newStatus === currentStatus) {
-                        confirmBtn.disabled = true;
-                        selectedStatus = null;
-                        return;
-                    }
-                    
-                    statusOptions.forEach(opt => opt.classList.remove('selected'));
-                    this.classList.add('selected');
-                    selectedStatus = newStatus;
-                    confirmBtn.disabled = false;
-                });
-            });
-
-            // Close order status modal functions
-            function closeStatusModal() {
-                statusModal.classList.remove('active');
-                currentOrderId = null;
-                selectedStatus = null;
-                currentStatus = null;
-            }
-
-            closeModalBtn.addEventListener('click', closeStatusModal);
-            cancelBtn.addEventListener('click', closeStatusModal);
-
-            // Order status form submission
-            statusForm.addEventListener('submit', function(e) {
-                if (!selectedStatus) {
-                    e.preventDefault();
-                    return;
-                }
-                
-                // Add the selected status to the form data
-                const statusInput = document.createElement('input');
-                statusInput.type = 'hidden';
-                statusInput.name = 'order_status';
-                statusInput.value = selectedStatus;
-                this.appendChild(statusInput);
-            });
-
-            // Close modal when clicking outside
-            statusModal.addEventListener('click', function(e) {
-                if (e.target === statusModal) {
-                    closeStatusModal();
-                }
-            });
-        }
-
-        // Payment modal event listeners - only if elements exist
-        if (paymentBadges.length > 0 && paymentModal && closePaymentModalBtn && cancelPaymentBtn && confirmPaymentBtn && paymentOptions.length > 0 && currentPaymentStatusSpan && paymentForm) {
-            // Open payment status modal when clicking on payment badge
-            paymentBadges.forEach(badge => {
-                badge.addEventListener('click', function() {
-                    const orderId = this.closest('.payment-status-cell').getAttribute('data-order-id');
-                    currentPaymentStatus = this.getAttribute('data-is-paid');
-                    
-                    currentOrderId = orderId;
-                    
-                    // Update current payment status display with badge styling
-                    currentPaymentStatusSpan.textContent = getPaymentDisplay(currentPaymentStatus);
-                    currentPaymentStatusSpan.className = 'current-payment-badge ' + getPaymentClass(currentPaymentStatus);
-                    
-                    // Reset selection
-                    paymentOptions.forEach(option => {
-                        option.classList.remove('selected');
-                        if (option.getAttribute('data-is-paid') === currentPaymentStatus) {
-                            option.classList.add('selected');
-                        }
-                    });
-                    
-                    confirmPaymentBtn.disabled = true;
-                    selectedPaymentStatus = null;
-                    
-                    // Update form action for payment
-                    paymentForm.action = 'http://hoteldash.test/staff/customer-order/update-order-payment/:id'.replace(':id', orderId);
-                    
-                    // Show modal
-                    paymentModal.classList.add('active');
-                });
-            });
-
-            // Select payment status option
-            paymentOptions.forEach(option => {
-                option.addEventListener('click', function() {
-                    const newPaymentStatus = this.getAttribute('data-is-paid');
-                    
-                    // Don't allow selecting current payment status
-                    if (newPaymentStatus === currentPaymentStatus) {
-                        confirmPaymentBtn.disabled = true;
-                        selectedPaymentStatus = null;
-                        return;
-                    }
-                    
-                    paymentOptions.forEach(opt => opt.classList.remove('selected'));
-                    this.classList.add('selected');
-                    selectedPaymentStatus = newPaymentStatus;
-                    confirmPaymentBtn.disabled = false;
-                });
-            });
-
-            // Close payment status modal functions
-            function closePaymentModal() {
-                paymentModal.classList.remove('active');
-                currentOrderId = null;
-                selectedPaymentStatus = null;
-                currentPaymentStatus = null;
-            }
-
-            closePaymentModalBtn.addEventListener('click', closePaymentModal);
-            cancelPaymentBtn.addEventListener('click', closePaymentModal);
-
-            // Payment status form submission
-            paymentForm.addEventListener('submit', function(e) {
-                if (!selectedPaymentStatus) {
-                    e.preventDefault();
-                    return;
-                }
-                
-                // Add the selected payment status to the form data
-                const paymentInput = document.createElement('input');
-                paymentInput.type = 'hidden';
-                paymentInput.name = 'is_paid';
-                paymentInput.value = selectedPaymentStatus;
-                this.appendChild(paymentInput);
-            });
-
-            // Close modal when clicking outside
-            paymentModal.addEventListener('click', function(e) {
-                if (e.target === paymentModal) {
-                    closePaymentModal();
-                }
-            });
-        }
-
-        // History modal event listeners - only if elements exist
-        if (historyModal && closeHistoryBtn && closeHistoryBtn2) {
-            // Close history modal function
-            function closeHistoryModal() {
-                historyModal.classList.remove('active');
-            }
-
-            closeHistoryBtn.addEventListener('click', closeHistoryModal);
-            closeHistoryBtn2.addEventListener('click', closeHistoryModal);
-
-            // Close modal when clicking outside
-            historyModal.addEventListener('click', function(e) {
-                if (e.target === historyModal) {
-                    closeHistoryModal();
-                }
-            });
-        }
-    });
-
-    // Global function to show order history - FIXED URL
-    function showOrderHistory(orderId) {
-        // Use the correct URL - fixed the route
-        fetch(`/staff/customer-order/${orderId}/history/json`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                document.getElementById('historyOrderId').textContent = orderId.substring(0, 8);
-                const timeline = document.getElementById('historyTimeline');
-                
-                if (data.histories.length === 0) {
-                    timeline.innerHTML = '<p>No history available for this order.</p>';
-                } else {
-                    timeline.innerHTML = data.histories.map(history => `
-                        <div class="timeline-item">
-                            <div class="timeline-content">
-                                <div class="timeline-action">${history.action.replace('_', ' ')}</div>
-                                ${history.old_status && history.new_status ? 
-                                    `<div class="timeline-status-change">
-                                        ${formatStatusDisplay(history.old_status)} → ${formatStatusDisplay(history.new_status)}
-                                    </div>` : ''
-                                }
-                                <div class="timeline-staff">By: ${history.staff_name}</div>
-                                <div class="timeline-time">${history.created_at}</div>
-                                ${history.notes ? `<div class="timeline-notes">${history.notes}</div>` : ''}
-                            </div>
-                        </div>
-                    `).join('');
-                }
-                
-                document.getElementById('historyModal').classList.add('active');
-            })
-            .catch(error => {
-                console.error('Error fetching order history:', error);
-                alert('Error loading order history. Please try again.');
-            });
+    // Helper functions
+    function getStatusClass(status) {
+        const statusClasses = {
+            'ordered': 'status-ordered',
+            'preparing': 'status-preparing',
+            'ready_to_deliver': 'status-ready',
+            'delivery_on_the_way': 'status-delivery',
+            'delivered': 'status-delivered',
+            'completed': 'status-completed',
+            'cancelled': 'status-cancelled'
+        };
+        return statusClasses[status] || 'status-ordered';
     }
 
-    // Helper function to format status display
     function formatStatusDisplay(status) {
         return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
+
+    function getPaymentClass(isPaid) {
+        return isPaid === '1' ? 'payment-paid' : 'payment-not-paid';
+    }
+
+    function getPaymentDisplay(isPaid) {
+        return isPaid === '1' ? 'Paid' : 'Not Paid';
+    }
+
+    // Order Status Modal Event Listeners
+    if (statusBadges.length > 0 && statusModal) {
+        statusBadges.forEach(badge => {
+            badge.addEventListener('click', function() {
+                const orderId = this.closest('.order-status-cell').getAttribute('data-order-id');
+                currentStatus = this.getAttribute('data-status');
+                
+                currentOrderId = orderId;
+                
+                // Update current status display
+                currentStatusSpan.textContent = formatStatusDisplay(currentStatus);
+                currentStatusSpan.className = 'current-status-badge ' + getStatusClass(currentStatus);
+                
+                // Reset selection
+                statusOptions.forEach(option => {
+                    option.classList.remove('selected');
+                    if (option.getAttribute('data-status') === currentStatus) {
+                        option.classList.add('selected');
+                    }
+                });
+                
+                confirmBtn.disabled = true;
+                selectedStatus = null;
+                
+                // FIXED: Use relative URL instead of hardcoded URL
+                statusForm.action = `/staff/customer-order/update-order/${orderId}`;
+                
+                // Show modal
+                statusModal.classList.add('active');
+            });
+        });
+
+        statusOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const newStatus = this.getAttribute('data-status');
+                
+                if (newStatus === currentStatus) {
+                    confirmBtn.disabled = true;
+                    selectedStatus = null;
+                    return;
+                }
+                
+                statusOptions.forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedStatus = newStatus;
+                confirmBtn.disabled = false;
+            });
+        });
+
+        function closeStatusModal() {
+            statusModal.classList.remove('active');
+            currentOrderId = null;
+            selectedStatus = null;
+            currentStatus = null;
+        }
+
+        if (closeModalBtn) closeModalBtn.addEventListener('click', closeStatusModal);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeStatusModal);
+
+        statusForm.addEventListener('submit', function(e) {
+            if (!selectedStatus) {
+                e.preventDefault();
+                return;
+            }
+            
+            const statusInput = document.createElement('input');
+            statusInput.type = 'hidden';
+            statusInput.name = 'order_status';
+            statusInput.value = selectedStatus;
+            this.appendChild(statusInput);
+        });
+
+        statusModal.addEventListener('click', function(e) {
+            if (e.target === statusModal) {
+                closeStatusModal();
+            }
+        });
+    }
+
+    // Payment Modal Event Listeners
+    if (paymentBadges.length > 0 && paymentModal) {
+        paymentBadges.forEach(badge => {
+            badge.addEventListener('click', function() {
+                const orderId = this.closest('.payment-status-cell').getAttribute('data-order-id');
+                currentPaymentStatus = this.getAttribute('data-is-paid');
+                
+                currentOrderId = orderId;
+                
+                // Update current payment status display
+                currentPaymentStatusSpan.textContent = getPaymentDisplay(currentPaymentStatus);
+                currentPaymentStatusSpan.className = 'current-payment-badge ' + getPaymentClass(currentPaymentStatus);
+                
+                // Reset selection
+                paymentOptions.forEach(option => {
+                    option.classList.remove('selected');
+                    if (option.getAttribute('data-is-paid') === currentPaymentStatus) {
+                        option.classList.add('selected');
+                    }
+                });
+                
+                confirmPaymentBtn.disabled = true;
+                selectedPaymentStatus = null;
+                
+                // FIXED: Use relative URL instead of hardcoded URL
+                paymentForm.action = `/staff/customer-order/update-order-payment/${orderId}`;
+                
+                // Show modal
+                paymentModal.classList.add('active');
+            });
+        });
+
+        paymentOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const newPaymentStatus = this.getAttribute('data-is-paid');
+                
+                if (newPaymentStatus === currentPaymentStatus) {
+                    confirmPaymentBtn.disabled = true;
+                    selectedPaymentStatus = null;
+                    return;
+                }
+                
+                paymentOptions.forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedPaymentStatus = newPaymentStatus;
+                confirmPaymentBtn.disabled = false;
+            });
+        });
+
+        function closePaymentModal() {
+            paymentModal.classList.remove('active');
+            currentOrderId = null;
+            selectedPaymentStatus = null;
+            currentPaymentStatus = null;
+        }
+
+        if (closePaymentModalBtn) closePaymentModalBtn.addEventListener('click', closePaymentModal);
+        if (cancelPaymentBtn) cancelPaymentBtn.addEventListener('click', closePaymentModal);
+
+        paymentForm.addEventListener('submit', function(e) {
+            if (!selectedPaymentStatus) {
+                e.preventDefault();
+                return;
+            }
+            
+            const paymentInput = document.createElement('input');
+            paymentInput.type = 'hidden';
+            paymentInput.name = 'is_paid';
+            paymentInput.value = selectedPaymentStatus;
+            this.appendChild(paymentInput);
+        });
+
+        paymentModal.addEventListener('click', function(e) {
+            if (e.target === paymentModal) {
+                closePaymentModal();
+            }
+        });
+    }
+
+    // History Modal Event Listeners
+    if (historyModal) {
+        function closeHistoryModal() {
+            historyModal.classList.remove('active');
+        }
+
+        if (closeHistoryBtn) closeHistoryBtn.addEventListener('click', closeHistoryModal);
+        if (closeHistoryBtn2) closeHistoryBtn2.addEventListener('click', closeHistoryModal);
+
+        historyModal.addEventListener('click', function(e) {
+            if (e.target === historyModal) {
+                closeHistoryModal();
+            }
+        });
+    }
+});
+
+// Global function to show order history
+function showOrderHistory(orderId) {
+    fetch(`/staff/customer-order/${orderId}/history/json`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById('historyOrderId').textContent = orderId.substring(0, 8);
+            const timeline = document.getElementById('historyTimeline');
+            
+            if (data.histories.length === 0) {
+                timeline.innerHTML = '<p>No history available for this order.</p>';
+            } else {
+                timeline.innerHTML = data.histories.map(history => `
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-action">${history.action.replace('_', ' ')}</div>
+                            ${history.old_status && history.new_status ? 
+                                `<div class="timeline-status-change">
+                                    ${formatStatusDisplay(history.old_status)} → ${formatStatusDisplay(history.new_status)}
+                                </div>` : ''
+                            }
+                            <div class="timeline-staff">By: ${history.staff_name}</div>
+                            <div class="timeline-time">${history.created_at}</div>
+                            ${history.notes ? `<div class="timeline-notes">${history.notes}</div>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            document.getElementById('historyModal').classList.add('active');
+        })
+        .catch(error => {
+            console.error('Error fetching order history:', error);
+            alert('Error loading order history. Please try again.');
+        });
+}
+
+function formatStatusDisplay(status) {
+    return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+}
 </script>
 @endsection
