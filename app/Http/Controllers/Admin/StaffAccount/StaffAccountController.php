@@ -140,12 +140,17 @@ class StaffAccountController extends Controller
     /*
     * Function view edit file
     */
-    public function edit($id) : View
-    {
-        $user = User::findOrFail($id);
+public function edit($id)
+{
+    $user = User::findOrFail($id);
+    $locations = Location::all(); // fetches all locations
 
-        return view('company.admin.staff-account.edit', ['user' => $user]);
-    }
+    return view('company.admin.staff-account.edit', [
+        'user' => $user,
+        'locations' => $locations
+    ]);
+}
+
 
 
 
