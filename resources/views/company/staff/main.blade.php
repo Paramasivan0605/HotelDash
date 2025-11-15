@@ -77,12 +77,12 @@
                         <span>Reservation</span>
                     </a>
                 </li> --}}
-                <li>
+                {{-- <li>
                     <a href="#">
                         <i class='bx bxs-message-alt-error'></i>
                         <span>Complaint</span>
                     </a>
-                </li>
+                </li> --}}
             </ul>
             <ul>
                 <li class="logout">

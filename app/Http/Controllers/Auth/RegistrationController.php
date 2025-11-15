@@ -56,8 +56,8 @@ class RegistrationController extends Controller
                     'location_id'=> $staffid->location_id,
                     'password' => Hash::make($request->password),
                 ]);
+            return redirect()->route('login')->with('success-message', 'Register Successful.');
 
-                return back()->with('success-message', 'Register Successful');
             } else {
                 return back()->withErrors([
                     'error-message' => 'User with the provided staff ID has already registered.'

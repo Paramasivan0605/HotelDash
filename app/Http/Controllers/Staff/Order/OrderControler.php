@@ -28,7 +28,7 @@ class OrderControler extends Controller
         $locationId = $user->location_id;
         $staffId = $user->id;
 
-        $orders = CustomerOrder::with(['customer', 'diningTable', 'customerOrderDetail.foodMenu', 'assignedStaff'])
+        $orders = CustomerOrder::with(['customer', 'diningTable', 'customerOrderDetail.foodMenu', 'assignedStaff','location'])
             ->when($locationId, function($query) use ($locationId) {
                 return $query->where('location_id', $locationId);
             })

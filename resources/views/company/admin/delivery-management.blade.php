@@ -53,7 +53,8 @@
                                             {{ $order->delivery_type }}
                                         </span>
                                     </td>
-                                    <td>₹{{ number_format($order->order_total_price, 2) }}</td>
+                                    <td>    {{ $order->location->currency ?? '₹' }}
+                                       {{ number_format($order->order_total_price, 2) }}</td>
                                     <td>
                                         <span class="badge badge-status badge-{{ strtolower($order->order_status->value) }}">
                                             {{ $order->order_status->value }}

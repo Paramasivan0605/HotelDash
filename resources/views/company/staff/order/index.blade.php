@@ -62,7 +62,7 @@
                                 <div class="border rounded p-3 bg-white shadow-sm">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
-                                            <p class="text-muted mb-1">Total Orders</p>
+                                            <p class="text-muted mb-1">Completed Orders</p>
                                             <h3 class="fw-bold text-info mb-0">{{  @$totalCount }}</h3>
                                         </div>
                                         <div class="bg-info bg-opacity-10 p-3 rounded">
@@ -90,11 +90,11 @@
                     <div class="bottom-section">
                         <div class="table-top">
                             <h3>Manage Orders</h3>
-                            <div class="button">
+                            {{-- <div class="button">
                                 <a href="{{ route('customer-order-create') }}" class="add">
                                     <i class='bx bxs-plus-circle'></i><span>Check Table</span>
                                 </a>
-                            </div>
+                            </div> --}}
                         </div>
 
                         <table>
@@ -152,7 +152,8 @@
                                                 {{ $order->isPaid ? 'Paid' : 'Not Paid' }}
                                             </div>
                                         </td>
-                                        <td>${{ number_format($order->order_total_price, 2) }}</td>
+                                        <td>    {{ $order->location->currency ?? '₹' }}
+                                           {{ number_format($order->order_total_price, 2) }}</td>
                                         <td>
                                             {{ $order->customer_contact ?? 'N/A' }}
                                             @if(!empty($order->customer->mobile))

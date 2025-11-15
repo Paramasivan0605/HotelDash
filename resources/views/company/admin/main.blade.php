@@ -34,24 +34,24 @@
             <li class="{{ request()->routeIs(['partnership', 'partnership-create', 'partnership-edit']) ? 'active' : '' }}">
                 <a href="{{ route('partnership') }}"><i class='bx bxs-group'></i>Partnerships</a>
             </li>
-            <li class="{{ request()->routeIs(['promotion-discount', 'promotion-discount-create', 'promotion-discount-show', 'promotion-discount-edit']) ? 'active' : '' }}">
+            {{-- <li class="{{ request()->routeIs(['promotion-discount', 'promotion-discount-create', 'promotion-discount-show', 'promotion-discount-edit']) ? 'active' : '' }}">
                 <a href="{{ route('promotion-discount') }}"><i class='bx bxs-offer'></i>Promotions & Discounts</a>
-            </li>
+            </li> --}}
             <li class="{{ request()->routeIs('delivery-management') ? 'active' : '' }}">
                 <a href="{{ route('delivery-management') }}"><i class='bx bxs-truck'></i>Delivery Management</a>
             </li>
-            <li>
+            {{-- <li>
                 <a href="#"><i class='bx bxs-receipt'></i>Billing & Invoices</a>
             </li>
             <li>
                 <a href="#"><i class='bx bx-analyse'></i>Analytics</a>
-            </li>
+            </li> --}}
         </ul>
 
         <ul class="side-menu">
-            <li>
+            {{-- <li>
                 <a href="#"><i class='bx bx-shield-quarter'></i>Access Control</a>
-            </li>
+            </li> --}}
             <li class="{{ request()->routeIs('admin-profile') ? 'active' : ''}}">
                 <a href="{{ route('admin-profile') }}"><i class='bx bx-cog'></i>Settings</a>
             </li>
