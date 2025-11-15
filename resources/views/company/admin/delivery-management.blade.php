@@ -24,6 +24,41 @@
                     <div class="left">
                         <h1>Delivery Management</h1>
                     </div>
+                    <div class="right">
+                        <form method="GET" action="{{ route('delivery-management') }}" class="filter-form">
+                            <div class="filter-group">
+                                <i class='bx bx-user'></i>
+                                <select name="staff_id" class="filter-select" onchange="this.form.submit()">
+                                    <option value="">All Staff</option>
+                                    @foreach($staffList as $staff)
+                                        <option value="{{ $staff->id }}" 
+                                            {{ $selectedStaff == $staff->id ? 'selected' : '' }}>
+                                            {{ $staff->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <i class='bx bx-map'></i>
+                                <select name="location_id" class="filter-select" onchange="this.form.submit()">
+                                    <option value="">All Locations</option>
+                                    @foreach($locationList as $location)
+                                        <option value="{{ $location->location_id }}" 
+                                            {{ $selectedLocation == $location->location_id ? 'selected' : '' }}>
+                                            {{ $location->location_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            @if($selectedStaff || $selectedLocation)
+                                <a href="{{ route('delivery-management') }}" class="clear-filters" title="Clear Filters">
+                                    <i class='bx bx-x'></i>
+                                </a>
+                            @endif
+                        </form>
+                    </div>
                 </div>
 
                 <div class="orders-table-container">
@@ -34,6 +69,7 @@
                                 <th>Customer</th>
                                 <th>Contact</th>
                                 <th>Delivery Type</th>
+                                <th>Location</th>
                                 <th>Total Price</th>
                                 <th>Status</th>
                                 <th>Assigned Staff</th>
@@ -53,7 +89,8 @@
                                             {{ $order->delivery_type }}
                                         </span>
                                     </td>
-                                    <td>    {{ $order->location->currency ?? '₹' }}
+                                    <td>{{ $order->location->location_name }} </td>
+                                    <td>{{ $order->location->currency ?? '₹' }}
                                        {{ number_format($order->order_total_price, 2) }}</td>
                                     <td>
                                         <span class="badge badge-status badge-{{ strtolower($order->order_status->value) }}">
@@ -76,7 +113,7 @@
                                     </td>
                                 </tr>
                                 <tr class="history-row" id="history-{{ $order->id }}" style="display: none;">
-                                    <td colspan="10">
+                                    <td colspan="11">
                                         <div class="history-container">
                                             <div class="history-header">
                                                 <h3>Order History</h3>
@@ -122,14 +159,22 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="10" class="no-data">No orders found.</td>
+                                    <td colspan="11" class="no-data">
+                                        <div class="no-data-content">
+                                            <i class='bx bx-inbox'></i>
+                                            <p>No orders found</p>
+                                            @if($selectedStaff || $selectedLocation)
+                                                <a href="{{ route('delivery-management') }}" class="btn-link">Clear filters</a>
+                                            @endif
+                                        </div>
+                                    </td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
 
                     <div class="pagination-container">
-                        {{ $orders->links() }}
+                        {{ $orders->appends(request()->query())->links() }}
                     </div>
                 </div>
 
@@ -140,9 +185,97 @@
     </div>
 
     <style>
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header .left h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .header .right {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Filter Form Styles */
+        .filter-form {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .filter-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-group i {
+            position: absolute;
+            left: 12px;
+            color: #6b7280;
+            font-size: 18px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .filter-select {
+            padding: 10px 16px 10px 38px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 180px;
+            outline: none;
+        }
+
+        .filter-select:hover {
+            border-color: #3b82f6;
+        }
+
+        .filter-select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .clear-filters {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: #fee2e2;
+            color: #dc2626;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .clear-filters:hover {
+            background: #fecaca;
+            transform: scale(1.05);
+        }
+
+        .clear-filters i {
+            font-size: 22px;
+        }
+
         .orders-table-container {
             background: white;
-            border-radius: 8px;
+            border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             overflow: hidden;
             margin-top: 20px;
@@ -159,11 +292,13 @@
         }
 
         .orders-table th {
-            padding: 12px 16px;
+            padding: 14px 16px;
             text-align: left;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 13px;
             color: #495057;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .orders-table tbody tr.order-row {
@@ -176,17 +311,19 @@
         }
 
         .orders-table td {
-            padding: 12px 16px;
+            padding: 14px 16px;
             font-size: 14px;
             color: #212529;
+            vertical-align: middle;
         }
 
         .badge {
-            padding: 4px 12px;
+            padding: 5px 12px;
             border-radius: 12px;
             font-size: 12px;
-            font-weight: 500;
+            font-weight: 600;
             display: inline-block;
+            white-space: nowrap;
         }
 
         .badge-delivered { background: #e3f2fd; color: #1976d2; }
@@ -202,21 +339,24 @@
         .badge-success { background: #d4edda; color: #155724; }
 
         .btn-history {
-            padding: 6px 12px;
+            padding: 8px 14px;
             background: #007bff;
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 13px;
+            font-weight: 500;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            transition: background 0.2s;
+            gap: 6px;
+            transition: all 0.2s;
         }
 
         .btn-history:hover {
             background: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,123,255,0.3);
         }
 
         .history-row {
@@ -224,7 +364,7 @@
         }
 
         .history-container {
-            padding: 20px;
+            padding: 24px;
             animation: slideDown 0.3s ease;
         }
 
@@ -244,7 +384,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            padding-bottom: 10px;
+            padding-bottom: 12px;
             border-bottom: 2px solid #dee2e6;
         }
 
@@ -252,6 +392,7 @@
             margin: 0;
             color: #212529;
             font-size: 18px;
+            font-weight: 600;
         }
 
         .btn-close {
@@ -261,17 +402,18 @@
             cursor: pointer;
             color: #6c757d;
             padding: 0;
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 4px;
-            transition: background 0.2s;
+            border-radius: 6px;
+            transition: all 0.2s;
         }
 
         .btn-close:hover {
             background: #dee2e6;
+            color: #212529;
         }
 
         .timeline {
@@ -281,7 +423,7 @@
 
         .timeline-item {
             position: relative;
-            padding-bottom: 20px;
+            padding-bottom: 24px;
         }
 
         .timeline-item:last-child {
@@ -305,7 +447,7 @@
             position: absolute;
             left: -24px;
             top: 12px;
-            bottom: -20px;
+            bottom: -24px;
             width: 2px;
             background: #dee2e6;
         }
@@ -316,7 +458,7 @@
 
         .timeline-content {
             background: white;
-            padding: 15px;
+            padding: 16px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
@@ -325,7 +467,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .timeline-action {
@@ -363,14 +505,77 @@
 
         .no-data {
             text-align: center;
-            padding: 40px;
+            padding: 0;
+        }
+
+        .no-data-content {
+            padding: 60px 20px;
             color: #6c757d;
+        }
+
+        .no-data-content i {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .no-data-content p {
+            font-size: 16px;
+            margin: 12px 0;
+            color: #495057;
+        }
+
+        .btn-link {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .btn-link:hover {
+            color: #0056b3;
+            text-decoration: underline;
         }
 
         .pagination-container {
             padding: 20px;
             display: flex;
             justify-content: center;
+            border-top: 1px solid #dee2e6;
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header .right {
+                width: 100%;
+            }
+
+            .filter-form {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .filter-group {
+                width: 100%;
+            }
+
+            .filter-select {
+                width: 100%;
+            }
+
+            .orders-table-container {
+                overflow-x: auto;
+            }
+
+            .orders-table {
+                min-width: 1000px;
+            }
         }
     </style>
 
