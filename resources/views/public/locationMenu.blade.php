@@ -7,7 +7,6 @@
     window.locationCurrency = "{{ $currency ?? 'RM' }}";
 </script>
 
-<!-- Keep all existing modals and alerts -->
 @if(session('restore_cart'))
     <script>
         alert("Welcome back! We've restored your cart.");
@@ -18,20 +17,20 @@
     <div class="alert alert-warning mt-4">
         <i class="bi bi-exclamation-triangle"></i>
         You still have an order in progress. 
-        <a href="{{ route('orders.details', session('pending_order')) }}" class="alert-link">View Order</a>
+        <a href="{{ route('orders.history', session('pending_order')) }}" class="alert-link">View Order</a>
     </div>
 @endif
 
-<!-- Delivery Option Modal (keep existing) -->
+<!-- Delivery Option Modal -->
 <div class="modal fade" id="deliveryOptionModal" data-bs-backdrop="static" data-bs-keyboard="false">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content border-0 shadow-lg" style="border-radius: 24px; overflow: hidden;">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
       <div class="modal-body p-0">
         <div class="delivery-modal-header">
           <div class="icon-container">
             <i class='bx bx-food-menu'></i>
           </div>
-          <h3 class="modal-title">Choose Your Order Type</h3>
+          <h3 class="modal-title-custom">Choose Your Order Type</h3>
           <p class="modal-subtitle">Select how you'd like to receive your order</p>
         </div>
         
@@ -118,13 +117,7 @@
 <div id="menuSection" class="menu-container" style="display:none;">
     <div class="container py-5">
         <div class="menu-section-header">
-            <div class="section-title-wrapper">
-                <h2 class="section-title">
-                    <span class="title-icon">🍽️</span>
-                    <span id="categoryTitle">Our Delicious Menu</span>
-                </h2>
-                <p class="section-subtitle">Handcrafted with love, served with passion</p>
-            </div>
+            <h2 class="section-title" id="categoryTitle">Our Delicious Menu</h2>
         </div>
         
         @if($foodMenu->isEmpty())
@@ -136,125 +129,119 @@
         @else
             <div class="food-menu-grid">
                 @foreach($foodMenu as $item)
-                    <div class="food-item-card" data-aos="fade-up" data-category="{{ $item->category_id ?? 'uncategorized' }}">
-                        <div class="card-image-wrapper" data-bs-toggle="modal" data-bs-target="#itemModal{{ $item->id }}">
-                            <img src="{{ $item->image ? asset($item->image) : asset('images/placeholder.jpg') }}" 
-                                 alt="{{ $item->name }}" 
-                                 class="food-image">
-                            @if($item->category)
-                                <span class="food-category">{{ $item->category }}</span>
+                    @php
+                        $categoryImage = '';
+                        if($item->category_id && $categories->where('id', $item->category_id)->first()) {
+                            $category = $categories->where('id', $item->category_id)->first();
+                            $categoryImage = $category->image ? asset($category->image) : '';
+                        }
+                    @endphp
+                    
+                    <div class="food-item-card" data-category="{{ $item->category_id ?? 'uncategorized' }}">
+                        <div class="card-background">
+                            @if($categoryImage)
+                                <img src="{{ $categoryImage }}" alt="{{ $item->category ?? 'Food Item' }}" class="category-bg-image">
+                            @else
+                                <div class="animated-gradient-bg"></div>
                             @endif
-                            <div class="image-overlay">
-                                <div class="overlay-content">
-                                    <i class='bx bx-show'></i>
-                                    <span>Quick View</span>
-                                </div>
-                            </div>
                         </div>
                         
-                        <div class="card-content">
-                            <h3 class="food-name">{{ $item->name }}</h3>
-                            
-                            @if($item->description)
-                                <p class="food-description">{{ Str::limit($item->description, 60) }}</p>
+                        <div class="card-content-wrapper">
+                            @if($item->category)
+                                <div class="item-category-tag">
+                                    <i class='bx bx-food-tag'></i>
+                                    {{ $item->category }}
+                                </div>
                             @endif
                             
-                            <div class="card-footer-content">
-                                <div class="price-display">
-                                    <span class="currency-symbol">{{ $location->currency }}</span>
-                                    <span class="price-amount">{{ number_format($item->price, 2) }}</span>
-                                </div>
+                            <div class="item-info">
+                                <h3 class="item-name">{{ $item->name }}</h3>
                                 
-                                <button class="btn-add-to-cart" 
-                                        data-food-id="{{ $item->id }}" 
-                                        data-food-image="{{ asset($item->image) }}" 
-                                        data-food-name="{{ $item->name }}" 
-                                        data-food-price="{{ $item->price }}"
-                                        data-delivery-type=""
-                                        data-location-id="">
-                                    <i class='bx bx-cart-add'></i>
-                                </button>
+                                <div class="item-footer">
+                                    <div class="item-price">
+                                        <span class="currency">{{ $location->currency }}</span>
+                                        <span class="price">{{ number_format($item->price, 2) }}</span>
+                                    </div>
+                                    
+                                    <button class="btn-add-item" 
+                                            data-food-id="{{ $item->id }}" 
+                                            data-food-name="{{ $item->name }}" 
+                                            data-food-price="{{ $item->price }}"
+                                            data-food-category="{{ $item->category ?? '' }}"
+                                            data-food-description="{{ $item->description ?? '' }}"
+                                            data-category-image="{{ $categoryImage }}"
+                                            data-delivery-type=""
+                                            data-location-id=""
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#itemModal{{ $item->id }}">
+                                        <i class='bx bx-cart-add'></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {{-- Enhanced Modal --}}
-                    <div class="modal fade food-detail-modal" id="itemModal{{ $item->id }}" tabindex="-1">
-                        <div class="modal-dialog modal-dialog-centered modal-xl">
+                    {{-- Enhanced Modal with Background --}}
+                    <div class="modal fade item-modal" id="itemModal{{ $item->id }}" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
-                                <button type="button" class="modal-close-btn" data-bs-dismiss="modal">
-                                    <i class='bx bx-x'></i>
-                                </button>
+                                <div class="modal-background">
+                                    @if($categoryImage)
+                                        <img src="{{ $categoryImage }}" alt="{{ $item->category ?? 'Food Item' }}">
+                                    @else
+                                        <div class="animated-gradient-bg"></div>
+                                    @endif
+                                </div>
                                 
-                                <div class="row g-0">
-                                    <div class="col-lg-6">
-                                        <div class="modal-image-section">
-                                            <img src="{{ $item->image ? asset($item->image) : asset('images/placeholder.jpg') }}" 
-                                                 alt="{{ $item->name }}">
-                                            @if($item->category)
-                                                <span class="modal-category-badge">{{ $item->category }}</span>
-                                            @endif
+                                <div class="modal-header">
+                                    <div class="modal-header-content">
+                                        <i class='bx bx-dish modal-icon'></i>
+                                        <h3 class="modal-title">{{ $item->name }}</h3>
+                                    </div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal">X</button>
+                                </div>
+                                
+                                <div class="modal-body">
+                                    @if($item->category)
+                                        <div class="modal-category">
+                                            <i class='bx bx-category-alt'></i>
+                                            <span>{{ $item->category }}</span>
                                         </div>
+                                    @endif
+                                    
+                                    @if($item->description)
+                                        <div class="modal-description">
+                                            <div class="description-header">
+                                                <i class='bx bx-info-circle'></i>
+                                                <span>About this dish</span>
+                                            </div>
+                                            <div class="description-content">
+                                                {{ $item->description }}
+                                            </div>
+                                        </div>
+                                    @endif
+                                    
+                                    <div class="modal-price-box">
+                                        <div class="price-box-header">
+                                            <i class='bx bx-purchase-tag'></i>
+                                            <span>Price</span>
+                                        </div>
+                                        <span class="modal-price-value">
+                                            {{ $location->currency }} {{ number_format($item->price, 2) }}
+                                        </span>
                                     </div>
                                     
-                                    <div class="col-lg-6">
-                                        <div class="modal-content-section">
-                                            <div class="modal-header-content">
-                                                <h2 class="modal-food-name">{{ $item->name }}</h2>
-                                                <div class="rating-stars">
-                                                    <i class='bx bxs-star'></i>
-                                                    <i class='bx bxs-star'></i>
-                                                    <i class='bx bxs-star'></i>
-                                                    <i class='bx bxs-star'></i>
-                                                    <i class='bx bxs-star-half'></i>
-                                                    <span>(4.5)</span>
-                                                </div>
-                                            </div>
-                                            
-                                            @if($item->description)
-                                                <div class="modal-description">
-                                                    <h4>About This Dish</h4>
-                                                    <p>{{ $item->description }}</p>
-                                                </div>
-                                            @endif
-                                            
-                                            <div class="modal-highlights">
-                                                <div class="highlight-item">
-                                                    <i class='bx bx-time-five'></i>
-                                                    <span>15-20 mins</span>
-                                                </div>
-                                                <div class="highlight-item">
-                                                    <i class='bx bx-fire'></i>
-                                                    <span>Freshly Made</span>
-                                                </div>
-                                                <div class="highlight-item">
-                                                    <i class='bx bx-check-shield'></i>
-                                                    <span>Quality Assured</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="modal-price-section">
-                                                <div class="price-label">Price</div>
-                                                <div class="price-value">
-                                                    <span class="currency">{{ $location->currency }}</span>
-                                                    <span class="amount">{{ number_format($item->price, 2) }}</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <button type="button" 
-                                                    class="btn-modal-add-cart add-to-cart"
-                                                    data-food-id="{{ $item->id }}" 
-                                                    data-food-image="{{ asset($item->image) }}" 
-                                                    data-food-name="{{ $item->name }}" 
-                                                    data-food-price="{{ $item->price }}"
-                                                    data-delivery-type="{{ $item->delivery_type ?? '' }}"
-                                                    data-location-id="{{ $location->location_id }}"
-                                                    data-bs-dismiss="modal">
-                                                <i class='bx bx-cart'></i>
-                                                <span>Add to Cart</span>
-                                            </button>
-                                        </div>
-                                    </div>
+                                    <button type="button" 
+                                            class="btn-confirm-add add-to-cart"
+                                            data-food-id="{{ $item->id }}" 
+                                            data-food-name="{{ $item->name }}" 
+                                            data-food-price="{{ $item->price }}"
+                                            data-delivery-type="{{ $item->delivery_type ?? '' }}"
+                                            data-location-id="{{ $location->location_id }}"
+                                            data-bs-dismiss="modal">
+                                        <i class='bx bx-cart-add'></i>
+                                        Add to Cart
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -265,151 +252,8 @@
     </div>
 </div>
 
-<style>    
-    /* Categories Section */
-    .categories-section {
-        background: white;
-        border-bottom: 2px solid #f3f4f6;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    }
-
-    .categories-scroll-container {
-        overflow-x: auto;
-        scrollbar-width: thin;
-        scrollbar-color: var(--primary-red) #f3f4f6;
-    }
-
-    .categories-scroll-container::-webkit-scrollbar {
-        height: 8px;
-    }
-
-    .categories-scroll-container::-webkit-scrollbar-track {
-        background: #f3f4f6;
-        border-radius: 10px;
-    }
-
-    .categories-scroll-container::-webkit-scrollbar-thumb {
-        background: var(--red-gradient);
-        border-radius: 10px;
-    }
-
-    .categories-grid {
-        display: flex;
-        gap: 1rem;
-        padding: 0.5rem 0;
-        min-width: min-content;
-    }
-
-    .category-card {
-        background: white;
-        border: 3px solid #e5e7eb;
-        border-radius: 20px;
-        padding: 1.25rem 1.75rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        white-space: nowrap;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .category-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: var(--red-gradient);
-        transition: left 0.3s ease;
-        z-index: 0;
-    }
-
-    .category-card:hover::before,
-    .category-card.active::before {
-        left: 0;
-    }
-
-    .category-card:hover,
-    .category-card.active {
-        border-color: var(--primary-red);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(220, 38, 38, 0.25);
-    }
-
-    .category-card:hover *,
-    .category-card.active * {
-        color: white;
-        position: relative;
-        z-index: 1;
-    }
-
-    .category-icon {
-        font-size: 2rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-    }
-
-    .category-icon img {
-        width: 40px;
-        height: 40px;
-        object-fit: cover;
-        border-radius: 50%;
-    }
-
-    .category-card:hover .category-icon,
-    .category-card.active .category-icon {
-        transform: scale(1.1) rotate(5deg);
-    }
-
-    .category-card h4 {
-        margin: 0;
-        font-size: 1rem;
-        font-weight: 700;
-        color: #1f2937;
-        transition: color 0.3s ease;
-    }
-
-    /* Animation for filtered items */
-    .food-item-card {
-        transition: all 0.4s ease;
-    }
-
-    .food-item-card.hidden {
-        display: none;
-    }
-
-    @media (max-width: 768px) {
-        .categories-grid {
-            gap: 0.75rem;
-        }
-
-        .category-card {
-            padding: 1rem 1.25rem;
-            gap: 0.5rem;
-        }
-
-        .category-icon {
-            font-size: 1.5rem;
-        }
-
-        .category-icon img {
-            width: 30px;
-            height: 30px;
-        }
-
-        .category-card h4 {
-            font-size: 0.9rem;
-        }
-    }
-    /* Modern Red Color Palette */
+<style>
+    /* Color Palette */
     :root {
         --primary-red: #dc2626;
         --secondary-red: #ef4444;
@@ -420,65 +264,57 @@
         --dark-gradient: linear-gradient(135deg, #991b1b 0%, #dc2626 100%);
     }
 
-    /* Delivery Modal Styles */
+    /* Delivery Modal */
     .delivery-modal-header {
         background: var(--red-gradient);
-        padding: 3rem 2rem 2rem;
+        padding: 2.5rem 2rem 2rem;
         text-align: center;
         color: white;
-        position: relative;
     }
 
     .icon-container {
-        width: 80px;
-        height: 80px;
+        width: 70px;
+        height: 70px;
         background: rgba(255, 255, 255, 0.2);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 1.5rem;
-        font-size: 2.5rem;
+        font-size: 2.2rem;
         animation: bounceIn 0.6s ease;
     }
 
     @keyframes bounceIn {
-        0%, 20%, 50%, 80%, 100% {
-            transform: translateY(0);
-        }
-        40% {
-            transform: translateY(-20px);
-        }
-        60% {
-            transform: translateY(-10px);
-        }
+        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-20px); }
+        60% { transform: translateY(-10px); }
     }
 
-    .modal-title {
-        font-size: 2rem;
+    .modal-title-custom {
+        font-size: 1.75rem;
         font-weight: 800;
         margin: 0 0 0.5rem;
-        letter-spacing: -0.5px;
     }
 
     .modal-subtitle {
         margin: 0;
         opacity: 0.9;
-        font-size: 1.1rem;
+        font-size: 1rem;
     }
 
     .delivery-options-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-        padding: 2rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+        padding: 1.75rem;
     }
 
     .delivery-option-card {
         background: white;
-        border: 3px solid #e5e7eb;
-        border-radius: 20px;
-        padding: 2rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 1.75rem 1.25rem;
         text-align: center;
         cursor: pointer;
         transition: all 0.3s ease;
@@ -504,8 +340,8 @@
 
     .delivery-option-card:hover {
         border-color: var(--primary-red);
-        transform: translateY(-8px);
-        box-shadow: 0 15px 40px rgba(220, 38, 38, 0.25);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(220, 38, 38, 0.25);
     }
 
     .delivery-option-card:hover * {
@@ -515,19 +351,17 @@
     }
 
     .option-icon {
-        font-size: 4rem;
+        font-size: 3.5rem;
         margin-bottom: 1rem;
-        filter: grayscale(0.3);
         transition: all 0.3s ease;
     }
 
     .delivery-option-card:hover .option-icon {
-        filter: grayscale(0);
-        transform: scale(1.2) rotate(10deg);
+        transform: scale(1.15);
     }
 
     .delivery-option-card h4 {
-        font-size: 1.3rem;
+        font-size: 1.15rem;
         font-weight: 700;
         margin: 0.5rem 0;
         color: #1f2937;
@@ -537,22 +371,24 @@
     .delivery-option-card p {
         color: #6b7280;
         margin: 0;
+        font-size: 0.9rem;
         transition: color 0.3s ease;
     }
 
     .option-badge {
         position: absolute;
-        top: 15px;
-        right: 15px;
+        top: 12px;
+        right: 12px;
         background: var(--red-gradient);
         color: white;
-        padding: 0.4rem 0.8rem;
-        border-radius: 20px;
-        font-size: 0.75rem;
+        padding: 0.35rem 0.7rem;
+        border-radius: 15px;
+        font-size: 0.7rem;
         font-weight: 700;
         z-index: 2;
     }
 
+   
     /* Location Header Section */
     .location-header-section {
         background: var(--red-gradient);
@@ -638,225 +474,259 @@
         font-size: 0.95rem;
     }
 
-    .btn-change-location {
+    /* Categories */
+    .categories-section {
         background: white;
-        color: var(--primary-red);
-        padding: 1rem 2rem;
-        border-radius: 16px;
-        text-decoration: none;
-        font-weight: 700;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.75rem;
-        font-size: 1.1rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        border-bottom: 2px solid #f3f4f6;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     }
 
-    .btn-change-location:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
-        color: var(--dark-red);
+    .categories-scroll-container {
+        overflow-x: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary-red) #f3f4f6;
+    }
+
+    .categories-scroll-container::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .categories-scroll-container::-webkit-scrollbar-track {
+        background: #f3f4f6;
+        border-radius: 10px;
+    }
+
+    .categories-scroll-container::-webkit-scrollbar-thumb {
+        background: var(--red-gradient);
+        border-radius: 10px;
+    }
+
+    .categories-grid {
+        display: flex;
+        gap: 1rem;
+        padding: 0.5rem 0;
+        min-width: min-content;
+    }
+
+    .category-card {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 1rem 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        white-space: nowrap;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .category-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: var(--red-gradient);
+        transition: left 0.3s ease;
+        z-index: 0;
+    }
+
+    .category-card:hover::before,
+    .category-card.active::before {
+        left: 0;
+    }
+
+    .category-card:hover,
+    .category-card.active {
+        border-color: var(--primary-red);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(220, 38, 38, 0.25);
+    }
+
+    .category-card:hover *,
+    .category-card.active * {
+        color: white;
+        position: relative;
+        z-index: 1;
+    }
+
+    .category-icon {
+        font-size: 1.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .category-icon img {
+        width: 35px;
+        height: 35px;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .category-card h4 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #1f2937;
+        transition: color 0.3s ease;
     }
 
     /* Menu Section */
     .menu-container {
         background-image: url('{{ asset('images/bg-image.jpeg') }}');
         min-height: 100vh;
+        padding: 2rem 0;
     }
 
     .menu-section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 3rem;
-        flex-wrap: wrap;
-        gap: 2rem;
-    }
-
-    .section-title-wrapper {
-        flex: 1;
+        text-align: center;
+        margin-bottom: 2.5rem;
     }
 
     .section-title {
-        font-size: 2.5rem;
-        font-weight: 900;
+        font-size: 2rem;
+        font-weight: 800;
         color: #1f2937;
-        margin: 0 0 0.5rem;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        letter-spacing: -1px;
-    }
-
-    .title-icon {
-        font-size: 3rem;
-    }
-
-    .section-subtitle {
-        color: #6b7280;
-        font-size: 1.1rem;
         margin: 0;
-    }
-
-    .menu-filters {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .filter-btn {
-        background: white;
-        border: 2px solid #e5e7eb;
-        color: #4b5563;
-        padding: 0.75rem 1.5rem;
-        border-radius: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .filter-btn:hover,
-    .filter-btn.active {
-        background: var(--red-gradient);
-        border-color: var(--primary-red);
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(220, 38, 38, 0.25);
+        letter-spacing: -0.5px;
     }
 
     /* Food Menu Grid */
     .food-menu-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 2rem;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
     }
 
     .food-item-card {
         background: white;
-        border-radius: 24px;
+        border-radius: 20px;
         overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        height: 100%;
-        display: flex;
-        flex-direction: column;
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        border: 2px solid transparent;
+        min-height: 180px;
     }
 
     .food-item-card:hover {
-        transform: translateY(-12px) scale(1.02);
-        box-shadow: 0 20px 50px rgba(220, 38, 38, 0.2);
+        transform: translateY(-8px);
+        box-shadow: 0 12px 35px rgba(220, 38, 38, 0.2);
+        border-color: var(--primary-red);
     }
 
-    .card-image-wrapper {
-        position: relative;
-        height: 250px;
-        overflow: hidden;
-        cursor: pointer;
+    .food-item-card.hidden {
+        display: none;
     }
 
-    .food-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.6s ease;
-    }
-
-    .food-item-card:hover .food-image {
-        transform: scale(1.15) rotate(2deg);
-    }
-
-    .food-category {
-        position: absolute;
-        top: 15px;
-        left: 15px;
-        background: var(--red-gradient);
-        color: white;
-        padding: 0.5rem 1.2rem;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        z-index: 2;
-        box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
-    }
-
-    .image-overlay {
+    .card-background {
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(220, 38, 38, 0.95);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.4s ease;
+        z-index: 0;
+        overflow: hidden;
     }
 
-    .card-image-wrapper:hover .image-overlay {
-        opacity: 1;
+    .category-bg-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: blur(8px) brightness(0.7);
+        transform: scale(1.1);
+        transition: all 0.5s ease;
     }
 
-    .overlay-content {
-        color: white;
-        text-align: center;
-        transform: translateY(20px);
-        transition: transform 0.4s ease;
+    .food-item-card:hover .category-bg-image {
+        filter: blur(10px) brightness(0.6);
+        transform: scale(1.15);
     }
 
-    .card-image-wrapper:hover .overlay-content {
-        transform: translateY(0);
+    .animated-gradient-bg {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #dc2626 0%, #f97316 100%);
+        filter: blur(8px);
+        animation: gradientShift 3s ease infinite;
+        background-size: 200% 200%;
     }
 
-    .overlay-content i {
-        font-size: 3rem;
-        display: block;
-        margin-bottom: 0.5rem;
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
 
-    .overlay-content span {
-        font-weight: 700;
-        font-size: 1.1rem;
-    }
-
-    .card-content {
+    .card-content-wrapper {
+        position: relative;
+        z-index: 1;
         padding: 1.5rem;
-        flex: 1;
         display: flex;
         flex-direction: column;
+        gap: 1rem;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        min-height: 180px;
     }
 
-    .food-name {
-        font-size: 1.4rem;
+    .item-category-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--red-gradient);
+        color: white;
+        padding: 0.5rem 1.1rem;
+        border-radius: 25px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        width: fit-content;
+        box-shadow: 0 2px 10px rgba(220, 38, 38, 0.3);
+    }
+
+    .item-category-tag i {
+        font-size: 1rem;
+    }
+
+    .item-info {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        flex: 1;
+    }
+
+    .item-name {
+        font-size: 1.35rem;
         font-weight: 800;
         color: #1f2937;
-        margin: 0 0 0.75rem;
+        margin: 0;
         line-height: 1.3;
     }
 
-    .food-description {
-        color: #6b7280;
-        font-size: 0.95rem;
-        line-height: 1.6;
-        margin: 0 0 1rem;
-        flex: 1;
-    }
-
-    .card-footer-content {
+    .item-footer {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding-top: 1rem;
         border-top: 2px solid #f3f4f6;
+        margin-top: auto;
     }
 
-    .price-display {
+    .item-price {
         display: flex;
         align-items: baseline;
         gap: 0.3rem;
@@ -864,17 +734,17 @@
         font-weight: 900;
     }
 
-    .currency-symbol {
-        font-size: 1.1rem;
+    .item-price .currency {
+        font-size: 1rem;
     }
 
-    .price-amount {
-        font-size: 1.8rem;
+    .item-price .price {
+        font-size: 1.75rem;
     }
 
-    .btn-add-to-cart {
-        width: 50px;
-        height: 50px;
+    .btn-add-item {
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
         background: var(--red-gradient);
         border: none;
@@ -885,272 +755,272 @@
         justify-content: center;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        box-shadow: 0 4px 15px rgba(220, 38, 38, 0.35);
     }
 
-    .btn-add-to-cart:hover {
-        transform: rotate(360deg) scale(1.15);
-        box-shadow: 0 8px 25px rgba(220, 38, 38, 0.5);
+    .btn-add-item:hover {
+        transform: scale(1.15) rotate(90deg);
+        box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
     }
 
-    /* Modal Styles */
-    .food-detail-modal .modal-content {
+    .btn-add-item i {
+        transition: transform 0.3s ease;
+    }
+
+    /* Modal */
+    .item-modal .modal-content {
         border: none;
-        border-radius: 32px;
+        border-radius: 24px;
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
         overflow: hidden;
-        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
-    }
-
-    .modal-close-btn {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background: white;
-        border: none;
-        font-size: 1.8rem;
-        color: var(--primary-red);
-        cursor: pointer;
-        z-index: 10;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .modal-close-btn:hover {
-        background: var(--red-gradient);
-        color: white;
-        transform: rotate(90deg) scale(1.1);
-    }
-
-    .modal-image-section {
-        height: 100%;
-        min-height: 500px;
         position: relative;
     }
 
-    .modal-image-section img {
+    .modal-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 0;
+    }
+
+    .modal-background img {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        filter: blur(20px) brightness(0.5);
     }
 
-    .modal-category-badge {
-        position: absolute;
-        top: 25px;
-        left: 25px;
-        background: var(--red-gradient);
-        color: white;
-        padding: 0.75rem 1.5rem;
-        border-radius: 25px;
-        font-size: 0.95rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
-    }
-
-    .modal-content-section {
-        padding: 3rem;
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-    }
-
-    .modal-food-name {
-        font-size: 2.5rem;
-        font-weight: 900;
+    .item-modal .modal-header {
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(15px);
         color: #1f2937;
+        padding: 1.75rem 2rem;
+        border: none;
+        border-radius: 24px 24px 0 0;
+        position: relative;
+        z-index: 1;
+        border-bottom: 3px solid var(--primary-red);
+    }
+
+    .modal-header-content {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .modal-icon {
+        font-size: 2rem;
+        color: var(--primary-red);
+        animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+
+    .item-modal .modal-title {
+        font-size: 1.65rem;
+        font-weight: 900;
         margin: 0;
-        letter-spacing: -1px;
+        color: #1f2937;
     }
 
-    .rating-stars {
+    .item-modal .btn-close {
+        background: var(--red-gradient);
+        border-radius: 50%;
+        opacity: 1;
+        width: 35px;
+        height: 35px;
         display: flex;
         align-items: center;
-        gap: 0.3rem;
-        color: #fbbf24;
-        font-size: 1.3rem;
-        margin-top: 0.5rem;
+        justify-content: center;
+        transition: all 0.3s ease;
+        color: white;
     }
 
-    .rating-stars span {
-        color: #6b7280;
-        font-size: 1rem;
-        font-weight: 600;
-        margin-left: 0.5rem;
+    .item-modal .btn-close:hover {
+        transform: rotate(90deg) scale(1.1);
+        box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
     }
 
-    .modal-description h4 {
-        font-size: 1.2rem;
+    .item-modal .modal-body {
+        padding: 2rem;
+        position: relative;
+        z-index: 1;
+        /* background: rgba(255, 255, 255, 0.98); */
+        backdrop-filter: blur(15px);
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    .modal-category {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: var(--dark-red);
+        padding: 0.85rem 1.35rem;
+        border-radius: 15px;
         font-weight: 700;
-        color: #374151;
-        margin-bottom: 0.75rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+        border: 2px solid var(--light-red);
     }
 
-    .modal-description p {
-        color: #6b7280;
-        font-size: 1.05rem;
-        line-height: 1.8;
-    }
-
-    .modal-highlights {
-        display: flex;
-        gap: 1.5rem;
-        flex-wrap: wrap;
-        padding: 1.5rem;
-        background: #f9fafb;
-        border-radius: 16px;
-    }
-
-    .highlight-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: #4b5563;
-        font-weight: 600;
-    }
-
-    .highlight-item i {
-        font-size: 1.5rem;
+    .modal-category i {
+        font-size: 1.4rem;
         color: var(--primary-red);
     }
 
-    .modal-price-section {
+    .modal-description {
+        margin-bottom: 1.5rem;
+        background: #f9fafb;
+        padding: 1.25rem;
+        border-radius: 12px;
+        border-left: 4px solid var(--primary-red);
+    }
+
+    .description-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 0.75rem;
+        font-size: 1rem;
+    }
+
+    .description-header i {
+        font-size: 1.3rem;
+        color: var(--primary-red);
+    }
+
+    .description-content {
+        color: #6b7280;
+        font-size: 1rem;
+        line-height: 1.7;
+        margin: 0;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        max-height: 150px;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+
+    /* Scrollbar for description */
+    .description-content::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .description-content::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .description-content::-webkit-scrollbar-thumb {
+        background: var(--primary-red);
+        border-radius: 10px;
+    }
+
+    .modal-price-box {
         background: var(--red-gradient);
-        padding: 1.5rem 2rem;
+        padding: 1.35rem 1.65rem;
         border-radius: 16px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        color: white;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 6px 20px rgba(220, 38, 38, 0.3);
     }
 
-    .price-label {
-        font-size: 1.1rem;
-        font-weight: 600;
-        opacity: 0.9;
-    }
-
-    .price-value {
+    .price-box-header {
         display: flex;
-        align-items: baseline;
-        gap: 0.5rem;
+        align-items: center;
+        gap: 0.6rem;
+        color: white;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .price-box-header i {
+        font-size: 1.5rem;
+    }
+
+    .modal-price-value {
+        font-size: 2rem;
         font-weight: 900;
+        color: white;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
-    .price-value .currency {
-        font-size: 1.3rem;
-    }
-
-    .price-value .amount {
-        font-size: 2.5rem;
-    }
-
-    .btn-modal-add-cart {
+    .btn-confirm-add {
+        width: 100%;
         background: var(--dark-gradient);
         color: white;
         border: none;
-        padding: 1.25rem 2.5rem;
-        border-radius: 16px;
-        font-size: 1.2rem;
-        font-weight: 700;
+        padding: 1.15rem;
+        border-radius: 14px;
+        font-size: 1.15rem;
+        font-weight: 800;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 0.75rem;
+        gap: 0.85rem;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 8px 25px rgba(153, 27, 27, 0.3);
+        box-shadow: 0 6px 20px rgba(153, 27, 27, 0.35);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
-    .btn-modal-add-cart:hover {
+    .btn-confirm-add:hover {
         transform: translateY(-3px);
-        box-shadow: 0 15px 40px rgba(153, 27, 27, 0.4);
+        box-shadow: 0 10px 30px rgba(153, 27, 27, 0.45);
     }
 
-    .btn-modal-add-cart i {
+    .btn-confirm-add i {
         font-size: 1.5rem;
+        animation: cartShake 1s infinite;
+    }
+
+    @keyframes cartShake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-3px); }
+        75% { transform: translateX(3px); }
     }
 
     /* Empty State */
     .empty-menu-state {
         text-align: center;
-        padding: 5rem 2rem;
+        padding: 4rem 2rem;
         background: white;
-        border-radius: 24px;
+        border-radius: 20px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     }
 
     .empty-icon {
-        font-size: 6rem;
+        font-size: 5rem;
         margin-bottom: 1.5rem;
         opacity: 0.5;
     }
 
     .empty-menu-state h3 {
-        font-size: 2rem;
+        font-size: 1.75rem;
         font-weight: 800;
         color: #1f2937;
-        margin-bottom: 1rem;
+        margin-bottom: 0.75rem;
     }
 
     .empty-menu-state p {
         color: #6b7280;
-        font-size: 1.2rem;
-        margin-bottom: 2rem;
+        font-size: 1.1rem;
     }
 
-    .btn-primary-custom {
-        background: var(--red-gradient);
-        color: white;
-        padding: 1rem 2.5rem;
-        border-radius: 16px;
-        text-decoration: none;
-        font-weight: 700;
-        display: inline-block;
-        transition: all 0.3s ease;
-        box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
-    }
-
-    .btn-primary-custom:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 35px rgba(220, 38, 38, 0.4);
-        color: white;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 1200px) {
-        .food-menu-grid {
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.5rem;
-        }
-    }
-
+    /* Responsive */
     @media (max-width: 992px) {
-        .location-name {
-            font-size: 2rem;
-        }
-
-        .section-title {
-            font-size: 2rem;
-        }
-
-        .modal-image-section {
-            min-height: 400px;
-        }
-
-        .modal-content-section {
-            padding: 2rem;
-        }
-
-        .modal-food-name {
-            font-size: 2rem;
-        }
-
         .delivery-options-grid {
             grid-template-columns: 1fr;
         }
@@ -1162,128 +1032,48 @@
             text-align: center;
         }
 
-        .location-name {
-            font-size: 1.75rem;
-        }
-
-        .location-meta {
-            justify-content: center;
-        }
-
-        .menu-section-header {
-            flex-direction: column;
-            text-align: center;
+        .food-menu-grid {
+            grid-template-columns: 1fr;
+            padding: 0 0.5rem;
         }
 
         .section-title {
-            font-size: 1.75rem;
-            justify-content: center;
+            font-size: 1.65rem;
         }
 
-        .food-menu-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .btn-change-location {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .modal-content-section {
+        .item-modal .modal-body {
             padding: 1.5rem;
-        }
-
-        .modal-food-name {
-            font-size: 1.75rem;
-        }
-
-        .modal-highlights {
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .price-value .amount {
-            font-size: 2rem;
+            max-height: 60vh;
         }
     }
 
     @media (max-width: 576px) {
-        .location-header-section {
-            min-height: 240px;
-        }
-
-        .location-icon {
-            width: 60px;
-            height: 60px;
-            font-size: 2rem;
-        }
-
         .location-name {
-            font-size: 1.5rem;
+            font-size: 1.65rem;
         }
 
         .section-title {
+            font-size: 1.4rem;
+        }
+
+        .item-modal .modal-body {
+            padding: 1.25rem;
+        }
+
+        .modal-price-value {
             font-size: 1.5rem;
         }
 
-        .title-icon {
-            font-size: 2rem;
-        }
-
-        .card-image-wrapper {
-            height: 200px;
-        }
-
-        .food-name {
-            font-size: 1.2rem;
-        }
-
-        .price-amount {
-            font-size: 1.5rem;
-        }
-
-        .btn-add-to-cart {
-            width: 45px;
-            height: 45px;
-            font-size: 1.3rem;
-        }
-
-        .modal-image-section {
-            min-height: 300px;
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-        }
-
-        .modal-subtitle {
-            font-size: 1rem;
-        }
-
-        .icon-container {
-            width: 60px;
-            height: 60px;
-            font-size: 2rem;
-        }
-
-        .delivery-option-card {
-            padding: 1.5rem;
-        }
-
-        .option-icon {
-            font-size: 3rem;
-        }
-
-        .delivery-option-card h4 {
-            font-size: 1.1rem;
+        .description-content {
+            max-height: 120px;
         }
     }
 
-    /* Smooth Animations */
+    /* Animations */
     @keyframes fadeInUp {
         from {
             opacity: 0;
-            transform: translateY(30px);
+            transform: translateY(20px);
         }
         to {
             opacity: 1;
@@ -1292,61 +1082,15 @@
     }
 
     .food-item-card {
-        animation: fadeInUp 0.6s ease backwards;
+        animation: fadeInUp 0.5s ease backwards;
     }
 
-    .food-item-card:nth-child(1) { animation-delay: 0.1s; }
-    .food-item-card:nth-child(2) { animation-delay: 0.2s; }
-    .food-item-card:nth-child(3) { animation-delay: 0.3s; }
-    .food-item-card:nth-child(4) { animation-delay: 0.4s; }
-    .food-item-card:nth-child(5) { animation-delay: 0.5s; }
-    .food-item-card:nth-child(6) { animation-delay: 0.6s; }
-
-    /* Loading State */
-    @keyframes shimmer {
-        0% {
-            background-position: -1000px 0;
-        }
-        100% {
-            background-position: 1000px 0;
-        }
-    }
-
-    /* Scrollbar Styling */
-    ::-webkit-scrollbar {
-        width: 12px;
-    }
-
-    ::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background: var(--red-gradient);
-        border-radius: 10px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-        background: var(--dark-gradient);
-    }
-
-    /* Focus States for Accessibility */
-    button:focus-visible,
-    a:focus-visible {
-        outline: 3px solid var(--primary-red);
-        outline-offset: 3px;
-    }
-
-    /* Print Styles */
-    @media print {
-        .topbar,
-        .btn-change-location,
-        .btn-add-to-cart,
-        .btn-modal-add-cart {
-            display: none;
-        }
-    }
+    .food-item-card:nth-child(1) { animation-delay: 0.05s; }
+    .food-item-card:nth-child(2) { animation-delay: 0.1s; }
+    .food-item-card:nth-child(3) { animation-delay: 0.15s; }
+    .food-item-card:nth-child(4) { animation-delay: 0.2s; }
+    .food-item-card:nth-child(5) { animation-delay: 0.25s; }
+    .food-item-card:nth-child(6) { animation-delay: 0.3s; }
 </style>
 
 <script>
@@ -1359,11 +1103,9 @@ document.addEventListener('DOMContentLoaded', function() {
         card.addEventListener('click', function() {
             const selectedCategory = this.getAttribute('data-category');
             
-            // Update active state
             categoryCards.forEach(c => c.classList.remove('active'));
             this.classList.add('active');
             
-            // Filter food items
             foodItems.forEach(item => {
                 const itemCategory = item.getAttribute('data-category');
                 
@@ -1376,13 +1118,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         item.classList.add('hidden');
                     }
-                    // Update title with category name
                     const categoryName = this.querySelector('h4').textContent;
                     categoryTitle.textContent = categoryName;
                 }
             });
             
-            // Smooth scroll to menu section
             document.getElementById('menuSection').scrollIntoView({ 
                 behavior: 'smooth', 
                 block: 'start' 

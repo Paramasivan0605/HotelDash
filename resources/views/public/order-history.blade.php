@@ -3,7 +3,7 @@
 @section('title', 'My Orders')
 
 @section('content')
-<div class="container mt-4 mb-5">
+<div class="container mt-4 mb-5" style="max-width: 1420px;">
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -23,58 +23,58 @@
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="bg-dark text-white">
                                     <tr>
-                                        <th class="py-3 px-4 fw-semibold">Order ID</th>
-                                        <th class="py-3 px-4 fw-semibold">Date & Time</th>
-                                        <th class="py-3 px-4 fw-semibold">Delivery</th>
-                                        <th class="py-3 px-4 fw-semibold">Payment</th>
-                                        <th class="py-3 px-4 fw-semibold">Payment Status</th>
-                                        <th class="py-3 px-4 fw-semibold">Total</th>
-                                        <th class="py-3 px-4 fw-semibold">Status</th>
-                                        <th class="py-3 px-4 fw-semibold text-center">Action</th>
+                                        <th class="py-3 px-4 fw-semibold text-nowrap">Order ID</th>
+                                        <th class="py-3 px-4 fw-semibold text-nowrap">Date & Time</th>
+                                        <th class="py-3 px-4 fw-semibold text-nowrap">Delivery</th>
+                                        <th class="py-3 px-4 fw-semibold text-nowrap">Payment</th>
+                                        <th class="py-3 px-4 fw-semibold text-nowrap">Payment Status</th>
+                                        <th class="py-3 px-4 fw-semibold text-nowrap">Total</th>
+                                        <th class="py-3 px-4 fw-semibold text-nowrap">Status</th>
+                                        <th class="py-3 px-4 fw-semibold text-center text-nowrap">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white">
                                     @foreach($orders as $order)
                                     <tr>
                                         <td class="py-3 px-4">
-                                            <span class="fw-bold text-primary">#{{ $order->id }}</span>
+                                            <span class="fw-bold text-primary text-nowrap">#{{ $order->id }}</span>
                                         </td>
                                         <td class="py-3 px-4">
-                                            <div class="fw-semibold text-dark">{{ $order->created_at->format('M d, Y') }}</div>
-                                            <small class="text-muted">{{ $order->created_at->format('h:i A') }}</small>
+                                            <div class="fw-semibold text-dark text-nowrap">{{ $order->created_at->format('M d, Y') }}</div>
+                                            <small class="text-muted text-nowrap">{{ $order->created_at->format('h:i A') }}</small>
                                         </td>
                                         <td class="py-3 px-4">
-                                            <span class="badge bg-info px-3 py-2">
+                                            <span class="badge bg-info px-3 py-2 text-nowrap">
                                                 {{ $order->delivery_type }}
                                             </span>
                                         </td>
                                         <td class="py-3 px-4">
-                                            <span class="badge bg-{{ $order->payment_type == 'cash' ? 'success' : 'primary' }} px-3 py-2">
+                                            <span class="badge bg-{{ $order->payment_type == 'cash' ? 'success' : 'primary' }} px-3 py-2 text-nowrap">
                                                 {{ ucfirst($order->payment_type) }}
                                             </span>
                                         </td>
                                         <td class="py-3 px-4">
                                             @if($order->isPaid)
-                                                <span class="badge bg-success px-3 py-2">
+                                                <span class="badge bg-success px-3 py-2 text-nowrap">
                                                     <i class="bi bi-check-circle me-1"></i>Paid
                                                 </span>
                                             @else
-                                                <span class="badge bg-danger px-3 py-2">
+                                                <span class="badge bg-danger px-3 py-2 text-nowrap">
                                                     <i class="bi bi-x-circle me-1"></i>Not Paid
                                                 </span>
                                             @endif
                                         </td>
                                         <td class="py-3 px-4">
-                                            <span class="fw-bold text-success fs-5">RM {{ number_format($order->order_total_price, 2) }}</span>
+                                            <span class="fw-bold text-success fs-5 text-nowrap">RM {{ number_format($order->order_total_price, 2) }}</span>
                                         </td>
                                         <td class="py-3 px-4">
-                                            <span class="badge {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusClass($order->order_status) }} px-3 py-2">
+                                            <span class="badge {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusClass($order->order_status) }} px-3 py-2 text-nowrap">
                                                 {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusDisplay($order->order_status) }}
                                             </span>
                                         </td>
                                         <td class="py-3 px-4 text-center">
-                                            <a href="{{ route('orders.details', $order->id) }}" class="btn btn-dark btn-sm px-3 rounded-pill">
-                                                <i class="bi bi-eye me-1"></i>View
+                                            <a href="{{ route('orders.details', $order->id) }}" class="btn btn-dark btn-sm px-3 rounded-pill d-inline-flex align-items-center text-nowrap">
+                                                <i class="bi bi-eye me-1"></i><span>View</span>
                                             </a>
                                         </td>
                                     </tr>
@@ -245,6 +245,15 @@
     .card:hover {
         transform: translateY(-3px);
         box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.2) !important;
+    }
+
+    /* Additional alignment fixes */
+    .btn.d-inline-flex {
+        white-space: nowrap;
+    }
+    
+    .text-nowrap {
+        white-space: nowrap !important;
     }
 </style>
 @endsection

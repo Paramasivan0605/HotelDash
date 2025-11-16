@@ -72,20 +72,7 @@
                             @endphp
                             <div class="border-bottom p-4">
                                 <div class="row align-items-center g-3">
-                                    <!-- Food Image -->
-                                    <div class="col-auto">
-                                        @if($detail->foodMenu && $detail->foodMenu->image)
-                                            <img src="{{ asset('storage/' . $detail->foodMenu->image) }}" 
-                                                 alt="{{ $detail->foodMenu->name }}" 
-                                                 class="rounded-3 shadow-sm" 
-                                                 style="width: 80px; height: 80px; object-fit: cover;">
-                                        @else
-                                            <div class="bg-light rounded-3 d-flex align-items-center justify-content-center shadow-sm" 
-                                                 style="width: 80px; height: 80px;">
-                                                <i class="bi bi-image text-muted fs-2"></i>
-                                            </div>
-                                        @endif
-                                    </div>
+                                 
                                     
                                     <!-- Food Details -->
                                     <div class="col">
