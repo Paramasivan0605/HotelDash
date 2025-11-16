@@ -30,6 +30,7 @@
                                 <i class='bx bx-map'></i>
                                 <select name="location_id" id="locationFilter" class="filter-select" onchange="this.form.submit()">
                                     <option value="">All Locations</option>
+                                    @php $locationList = $locationList ?? collect(); @endphp
                                     @foreach($locationList as $location)
                                         <option value="{{ $location->location_id }}" 
                                             {{ $selectedLocation == $location->location_id ? 'selected' : '' }}>
@@ -38,7 +39,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            @if($selectedLocation)
+                            @if(@$selectedLocation)
                                 <a href="{{ route('admin-dashboard') }}" class="clear-filter-btn" title="Clear Filter">
                                     <i class='bx bx-x'></i>
                                 </a>
@@ -66,14 +67,14 @@
                     <li>
                         <i class='bx bx-line-chart'></i>
                         <span class="info">
-                            <h3>฿ {{ number_format($totalThbAmount, 2) }}</h3>
+                            <h3>฿ {{ number_format(@$totalThbAmount, 2) }}</h3>
                             <p>Total Price (THB)</p>
                         </span>
                     </li>
                     <li>
                         <i class='bx bx-line-chart'></i>
                         <span class="info">
-                            <h3>Rs {{ number_format($totalLkrAmount, 2) }}</h3>
+                            <h3>Rs {{ number_format(@$totalLkrAmount, 2) }}</h3>
                             <p>Total Price (LKR)</p>
                         </span>
                     </li>

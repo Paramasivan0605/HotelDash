@@ -17,11 +17,11 @@ class LoginController extends Controller
     {
         if (Auth::check()) {
             if (Auth::user()->role == 1) {
-                return view('company.admin.dashboard');
+                return redirect()->route('admin-dashboard')->with('success-message', 'Login Successful.');
             }
 
             if (Auth::user()->role == 2) {
-                return view('company.staff.dashboard');
+                return redirect()->route('staff-dashboard')->with('success-message', 'Login Successful.');
             }
         }
         else {
