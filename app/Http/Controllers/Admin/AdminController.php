@@ -25,9 +25,9 @@ class AdminController extends Controller
         $staffQuery = User::where('role', 2);
         $salesQuery = CustomerOrder::query();
         $thbQuery = CustomerOrder::join('location', 'customer_orders.location_id', '=', 'location.location_id')
-            ->where('location.currency', 'THB');
+            ->where('location.currency', 'THB')->where('isPaid',1);
         $lkrQuery = CustomerOrder::join('location', 'customer_orders.location_id', '=', 'location.location_id')
-            ->where('location.currency', 'LKR');
+            ->where('location.currency', 'LKR')->where('isPaid',1);
 
         // Apply location filter if selected
         if ($selectedLocation) {
@@ -74,6 +74,12 @@ class AdminController extends Controller
         // Get filter values
         $selectedStaff = $request->input('staff_id');
         $selectedLocation = $request->input('location_id');
+        $selectedStatus = $request->input('status');
+        $selectedPaymentStatus = $request->input('payment_status');
+        $selectedDeliveryType = $request->input('delivery_type');
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
+        $searchQuery = $request->input('search');
 
         // Build query with relationships
         $ordersQuery = CustomerOrder::with([
@@ -94,8 +100,39 @@ class AdminController extends Controller
             $ordersQuery->where('location_id', $selectedLocation);
         }
 
+        if ($selectedStatus) {
+            $ordersQuery->where('order_status', $selectedStatus);
+        }
+
+        if ($selectedPaymentStatus !== null && $selectedPaymentStatus !== '') {
+            $ordersQuery->where('isPaid', $selectedPaymentStatus);
+        }
+
+        if ($selectedDeliveryType) {
+            $ordersQuery->where('delivery_type', $selectedDeliveryType);
+        }
+
+        if ($dateFrom) {
+            $ordersQuery->whereDate('created_at', '>=', $dateFrom);
+        }
+
+        if ($dateTo) {
+            $ordersQuery->whereDate('created_at', '<=', $dateTo);
+        }
+
+        if ($searchQuery) {
+            $ordersQuery->where(function($query) use ($searchQuery) {
+                $query->where('id', 'like', '%' . $searchQuery . '%')
+                    ->orWhere('customer_contact', 'like', '%' . $searchQuery . '%')
+                    ->orWhereHas('customer', function($q) use ($searchQuery) {
+                        $q->where('name', 'like', '%' . $searchQuery . '%');
+                    });
+            });
+        }
+
         // Get orders with pagination
         $orders = $ordersQuery->orderBy('created_at', 'desc')->paginate(10);
+
         // Get staff and locations for filter dropdowns
         $staffList = User::where('role', 2)
             ->orderBy('name')
@@ -103,12 +140,26 @@ class AdminController extends Controller
 
         $locationList = Location::orderBy('location_name')->get();
 
+        // Get order statuses from enum
+        $statusList = OrderStatusEnum::cases();
+
+        // Delivery types
+        $deliveryTypes = ['Pickup', 'Delivery'];
+
         return view('company.admin.delivery-management', [
-            'orders'           => $orders,
-            'staffList'        => $staffList,
-            'locationList'     => $locationList,
-            'selectedStaff'    => $selectedStaff,
-            'selectedLocation' => $selectedLocation,
+            'orders'                => $orders,
+            'staffList'             => $staffList,
+            'locationList'          => $locationList,
+            'statusList'            => $statusList,
+            'deliveryTypes'         => $deliveryTypes,
+            'selectedStaff'         => $selectedStaff,
+            'selectedLocation'      => $selectedLocation,
+            'selectedStatus'        => $selectedStatus,
+            'selectedPaymentStatus' => $selectedPaymentStatus,
+            'selectedDeliveryType'  => $selectedDeliveryType,
+            'dateFrom'              => $dateFrom,
+            'dateTo'                => $dateTo,
+            'searchQuery'           => $searchQuery,
         ]);
     }
 }

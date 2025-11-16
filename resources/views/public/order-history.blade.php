@@ -149,7 +149,7 @@
                                 <!-- Total Amount -->
                                 <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded-3 mb-3">
                                     <span class="text-muted fw-semibold">Total Amount</span>
-                                    <span class="fw-bold text-success fs-4">RM {{ number_format($order->order_total_price, 2) }}</span>
+                                    <span class="fw-bold text-success fs-4"> {{ $order->location->currency }} {{ number_format($order->order_total_price, 2) }}</span>
                                 </div>
                                 
                                 <!-- Action Button -->
