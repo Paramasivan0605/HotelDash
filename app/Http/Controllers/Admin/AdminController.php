@@ -95,7 +95,7 @@ class AdminController extends Controller
         }
 
         // Get orders with pagination
-        $orders = $ordersQuery->orderBy('created_at', 'desc')->paginate(1);
+        $orders = $ordersQuery->orderBy('created_at', 'desc')->paginate(10);
         // Get staff and locations for filter dropdowns
         $staffList = User::where('role', 2)
             ->orderBy('name')
