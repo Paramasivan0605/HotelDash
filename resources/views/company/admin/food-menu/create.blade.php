@@ -69,7 +69,7 @@
                                 <input type="hidden" name="category_id" value="" required>
                             </div>
 
-                            <div class="low"><span class="star">Food Image</span></div>
+                            <div class="low">Food Image</div>
                             <div class="drag-area" id="dragArea">
                                 <i class='bx bxs-cloud-upload'></i>
                                 <input type="file" class="select-image-input" name="image" accept="image/*">

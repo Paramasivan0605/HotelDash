@@ -80,13 +80,13 @@
 
     <script>
         // Format mobile input to only allow 10 digits
-        document.getElementById('mobile').addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 10) {
-                value = value.substring(0, 10);
-            }
-            e.target.value = value;
-        });
+        // document.getElementById('mobile').addEventListener('input', function (e) {
+        //     let value = e.target.value.replace(/\D/g, '');
+        //     if (value.length > 10) {
+        //         value = value.substring(0, 10);
+        //     }
+        //     e.target.value = value;
+        // });
     </script>
 
 </body>

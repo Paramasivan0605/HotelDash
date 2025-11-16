@@ -47,7 +47,7 @@
                             'tableBodyCheckBoxId' => 'FoodMenuIndexCheckBox_',
                             'tableBodyCheckBoxName' => 'FoodMenuIndexCheckBox',
                             'tableDatas' => $food,
-                            'tableFields' => ['name', 'description', 'price', 'foodCategory.name', 'image'],
+                            'tableFields' => ['name', 'description', 'price', 'foodCategory.name', 'foodCategory.image'],
                             'buttonLink' => fn($td) => route('food-menu-show', ['food_menu' => $td->id]),
                         ])
 

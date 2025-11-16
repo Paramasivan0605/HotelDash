@@ -29,7 +29,7 @@ class FoodCategoryController extends Controller
         if ($request->hasFile('category_image')) {
             $file = $request->file('category_image');
             $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
-            $destinationPath = public_path('images/food-category');
+            $destinationPath = 'images/food-category';
 
             // ✅ Create folder if it doesn't exist
             if (!is_dir($destinationPath)) {

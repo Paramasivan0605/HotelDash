@@ -92,7 +92,7 @@ class FoodMenuController extends Controller
         'food_description' => 'required|max:9999',
         'price' => 'required|numeric|regex:/^\d+(\.\d{1,2})?$/|min:0.01|max:9999.99',
         'category_id' => 'required|exists:food_categories,id',
-        'image' => 'required|image|mimes:jpg,jpeg,png,svg|max:10480',
+        'image' => 'nullable|image|mimes:jpg,jpeg,png,svg|max:10480',
     ]);
 
     if ($validator->fails()) {
@@ -101,13 +101,18 @@ class FoodMenuController extends Controller
 
     // ✅ Move file directly to public/images/food-menu
     $file = $request->file('image');
-    $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+    if($file){
+        $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
 
-    $destinationPath = public_path('images/food-menu');
-    $file->move($destinationPath, $fileName);
+        $destinationPath = public_path('images/food-menu');
+        $file->move($destinationPath, $fileName);
 
-    // Store relative path (so it can be accessed by asset())
-    $imagePath = 'images/food-menu/' . $fileName;
+        // Store relative path (so it can be accessed by asset())
+        $imagePath = 'images/food-menu/' . $fileName;
+    }else{
+        $imagePath = null;
+    }
+   
 
     // Save data
     $foodMenu = FoodMenu::create([

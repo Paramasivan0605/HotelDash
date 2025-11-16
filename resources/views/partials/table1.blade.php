@@ -18,8 +18,8 @@
                 </td>
                 @foreach ($tableFields as $field)
                     <td>
-                        @if ($field == 'image')
-                            <img src="{{ asset($td->image) }}">
+                        @if ($field == 'foodCategory.image')
+                            <img src="{{ asset(data_get($td, 'foodCategory.image')) }}">
                         @elseif ($field == 'description')
                             {{ Str::limit($td->$field, 30) }}
                         @elseif ($field == 'price')
