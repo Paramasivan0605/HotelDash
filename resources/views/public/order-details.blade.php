@@ -81,13 +81,14 @@
                                             <span class="badge bg-secondary rounded-pill me-2">
                                                 Qty: {{ $detail->quantity }}
                                             </span>
-                                            <span class="fw-semibold">RM {{ number_format($foodPrice, 2) }}</span> each
-                                        </p>
+                                            <span class="fw-semibold">
+                                                {{ $order->location->currency }} {{ number_format($foodPrice, 2) }}
+                                            </span> each                                        </p>
                                     </div>
                                     
                                     <!-- Item Total -->
                                     <div class="col-auto text-end">
-                                        <h4 class="mb-0 text-primary fw-bold">RM {{ number_format($itemTotal, 2) }}</h4>
+                                        <h4 class="mb-0 text-primary fw-bold">{{ $order->location->currency }} {{ number_format($itemTotal, 2) }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -97,7 +98,7 @@
                             <div class="p-4 bg-light">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <h4 class="mb-0 fw-bold text-dark">Total Amount</h4>
-                                    <h3 class="mb-0 text-success fw-bold">RM {{ number_format($order->order_total_price, 2) }}</h3>
+                                    <h3 class="mb-0 text-success fw-bold">{{ $order->location->currency }} {{ number_format($order->order_total_price, 2) }}</h3>
                                 </div>
                             </div>
                         </div>

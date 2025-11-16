@@ -65,8 +65,9 @@
                                             @endif
                                         </td>
                                         <td class="py-3 px-4">
-                                            <span class="fw-bold text-success fs-5 text-nowrap">RM {{ number_format($order->order_total_price, 2) }}</span>
-                                        </td>
+                                            <span class="fw-bold text-success fs-5 text-nowrap">
+                                                {{ $order->location->currency }} {{ number_format($order->order_total_price, 2) }}
+                                            </span>                                        </td>
                                         <td class="py-3 px-4">
                                             <span class="badge {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusClass($order->order_status) }} px-3 py-2 text-nowrap">
                                                 {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusDisplay($order->order_status) }}
