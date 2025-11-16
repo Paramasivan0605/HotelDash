@@ -625,6 +625,14 @@ class PublicController extends Controller
 
         $deliveryType = $cartItems->first()->delivery_type;
         $locationId = $cartItems->first()->location_id;
+        $timezones = [
+            1 => 'Asia/Bangkok',   // Phuket
+            2 => 'Asia/Bangkok',   // Bangkok
+            3 => 'Asia/Bangkok',   // Pattaya
+            4 => 'Asia/Colombo',   // Colombo
+        ];
+
+        date_default_timezone_set($timezones[$locationId] ?? 'Asia/Bangkok');
 
         if ($deliveryType === 'Doorstep Delivery' && empty(trim($address))) {
             return response()->json([
