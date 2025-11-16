@@ -14,8 +14,7 @@
     <!-- Sidebar -->
     <div class="sidebar">
         
-        <a href="{{ route('admin-dashboard') }}" class="logo">Hash Restaurant</a>
-        <ul class="side-menu">
+<a href="{{ route('admin-dashboard') }}" class="logo">Madras<br>darbar</a>        <ul class="side-menu">
             <li class="{{ request()->routeIs(['admin-dashboard', 'login']) ? 'active' : '' }}">
                 <a href="{{ route('admin-dashboard') }}"><i class='bx bxs-dashboard'></i>Dashboard</a>
             </li>
@@ -28,11 +27,11 @@
             <li class="{{ request()->routeIs(['food-location', 'food-location-create', 'food-location-edit', 'food-location-show']) ? 'active' : '' }}">
                 <a href="{{ route('food-location') }}"><i class='bx bxs-map-pin'></i>Food Location</a>
             </li>
-            <li class="{{ request()->routeIs(['restaurant', 'restaurant-create', 'restaurant-show', 'restaurant-edit']) ? 'active' : '' }}">
+            {{-- <li class="{{ request()->routeIs(['restaurant', 'restaurant-create', 'restaurant-show', 'restaurant-edit']) ? 'active' : '' }}">
                 <a href="{{ route('restaurant') }}"><i class='bx bxs-store'></i>Restaurant</a>
             </li>
             <li class="{{ request()->routeIs(['partnership', 'partnership-create', 'partnership-edit']) ? 'active' : '' }}">
-                <a href="{{ route('partnership') }}"><i class='bx bxs-group'></i>Partnerships</a>
+                <a href="{{ route('partnership') }}"><i class='bx bxs-group'></i>Partnerships</a> --}}
             </li>
             {{-- <li class="{{ request()->routeIs(['promotion-discount', 'promotion-discount-create', 'promotion-discount-show', 'promotion-discount-edit']) ? 'active' : '' }}">
                 <a href="{{ route('promotion-discount') }}"><i class='bx bxs-offer'></i>Promotions & Discounts</a>

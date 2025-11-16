@@ -89,7 +89,7 @@
                                             {{ $order->delivery_type }}
                                         </span>
                                     </td>
-                                    <td>{{ $order->location->location_name }} </td>
+                                    <td>{{ @$order->location->location_name }} </td>
                                     <td>{{ $order->location->currency ?? '₹' }}
                                        {{ number_format($order->order_total_price, 2) }}</td>
                                     <td>

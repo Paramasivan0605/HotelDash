@@ -339,13 +339,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 listItem.innerHTML = `
                     <div class="cart-item">
                         <div class="card-body p-3">
-                            <div class="row g-3 align-items-center">
-                                <div class="col-auto">
-                                    <img src="${item.image}" 
-                                         alt="${item.name}" 
-                                         class="cart-item-img">
-                                </div>
-                                
+                            <div class="row g-3 align-items-center">                               
                                 <div class="col">
                                     <h6 class="mb-1 fw-semibold">${item.name}</h6>
                                     <small class="text-muted d-block mb-2">

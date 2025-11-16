@@ -54,10 +54,10 @@
         <div class="content">
             <ul>
                 <li>
-                    <a href="#" class="logo">
-                        <img src="{{ asset('images/logo.jpeg') }}" alt="Madras Darbar">
+                    <h3><a href="#" class="">
+                        Madrasdarbar
                         {{-- <span>Hash Restaurant</span> --}}
-                    </a>
+                    </a></h3>
                 </li>
                 <li class="{{ request()->routeIs(['staff-dashboard', 'login']) ? 'active' : '' }}">
                     <a href="{{ route('staff-dashboard') }}">

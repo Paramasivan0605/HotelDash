@@ -162,7 +162,7 @@
                     </div>
 
                     <!-- Reminders -->
-                    <div class="reminders">
+                    {{-- <div class="reminders">
                         <div class="header">
                             <i class='bx bx-note'></i>
                             <h3>Reminders</h3>
@@ -193,7 +193,7 @@
                                 <i class='bx bx-dots-vertical-rounded'></i>
                             </li>
                         </ul>
-                    </div>
+                    </div> --}}
                     <!-- End of Reminders -->
 
                 </div>

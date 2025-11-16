@@ -76,14 +76,20 @@ body {
 
 .sidebar .logo {
     font-size: 24px;
-    font: 700;
+    font-weight: 700;
     height: 56px;
     display: flex;
     align-items: center;
+    justify-content: center;
     color: var(--glow);
     z-index: 500;
+    padding-top: 20px; /* Add this for top space */
     padding-bottom: 20px;
     box-sizing: content-box;
+    max-width: 200px;
+    text-align: center;
+    line-height: 1.2;
+    word-break: break-word;
 }
 
 .sidebar .logo .logo-name span {
