@@ -31,165 +31,250 @@
                         <h1>Manage Customer Orders</h1>
                     </div>
 
-                       <div class="row g-3 mb-4">
-                            <div class="col-md-4">
-                                <div class="border rounded p-3 bg-white shadow-sm">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <p class="text-muted mb-1">My Assigned Orders</p>
-                                            <h3 class="fw-bold text-primary mb-0">{{ @$myAssignedCount }}</h3>
-                                        </div>
-                                        <div class="bg-primary bg-opacity-10 p-3 rounded">
-                                            <i class="bi bi-person-check text-primary fs-4"></i>
-                                        </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 bg-white shadow-sm">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="text-muted mb-1">My Assigned Orders</p>
+                                        <h3 class="fw-bold text-primary mb-0">{{ @$myAssignedCount }}</h3>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="border rounded p-3 bg-white shadow-sm">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <p class="text-muted mb-1">Available Orders</p>
-                                            <h3 class="fw-bold text-success mb-0">{{ @$availableCount }}</h3>
-                                        </div>
-                                        <div class="bg-success bg-opacity-10 p-3 rounded">
-                                            <i class="bi bi-cart-plus text-success fs-4"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="border rounded p-3 bg-white shadow-sm">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <p class="text-muted mb-1">Completed Orders</p>
-                                            <h3 class="fw-bold text-info mb-0">{{  @$totalCount }}</h3>
-                                        </div>
-                                        <div class="bg-info bg-opacity-10 p-3 rounded">
-                                            <i class="bi bi-list-ul text-info fs-4"></i>
-                                        </div>
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                                        <i class="bi bi-person-check text-primary fs-4"></i>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-        <!-- Orders Table -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white py-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0 fw-semibold">All Orders</h5>
-                    <div class="d-flex">
-                        <input type="text" class="form-control form-control-sm me-2" placeholder="Search orders...">
-                        <button class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-arrow-clockwise"></i> Refresh
-                        </button>
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 bg-white shadow-sm">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="text-muted mb-1">Available Orders</p>
+                                        <h3 class="fw-bold text-success mb-0">{{ @$availableCount }}</h3>
+                                    </div>
+                                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                                        <i class="bi bi-cart-plus text-success fs-4"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 bg-white shadow-sm">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="text-muted mb-1">Total Orders</p>
+                                        <h3 class="fw-bold text-info mb-0">{{ @$totalCount }}</h3>
+                                    </div>
+                                    <div class="bg-info bg-opacity-10 p-3 rounded">
+                                        <i class="bi bi-list-ul text-info fs-4"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-                    <div class="bottom-section">
-                        <div class="table-top">
-                            <h3>Manage Orders</h3>
-                            {{-- <div class="button">
-                                <a href="{{ route('customer-order-create') }}" class="add">
-                                    <i class='bx bxs-plus-circle'></i><span>Check Table</span>
-                                </a>
-                            </div> --}}
+                    <!-- Filter Section -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white py-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0 fw-semibold">
+                                    <i class="bi bi-funnel"></i> Filters
+                                </h5>
+                                <button class="btn btn-sm btn-outline-secondary" id="clearFilters">
+                                    <i class="bi bi-x-circle"></i> Clear All
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <!-- Search Input -->
+                                <div class="col-md-3">
+                                    <label class="form-label small">Search</label>
+                                    <input type="text" class="form-control form-control-sm" id="searchInput" 
+                                           placeholder="Order ID, Food, Contact...">
+                                </div>
+
+                                <!-- Order Status Filter -->
+                                <div class="col-md-3">
+                                    <label class="form-label small">Order Status</label>
+                                    <select class="form-select form-select-sm" id="statusFilter">
+                                        <option value="">All Statuses</option>
+                                        <option value="ordered">Ordered</option>
+                                        <option value="preparing">Preparing</option>
+                                        <option value="ready_to_deliver">Ready to Deliver</option>
+                                        <option value="delivery_on_the_way">Delivery on the Way</option>
+                                        <option value="delivered">Delivered</option>
+                                        <option value="completed">Completed</option>
+                                        <option value="cancelled">Cancelled</option>
+                                    </select>
+                                </div>
+
+                                <!-- Payment Status Filter -->
+                                <div class="col-md-2">
+                                    <label class="form-label small">Payment</label>
+                                    <select class="form-select form-select-sm" id="paymentFilter">
+                                        <option value="">All</option>
+                                        <option value="paid">Paid</option>
+                                        <option value="not_paid">Not Paid</option>
+                                    </select>
+                                </div>
+
+                                <!-- Assignment Filter -->
+                                <div class="col-md-2">
+                                    <label class="form-label small">Assignment</label>
+                                    <select class="form-select form-select-sm" id="assignmentFilter">
+                                        <option value="">All</option>
+                                        <option value="my_orders">My Orders</option>
+                                        <option value="available">Available</option>
+                                        <option value="others">Assigned to Others</option>
+                                    </select>
+                                </div>
+
+                                <!-- Date Filter -->
+                                <div class="col-md-2">
+                                    <label class="form-label small">Date Range</label>
+                                    <select class="form-select form-select-sm" id="dateFilter">
+                                        <option value="">All Time</option>
+                                        <option value="today">Today</option>
+                                        <option value="yesterday">Yesterday</option>
+                                        <option value="week">This Week</option>
+                                        <option value="month">This Month</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Active Filters Display -->
+                            <div class="mt-3" id="activeFilters" style="display: none;">
+                                <small class="text-muted">Active filters:</small>
+                                <div class="d-flex flex-wrap gap-2 mt-2" id="filterBadges"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Orders Table -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white py-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0 fw-semibold">
+                                    All Orders <span class="badge bg-primary" id="resultCount">{{ count($customerOrder) }}</span>
+                                </h5>
+                                <button class="btn btn-sm btn-outline-primary" onclick="location.reload()">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                                </button>
+                            </div>
                         </div>
 
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Order ID</th>
-                                    <th>Food Order</th>
-                                    <th>Assigned To</th>
-                                    <th>Order Status</th>
-                                    <th>Paid Status</th>
-                                    <th>Total Price</th>
-                                    <th>Customer Contact</th>
-                                    <th>Actions</th>
-                                    <th>History</th>
-                                    <th>Ordered At</th>
-                                </tr>
-                            </thead>
+                        <div class="bottom-section">
+                            <div class="table-top">
+                                <h3>Manage Orders</h3>
+                            </div>
 
-                            <tbody>
-                                @foreach ($customerOrder as $order)
+                            <table id="ordersTable">
+                                <thead>
                                     <tr>
-                                        <td>
-                                            <span title="{{ $order->id }}">#{{ Str::limit($order->id, 8) }}</span>
-                                        </td>
-                                        <td>
-                                            @foreach ($order->customerOrderDetail as $orderDetail)
-                                                {{ Str::limit($orderDetail->foodMenu->name, 10) }}
-                                                @if (!$loop->last)
-                                                    ,
-                                                @endif
-                                            @endforeach
-                                        </td>
-                                        <td>
-                                            @if($order->assigned_staff_id)
-                                                @if($order->assigned_staff_id == $currentStaffId)
-                                                    <span class="assigned-to-you">You</span>
-                                                @else
-                                                    <span class="assigned-to-other">{{ $order->assignedStaff->name ?? 'Unknown' }}</span>
-                                                @endif
-                                            @else
-                                                <span class="unassigned">Available</span>
-                                            @endif
-                                        </td>
-                                        <td class="order-status-cell" data-order-id="{{ $order->id }}" data-update-url="{{ route('update-order', $order->id) }}">
-                                            <div class="status-badge {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusClass($order->order_status) }}" 
-                                                 data-status="{{ $order->order_status }}"
-                                                 data-current-status="{{ $order->order_status }}">
-                                                {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusDisplay($order->order_status) }}
-                                            </div>
-                                        </td>
-                                        <td class="payment-status-cell" data-order-id="{{ $order->id }}"  data-update-payment-url="{{ route('update-order-payment', $order->id) }}">
-                                            <div class="payment-badge {{ $order->isPaid ? 'payment-paid' : 'payment-not-paid' }}" 
-                                                 data-is-paid="{{ $order->isPaid }}"
-                                                 data-current-paid="{{ $order->isPaid }}">
-                                                {{ $order->isPaid ? 'Paid' : 'Not Paid' }}
-                                            </div>
-                                        </td>
-                                        <td>    {{ $order->location->currency ?? '₹' }}
-                                           {{ number_format($order->order_total_price, 2) }}</td>
-                                        <td>
-                                            {{ $order->customer_contact ?? 'N/A' }}
-                                            @if(!empty($order->customer->mobile))
-                                                / {{ $order->customer->mobile }}
-                                            @endif
-                                        </td>
-                                        <td class="action-buttons">
-                                            @if(!$order->assigned_staff_id)
-                                                <form action="{{ route('order.accept', $order->id) }}" method="POST" class="inline-form">
-                                                    @csrf
-                                                    <button type="submit" class="btn-accept">Accept Order</button>
-                                                </form>
-                                            @elseif($order->assigned_staff_id == $currentStaffId)
-                                                <form action="{{ route('order.unaccept', $order->id) }}" method="POST" class="inline-form">
-                                                    @csrf
-                                                    <button type="submit" class="btn-unaccept">Unaccept</button>
-                                                </form>
-                                            @else
-                                                <span class="taken">Taken by others</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <button class="btn-history" onclick="showOrderHistory('{{ $order->id }}')">
-                                                <i class='bx bx-time'></i>
-                                            </button>
-                                        </td>
-                                        <td>{{ $order->created_at->format('j M Y, g:i A') }}</td>
+                                        <th>Order ID</th>
+                                        <th>Food Order</th>
+                                        <th>Assigned To</th>
+                                        <th>Order Status</th>
+                                        <th>Paid Status</th>
+                                        <th>Total Price</th>
+                                        <th>Customer Contact</th>
+                                        <th>Actions</th>
+                                        <th>History</th>
+                                        <th>Ordered At</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                </thead>
+
+                                <tbody>
+                                    @foreach ($customerOrder as $order)
+                                        <tr data-order-id="{{ $order->id }}"
+                                            data-status="{{ $order->order_status }}"
+                                            data-payment="{{ $order->isPaid ? 'paid' : 'not_paid' }}"
+                                            data-assignment="{{ !$order->assigned_staff_id ? 'available' : ($order->assigned_staff_id == $currentStaffId ? 'my_orders' : 'others') }}"
+                                            data-date="{{ $order->created_at->format('Y-m-d') }}"
+                                            data-search-text="{{ strtolower($order->id . ' ' . $order->customer_contact . ' ' . $order->customer->mobile ?? '') }}">
+                                            <td>
+                                                <span title="{{ $order->id }}">#{{ Str::limit($order->id, 8) }}</span>
+                                            </td>
+                                            <td data-food-items="{{ strtolower(collect($order->customerOrderDetail)->pluck('foodMenu.name')->implode(' ')) }}">
+                                                @foreach ($order->customerOrderDetail as $orderDetail)
+                                                    {{ Str::limit($orderDetail->foodMenu->name, 10) }}
+                                                    @if (!$loop->last), @endif
+                                                @endforeach
+                                            </td>
+                                            <td>
+                                                @if($order->assigned_staff_id)
+                                                    @if($order->assigned_staff_id == $currentStaffId)
+                                                        <span class="assigned-to-you">You</span>
+                                                    @else
+                                                        <span class="assigned-to-other">{{ $order->assignedStaff->name ?? 'Unknown' }}</span>
+                                                    @endif
+                                                @else
+                                                    <span class="unassigned">Available</span>
+                                                @endif
+                                            </td>
+                                            <td class="order-status-cell" data-order-id="{{ $order->id }}" data-update-url="{{ route('update-order', $order->id) }}">
+                                                <div class="status-badge {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusClass($order->order_status) }}" 
+                                                     data-status="{{ $order->order_status }}"
+                                                     data-current-status="{{ $order->order_status }}">
+                                                    {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusDisplay($order->order_status) }}
+                                                </div>
+                                            </td>
+                                            <td class="payment-status-cell" data-order-id="{{ $order->id }}" data-update-payment-url="{{ route('update-order-payment', $order->id) }}">
+                                                <div class="payment-badge {{ $order->isPaid ? 'payment-paid' : 'payment-not-paid' }}" 
+                                                     data-is-paid="{{ $order->isPaid }}"
+                                                     data-current-paid="{{ $order->isPaid }}">
+                                                    {{ $order->isPaid ? 'Paid' : 'Not Paid' }}
+                                                </div>
+                                            </td>
+                                            <td>{{ $order->location->currency ?? '₹' }} {{ number_format($order->order_total_price, 2) }}</td>
+                                            <td>
+                                                {{ $order->customer_contact ?? 'N/A' }}
+                                                @if(!empty($order->customer->mobile))
+                                                    / {{ $order->customer->mobile }}
+                                                @endif
+                                            </td>
+                                            <td class="action-buttons">
+                                                @if(!$order->assigned_staff_id)
+                                                    <form action="{{ route('order.accept', $order->id) }}" method="POST" class="inline-form">
+                                                        @csrf
+                                                        <button type="submit" class="btn-accept">Accept Order</button>
+                                                    </form>
+                                                @elseif($order->assigned_staff_id == $currentStaffId)
+                                                    <form action="{{ route('order.unaccept', $order->id) }}" method="POST" class="inline-form">
+                                                        @csrf
+                                                        <button type="submit" class="btn-unaccept">Unaccept</button>
+                                                    </form>
+                                                @else
+                                                    <span class="taken">Taken by others</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <button class="btn-history" onclick="showOrderHistory('{{ $order->id }}')">
+                                                    <i class='bx bx-time'></i>
+                                                </button>
+                                            </td>
+                                            <td>{{ $order->created_at->format('j M Y, g:i A') }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+
+                            <!-- No Results Message -->
+                            <div id="noResults" style="display: none; text-align: center; padding: 40px; color: #666;">
+                                <i class="bi bi-search" style="font-size: 48px; opacity: 0.3;"></i>
+                                <p style="margin-top: 15px; font-size: 16px;">No orders found matching your filters</p>
+                                <button class="btn btn-sm btn-primary mt-2" onclick="document.getElementById('clearFilters').click()">
+                                    Clear Filters
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>
         </div>
 
+        <!-- All your existing modals (Status, Payment, History) remain the same -->
         <!-- Status Change Modal -->
         <div class="status-modal" id="statusModal">
             <div class="modal-content">
@@ -293,6 +378,7 @@
     </section>
 
 <style>
+    /* All your existing styles remain the same */
     /* Status Badge Styles */
     .status-badge {
         display: inline-block;
@@ -313,7 +399,6 @@
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
 
-    /* Status Colors */
     .status-ordered {
         background-color: #e3f2fd;
         color: #1976d2 !important;
@@ -356,7 +441,6 @@
         border-color: #ffcdd2;
     }
 
-    /* Payment Badge Styles */
     .payment-badge {
         display: inline-block;
         padding: 6px 12px;
@@ -388,7 +472,6 @@
         border-color: #ffcdd2;
     }
 
-    /* Assignment Badges */
     .assigned-to-you {
         background-color: #4caf50;
         color: white !important;
@@ -419,7 +502,6 @@
         display: inline-block;
     }
 
-    /* Action Buttons - FIXED TEXT VISIBILITY */
     .action-buttons {
         display: flex;
         gap: 5px;
@@ -493,7 +575,29 @@
         background-color: rgba(33, 150, 243, 0.1) !important;
     }
 
-    /* Modal Styles */
+    /* Filter Badge Styles */
+    .filter-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        background-color: #e3f2fd;
+        color: #1976d2;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .filter-badge i {
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .filter-badge i:hover {
+        color: #c62828;
+    }
+
+    /* Modal Styles - keeping all existing modal styles */
     .status-modal, .payment-modal, .history-modal {
         display: none;
         position: fixed;
@@ -804,66 +908,6 @@
         border-bottom: none;
     }
 
-    /* Statistic Cards */
-    .statistic {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
-        margin-bottom: 30px;
-    }
-
-    .statistic .item1, .statistic .item2, .statistic .item3 {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .statistic i {
-        font-size: 32px;
-        width: 50px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 8px;
-    }
-
-    .statistic .item1 i {
-        background: #e8f5e8;
-        color: #4caf50;
-    }
-
-    .statistic .item2 i {
-        background: #e3f2fd;
-        color: #2196f3;
-    }
-
-    .statistic .item3 i {
-        background: #fff3e0;
-        color: #ff9800;
-    }
-
-    .statistic .data {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .statistic .title {
-        font-size: 14px;
-        color: #666;
-        margin-bottom: 4px;
-    }
-
-    .statistic .data span:last-child {
-        font-size: 18px;
-        font-weight: 600;
-        color: #333;
-    }
-
     /* Header Styles */
     .customer-order-index .header {
         margin-bottom: 30px;
@@ -889,25 +933,6 @@
         font-weight: 600;
         color: #333;
         margin: 0;
-    }
-
-    .button .add {
-        background: #4caf50;
-        color: white;
-        padding: 10px 16px;
-        border-radius: 6px;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-
-    .button .add:hover {
-        background: #45a049;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
 
     /* Success and Error Messages */
@@ -959,16 +984,6 @@
 
     /* Responsive Design */
     @media (max-width: 768px) {
-        .statistic {
-            grid-template-columns: 1fr;
-        }
-        
-        .table-top {
-            flex-direction: column;
-            gap: 15px;
-            align-items: flex-start;
-        }
-        
         .customer-order-index table {
             display: block;
             overflow-x: auto;
@@ -984,7 +999,8 @@
             margin: 20px;
         }
     }
-        /* Mobile Responsive Styles */
+
+    /* Mobile Responsive Styles */
     @media (max-width: 768px) {
         .customer-order-index {
             padding: 10px 5px;
@@ -1018,33 +1034,66 @@
             padding: 15px !important;
         }
 
-        /* Card Header - Mobile */
-        .card-header.bg-white.py-3 {
-            padding: 15px !important;
+        .d-flex.justify-content-between.align-items-center h3 {
+            font-size: 1.5rem;
         }
 
-        .d-flex.justify-content-between.align-items-center {
-            flex-direction: column;
-            gap: 15px;
-            align-items: flex-start !important;
+        /* Filter Section - Mobile */
+        .card.border-0.shadow-sm.mb-4 {
+            margin-bottom: 15px !important;
+        }
+
+        .card-header.bg-white.py-3 {
+            padding: 12px !important;
+        }
+
+        .card-header .d-flex {
+            flex-direction: row !important;
+            gap: 8px;
         }
 
         .card-title.mb-0.fw-semibold {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
         }
 
-        .d-flex {
+        .btn.btn-sm.btn-outline-secondary {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+        }
+
+        .card-body .row.g-3 {
+            gap: 12px !important;
+        }
+
+        .col-md-3, .col-md-2 {
             width: 100%;
-            justify-content: space-between;
+            padding: 0;
         }
 
-        .form-control.form-control-sm.me-2 {
-            width: 70%;
-            margin-right: 10px !important;
+        .form-label.small {
+            font-size: 0.8rem;
+            margin-bottom: 4px;
         }
 
-        .btn.btn-sm.btn-outline-primary {
-            white-space: nowrap;
+        .form-control.form-control-sm,
+        .form-select.form-select-sm {
+            font-size: 0.85rem;
+            padding: 6px 10px;
+        }
+
+        /* Active Filters - Mobile */
+        #activeFilters {
+            margin-top: 12px !important;
+        }
+
+        .filter-badge {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+        }
+
+        /* Card Header - Mobile */
+        .card-header .d-flex .badge {
+            font-size: 0.75rem;
         }
 
         /* Bottom Section - Mobile */
@@ -1058,24 +1107,22 @@
             gap: 15px;
             align-items: flex-start;
             margin-bottom: 15px;
+            padding: 0 10px;
         }
 
         .table-top h3 {
             font-size: 1.2rem;
         }
 
-        .button .add {
-            padding: 8px 12px;
-            font-size: 0.9rem;
+        /* Hide desktop table on mobile */
+        #ordersTable {
+            display: none !important;
         }
 
-        /* Table - Mobile - IMPROVED FOR MULTIPLE DATA */
-        table {
-            display: none; /* Hide original table on mobile */
-        }
-
+        /* Mobile Table */
         .mobile-table {
             display: block;
+            padding: 0 5px;
         }
 
         .mobile-order-card {
@@ -1125,7 +1172,7 @@
             background: #f8f9fa;
             padding: 2px 6px;
             border-radius: 4px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             border: 1px solid #e9ecef;
         }
 
@@ -1134,7 +1181,7 @@
             display: inline-block;
             padding: 4px 8px;
             border-radius: 12px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
             min-width: 80px;
             text-align: center;
@@ -1143,35 +1190,33 @@
         /* Action buttons on mobile */
         .mobile-actions {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
             justify-content: flex-end;
         }
 
         .btn-mobile {
-            padding: 6px 10px !important;
-            font-size: 0.75rem !important;
+            padding: 5px 10px !important;
+            font-size: 0.7rem !important;
             border: none !important;
             border-radius: 6px !important;
             text-decoration: none !important;
             display: inline-block !important;
             text-align: center !important;
-            min-width: 80px !important;
+            min-width: 70px !important;
+            color: white !important;
         }
 
         .btn-mobile-accept {
             background: #4caf50 !important;
-            color: white !important;
         }
 
         .btn-mobile-unaccept {
             background: #f44336 !important;
-            color: white !important;
         }
 
         .btn-mobile-history {
             background: #2196f3 !important;
-            color: white !important;
         }
 
         /* Contact info styling */
@@ -1180,60 +1225,95 @@
             flex-direction: column;
             gap: 2px;
             align-items: flex-end;
+            font-size: 0.75rem;
+        }
+
+        /* No Results - Mobile */
+        #noResults {
+            padding: 30px 15px !important;
+        }
+
+        #noResults i {
+            font-size: 36px !important;
+        }
+
+        #noResults p {
+            font-size: 14px !important;
         }
 
         /* Modals - Mobile */
         .modal-content {
-            width: 95%;
-            margin: 10px;
+            width: 95% !important;
+            margin: 10px !important;
             max-height: 90vh;
         }
 
         .modal-header {
-            padding: 15px;
+            padding: 15px !important;
         }
 
         .modal-header h3 {
-            font-size: 1.1rem;
+            font-size: 1rem !important;
         }
 
         .modal-body {
-            padding: 15px;
+            padding: 15px !important;
             max-height: 50vh;
         }
 
         .status-options, .payment-options {
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr !important;
             gap: 8px;
         }
 
         .status-option, .payment-option {
-            padding: 10px;
-            font-size: 0.9rem;
+            padding: 10px !important;
+            font-size: 0.85rem;
         }
 
         .modal-footer {
-            padding: 15px;
+            padding: 15px !important;
             flex-direction: column;
             gap: 8px;
         }
 
         .cancel-btn, .confirm-btn, .cancel-payment-btn, .confirm-payment-btn, .close-history-btn {
-            width: 100%;
-            padding: 12px !important;
+            width: 100% !important;
+            padding: 10px !important;
         }
 
         /* Success/Error Messages - Mobile */
         .success-message, .error-message {
             margin: 10px 5px;
             padding: 10px;
-            flex-direction: column;
-            text-align: center;
+            flex-direction: row;
             gap: 8px;
         }
 
         .success-message .text, .error-message .text {
-            align-items: center;
+            align-items: flex-start;
+        }
+
+        .success-message i, .error-message i {
+            font-size: 18px;
+        }
+
+        /* Timeline - Mobile */
+        .timeline-item {
+            padding-left: 25px;
+            margin-bottom: 15px;
+        }
+
+        .timeline-content {
+            padding: 10px;
+        }
+
+        .timeline-action {
+            font-size: 0.85rem;
+        }
+
+        .timeline-staff, .timeline-time, .timeline-status-change, .timeline-notes {
+            font-size: 0.75rem;
         }
     }
 
@@ -1248,11 +1328,12 @@
         }
 
         .card-title.mb-0.fw-semibold {
-            font-size: 1rem;
+            font-size: 0.85rem;
         }
 
-        .form-control.form-control-sm.me-2 {
-            width: 60%;
+        .btn.btn-sm.btn-outline-secondary {
+            padding: 3px 6px;
+            font-size: 0.7rem;
         }
 
         .mobile-order-card {
@@ -1269,27 +1350,217 @@
         }
 
         .btn-mobile {
-            min-width: 70px !important;
-            padding: 5px 8px !important;
+            min-width: 65px !important;
+            padding: 4px 8px !important;
+            font-size: 0.65rem !important;
+        }
+
+        .food-item {
+            font-size: 0.65rem;
+        }
+
+        .filter-badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
         }
     }
 
     /* Hide mobile table on desktop */
     @media (min-width: 769px) {
         .mobile-table {
-            display: none;
+            display: none !important;
         }
     }
 </style>
+
 <script>
+// Filter functionality
 document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const paymentFilter = document.getElementById('paymentFilter');
+    const assignmentFilter = document.getElementById('assignmentFilter');
+    const dateFilter = document.getElementById('dateFilter');
+    const clearFiltersBtn = document.getElementById('clearFilters');
+    const tableRows = document.querySelectorAll('#ordersTable tbody tr');
+    const resultCount = document.getElementById('resultCount');
+    const noResults = document.getElementById('noResults');
+    const activeFiltersDiv = document.getElementById('activeFilters');
+    const filterBadgesDiv = document.getElementById('filterBadges');
+    const ordersTable = document.getElementById('ordersTable');
+
+    // Apply filters
+    function applyFilters() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const selectedStatus = statusFilter.value;
+        const selectedPayment = paymentFilter.value;
+        const selectedAssignment = assignmentFilter.value;
+        const selectedDate = dateFilter.value;
+
+        let visibleCount = 0;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        tableRows.forEach(row => {
+            let visible = true;
+
+            // Search filter
+            if (searchTerm) {
+                const searchText = row.getAttribute('data-search-text');
+                const foodItems = row.querySelector('[data-food-items]')?.getAttribute('data-food-items') || '';
+                if (!searchText.includes(searchTerm) && !foodItems.includes(searchTerm)) {
+                    visible = false;
+                }
+            }
+
+            // Status filter
+            if (selectedStatus && visible) {
+                const rowStatus = row.getAttribute('data-status');
+                if (rowStatus !== selectedStatus) {
+                    visible = false;
+                }
+            }
+
+            // Payment filter
+            if (selectedPayment && visible) {
+                const rowPayment = row.getAttribute('data-payment');
+                if (rowPayment !== selectedPayment) {
+                    visible = false;
+                }
+            }
+
+            // Assignment filter
+            if (selectedAssignment && visible) {
+                const rowAssignment = row.getAttribute('data-assignment');
+                if (rowAssignment !== selectedAssignment) {
+                    visible = false;
+                }
+            }
+
+            // Date filter
+            if (selectedDate && visible) {
+                const rowDate = new Date(row.getAttribute('data-date'));
+                rowDate.setHours(0, 0, 0, 0);
+                
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                
+                const weekStart = new Date(today);
+                weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                
+                const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+                switch(selectedDate) {
+                    case 'today':
+                        if (rowDate.getTime() !== today.getTime()) visible = false;
+                        break;
+                    case 'yesterday':
+                        if (rowDate.getTime() !== yesterday.getTime()) visible = false;
+                        break;
+                    case 'week':
+                        if (rowDate < weekStart) visible = false;
+                        break;
+                    case 'month':
+                        if (rowDate < monthStart) visible = false;
+                        break;
+                }
+            }
+
+            // Show/hide row
+            if (visible) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Update result count
+        resultCount.textContent = visibleCount;
+
+        // Show/hide no results message
+        if (visibleCount === 0) {
+            noResults.style.display = 'block';
+            ordersTable.style.display = 'none';
+        } else {
+            noResults.style.display = 'none';
+            ordersTable.style.display = '';
+        }
+
+        // Update active filters display
+        updateActiveFilters();
+    }
+
+    // Update active filters badges
+    function updateActiveFilters() {
+        const filters = [];
+
+        if (searchInput.value.trim()) {
+            filters.push({ type: 'search', label: `Search: ${searchInput.value}`, clear: () => searchInput.value = '' });
+        }
+        if (statusFilter.value) {
+            const text = statusFilter.options[statusFilter.selectedIndex].text;
+            filters.push({ type: 'status', label: `Status: ${text}`, clear: () => statusFilter.value = '' });
+        }
+        if (paymentFilter.value) {
+            const text = paymentFilter.options[paymentFilter.selectedIndex].text;
+            filters.push({ type: 'payment', label: `Payment: ${text}`, clear: () => paymentFilter.value = '' });
+        }
+        if (assignmentFilter.value) {
+            const text = assignmentFilter.options[assignmentFilter.selectedIndex].text;
+            filters.push({ type: 'assignment', label: `Assignment: ${text}`, clear: () => assignmentFilter.value = '' });
+        }
+        if (dateFilter.value) {
+            const text = dateFilter.options[dateFilter.selectedIndex].text;
+            filters.push({ type: 'date', label: `Date: ${text}`, clear: () => dateFilter.value = '' });
+        }
+
+        if (filters.length > 0) {
+            activeFiltersDiv.style.display = 'block';
+            filterBadgesDiv.innerHTML = filters.map((filter, index) => `
+                <span class="filter-badge">
+                    ${filter.label}
+                    <i class="bi bi-x-circle" data-filter-index="${index}"></i>
+                </span>
+            `).join('');
+
+            // Add event listeners to remove individual filters
+            filterBadgesDiv.querySelectorAll('[data-filter-index]').forEach((badge, index) => {
+                badge.addEventListener('click', function() {
+                    filters[index].clear();
+                    applyFilters();
+                });
+            });
+        } else {
+            activeFiltersDiv.style.display = 'none';
+            filterBadgesDiv.innerHTML = '';
+        }
+    }
+
+    // Clear all filters
+    clearFiltersBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        statusFilter.value = '';
+        paymentFilter.value = '';
+        assignmentFilter.value = '';
+        dateFilter.value = '';
+        applyFilters();
+    });
+
+    // Add event listeners
+    searchInput.addEventListener('input', applyFilters);
+    statusFilter.addEventListener('change', applyFilters);
+    paymentFilter.addEventListener('change', applyFilters);
+    assignmentFilter.addEventListener('change', applyFilters);
+    dateFilter.addEventListener('change', applyFilters);
+
+    // Mobile table creation (keep your existing function)
     function createMobileTable() {
         if (window.innerWidth <= 768) {
             const table = document.querySelector('.customer-order-index table');
             const tbody = table.querySelector('tbody');
             const rows = tbody.querySelectorAll('tr');
             
-            // Create mobile container
             let mobileTable = document.querySelector('.mobile-table');
             if (!mobileTable) {
                 mobileTable = document.createElement('div');
@@ -1299,92 +1570,78 @@ document.addEventListener('DOMContentLoaded', function() {
             
             mobileTable.innerHTML = '';
             
+            // Only show visible rows
             rows.forEach(row => {
-                const cells = row.querySelectorAll('td');
-                const orderCard = document.createElement('div');
-                orderCard.className = 'mobile-order-card';
-                
-                // Order ID
-                const orderIdRow = createOrderRow('Order ID', cells[0].innerHTML);
-                
-                // Food Order - handle multiple items
-                const foodItems = Array.from(cells[1].querySelectorAll('span, a')).map(item => item.textContent).filter(Boolean);
-                const foodItemsHTML = foodItems.length > 0 ? 
-                    `<div class="food-items">${foodItems.map(item => `<span class="food-item">${item.trim()}</span>`).join('')}</div>` : 
-                    'No items';
-                const foodOrderRow = createOrderRow('Food Order', foodItemsHTML);
-                
-                // Assigned To
-                const assignedRow = createOrderRow('Assigned To', cells[2].innerHTML);
-                
-                // Order Status
-                const statusBadge = cells[3].querySelector('.status-badge');
-                const statusRow = createOrderRow('Order Status', statusBadge ? statusBadge.outerHTML : cells[3].innerHTML);
-                
-                // Paid Status
-                const paymentBadge = cells[4].querySelector('.payment-badge');
-                const paymentRow = createOrderRow('Payment', paymentBadge ? paymentBadge.outerHTML : cells[4].innerHTML);
-                
-                // Total Price
-                const priceRow = createOrderRow('Total Price', cells[5].innerHTML);
-                
-                // Customer Contact
-                const contactRow = createOrderRow('Contact', `<div class="contact-info">${cells[6].innerHTML}</div>`);
-                
-                // Actions
-                const actionsDiv = document.createElement('div');
-                actionsDiv.className = 'mobile-actions';
-                
-                // Copy action buttons
-                const actionButtons = cells[7].querySelectorAll('form, .taken, .btn-history');
-                actionButtons.forEach(button => {
-                    if (button.tagName === 'FORM') {
-                        const submitBtn = button.querySelector('button');
-                        if (submitBtn) {
-                            const mobileBtn = document.createElement('button');
-                            mobileBtn.className = `btn-mobile ${submitBtn.className.includes('btn-accept') ? 'btn-mobile-accept' : 'btn-mobile-unaccept'}`;
-                            mobileBtn.textContent = submitBtn.textContent;
-                            mobileBtn.type = 'button';
-                            mobileBtn.onclick = () => button.submit();
-                            actionsDiv.appendChild(mobileBtn);
+                if (row.style.display !== 'none') {
+                    const cells = row.querySelectorAll('td');
+                    const orderCard = document.createElement('div');
+                    orderCard.className = 'mobile-order-card';
+                    
+                    const orderIdRow = createOrderRow('Order ID', cells[0].innerHTML);
+                    const foodItems = Array.from(cells[1].querySelectorAll('span, a')).map(item => item.textContent).filter(Boolean);
+                    const foodItemsHTML = foodItems.length > 0 ? 
+                        `<div class="food-items">${foodItems.map(item => `<span class="food-item">${item.trim()}</span>`).join('')}</div>` : 
+                        'No items';
+                    const foodOrderRow = createOrderRow('Food Order', foodItemsHTML);
+                    const assignedRow = createOrderRow('Assigned To', cells[2].innerHTML);
+                    const statusBadge = cells[3].querySelector('.status-badge');
+                    const statusRow = createOrderRow('Order Status', statusBadge ? statusBadge.outerHTML : cells[3].innerHTML);
+                    const paymentBadge = cells[4].querySelector('.payment-badge');
+                    const paymentRow = createOrderRow('Payment', paymentBadge ? paymentBadge.outerHTML : cells[4].innerHTML);
+                    const priceRow = createOrderRow('Total Price', cells[5].innerHTML);
+                    const contactRow = createOrderRow('Contact', `<div class="contact-info">${cells[6].innerHTML}</div>`);
+                    
+                    const actionsDiv = document.createElement('div');
+                    actionsDiv.className = 'mobile-actions';
+                    
+                    const actionButtons = cells[7].querySelectorAll('form, .taken');
+                    actionButtons.forEach(button => {
+                        if (button.tagName === 'FORM') {
+                            const submitBtn = button.querySelector('button');
+                            if (submitBtn) {
+                                const mobileBtn = document.createElement('button');
+                                mobileBtn.className = `btn-mobile ${submitBtn.className.includes('btn-accept') ? 'btn-mobile-accept' : 'btn-mobile-unaccept'}`;
+                                mobileBtn.textContent = submitBtn.textContent;
+                                mobileBtn.type = 'button';
+                                mobileBtn.onclick = () => button.submit();
+                                actionsDiv.appendChild(mobileBtn);
+                            }
+                        } else if (button.classList.contains('taken')) {
+                            const span = document.createElement('span');
+                            span.className = 'taken';
+                            span.textContent = button.textContent;
+                            actionsDiv.appendChild(span);
                         }
-                    } else if (button.classList.contains('btn-history')) {
+                    });
+                    
+                    const historyBtn = cells[8].querySelector('.btn-history');
+                    if (historyBtn) {
                         const mobileBtn = document.createElement('button');
                         mobileBtn.className = 'btn-mobile btn-mobile-history';
                         mobileBtn.innerHTML = '<i class="bi bi-clock"></i> History';
-                        mobileBtn.onclick = button.onclick;
+                        mobileBtn.onclick = historyBtn.onclick;
                         actionsDiv.appendChild(mobileBtn);
-                    } else if (button.classList.contains('taken')) {
-                        const span = document.createElement('span');
-                        span.className = 'taken';
-                        span.textContent = button.textContent;
-                        actionsDiv.appendChild(span);
                     }
-                });
-                
-                const actionsRow = createOrderRow('Actions', actionsDiv.outerHTML);
-                
-                // Ordered At
-                const dateRow = createOrderRow('Ordered At', cells[9].innerHTML);
-                
-                // Append all rows to card
-                orderCard.appendChild(orderIdRow);
-                orderCard.appendChild(foodOrderRow);
-                orderCard.appendChild(assignedRow);
-                orderCard.appendChild(statusRow);
-                orderCard.appendChild(paymentRow);
-                orderCard.appendChild(priceRow);
-                orderCard.appendChild(contactRow);
-                orderCard.appendChild(actionsRow);
-                orderCard.appendChild(dateRow);
-                
-                mobileTable.appendChild(orderCard);
+                    
+                    const actionsRow = createOrderRow('Actions', actionsDiv.outerHTML);
+                    const dateRow = createOrderRow('Ordered At', cells[9].innerHTML);
+                    
+                    orderCard.appendChild(orderIdRow);
+                    orderCard.appendChild(foodOrderRow);
+                    orderCard.appendChild(assignedRow);
+                    orderCard.appendChild(statusRow);
+                    orderCard.appendChild(paymentRow);
+                    orderCard.appendChild(priceRow);
+                    orderCard.appendChild(contactRow);
+                    orderCard.appendChild(actionsRow);
+                    orderCard.appendChild(dateRow);
+                    
+                    mobileTable.appendChild(orderCard);
+                }
             });
             
-            // Hide original table
             table.style.display = 'none';
         } else {
-            // Show original table on desktop
             const table = document.querySelector('.customer-order-index table');
             if (table) table.style.display = '';
             const mobileTable = document.querySelector('.mobile-table');
@@ -1402,26 +1659,19 @@ document.addEventListener('DOMContentLoaded', function() {
         return row;
     }
     
-    // Initial creation
     createMobileTable();
-    
-    // Update on resize
     window.addEventListener('resize', createMobileTable);
     
-    // Recreate when modals are closed (in case status changed)
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('close-modal') || 
-            e.target.classList.contains('close-payment-modal') ||
-            e.target.classList.contains('cancel-btn') ||
-            e.target.classList.contains('cancel-payment-btn')) {
-            setTimeout(createMobileTable, 100);
-        }
-    });
+    // Recreate mobile table after filtering
+    const originalApplyFilters = applyFilters;
+    applyFilters = function() {
+        originalApplyFilters();
+        createMobileTable();
+    };
 });
-</script>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Order Status Modal
+
+// Keep all your existing modal scripts
+document.addEventListener('DOMContentLoaded', function() {
     const statusModal = document.getElementById('statusModal');
     const statusBadges = document.querySelectorAll('.status-badge');
     const closeModalBtn = document.querySelector('.close-modal');
@@ -1431,7 +1681,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentStatusSpan = document.getElementById('currentStatus');
     const statusForm = document.getElementById('statusForm');
     
-    // Payment Status Modal
     const paymentModal = document.getElementById('paymentModal');
     const paymentBadges = document.querySelectorAll('.payment-badge');
     const closePaymentModalBtn = document.querySelector('.close-payment-modal');
@@ -1441,7 +1690,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentPaymentStatusSpan = document.getElementById('currentPaymentStatus');
     const paymentForm = document.getElementById('paymentForm');
     
-    // History Modal
     const historyModal = document.getElementById('historyModal');
     const closeHistoryBtn = document.querySelector('.close-history-modal');
     const closeHistoryBtn2 = document.querySelector('.close-history-btn');
@@ -1452,7 +1700,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedPaymentStatus = null;
     let currentPaymentStatus = null;
 
-    // Helper functions
     function getStatusClass(status) {
         const statusClasses = {
             'ordered': 'status-ordered',
@@ -1478,34 +1725,23 @@ document.addEventListener('DOMContentLoaded', function() {
         return isPaid === '1' ? 'Paid' : 'Not Paid';
     }
 
-    // Order Status Modal Event Listeners
     if (statusBadges.length > 0 && statusModal) {
         statusBadges.forEach(badge => {
             badge.addEventListener('click', function() {
                 const orderId = this.closest('.order-status-cell').getAttribute('data-order-id');
                 currentStatus = this.getAttribute('data-status');
-                
                 currentOrderId = orderId;
-                
-                // Update current status display
                 currentStatusSpan.textContent = formatStatusDisplay(currentStatus);
                 currentStatusSpan.className = 'current-status-badge ' + getStatusClass(currentStatus);
-                
-                // Reset selection
                 statusOptions.forEach(option => {
                     option.classList.remove('selected');
                     if (option.getAttribute('data-status') === currentStatus) {
                         option.classList.add('selected');
                     }
                 });
-                
                 confirmBtn.disabled = true;
                 selectedStatus = null;
-                
-                // FIXED: Use relative URL instead of hardcoded URL
                 statusForm.action = `/staff/customer-order/update-order/${orderId}`;
-                
-                // Show modal
                 statusModal.classList.add('active');
             });
         });
@@ -1513,13 +1749,11 @@ document.addEventListener('DOMContentLoaded', function() {
         statusOptions.forEach(option => {
             option.addEventListener('click', function() {
                 const newStatus = this.getAttribute('data-status');
-                
                 if (newStatus === currentStatus) {
                     confirmBtn.disabled = true;
                     selectedStatus = null;
                     return;
                 }
-                
                 statusOptions.forEach(opt => opt.classList.remove('selected'));
                 this.classList.add('selected');
                 selectedStatus = newStatus;
@@ -1542,7 +1776,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 return;
             }
-            
             const statusInput = document.createElement('input');
             statusInput.type = 'hidden';
             statusInput.name = 'order_status';
@@ -1551,40 +1784,27 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         statusModal.addEventListener('click', function(e) {
-            if (e.target === statusModal) {
-                closeStatusModal();
-            }
+            if (e.target === statusModal) closeStatusModal();
         });
     }
 
-    // Payment Modal Event Listeners
     if (paymentBadges.length > 0 && paymentModal) {
         paymentBadges.forEach(badge => {
             badge.addEventListener('click', function() {
                 const orderId = this.closest('.payment-status-cell').getAttribute('data-order-id');
                 currentPaymentStatus = this.getAttribute('data-is-paid');
-                
                 currentOrderId = orderId;
-                
-                // Update current payment status display
                 currentPaymentStatusSpan.textContent = getPaymentDisplay(currentPaymentStatus);
                 currentPaymentStatusSpan.className = 'current-payment-badge ' + getPaymentClass(currentPaymentStatus);
-                
-                // Reset selection
                 paymentOptions.forEach(option => {
                     option.classList.remove('selected');
                     if (option.getAttribute('data-is-paid') === currentPaymentStatus) {
                         option.classList.add('selected');
                     }
                 });
-                
                 confirmPaymentBtn.disabled = true;
                 selectedPaymentStatus = null;
-                
-                // FIXED: Use relative URL instead of hardcoded URL
                 paymentForm.action = `/staff/customer-order/update-order-payment/${orderId}`;
-                
-                // Show modal
                 paymentModal.classList.add('active');
             });
         });
@@ -1592,13 +1812,11 @@ document.addEventListener('DOMContentLoaded', function() {
         paymentOptions.forEach(option => {
             option.addEventListener('click', function() {
                 const newPaymentStatus = this.getAttribute('data-is-paid');
-                
                 if (newPaymentStatus === currentPaymentStatus) {
                     confirmPaymentBtn.disabled = true;
                     selectedPaymentStatus = null;
                     return;
                 }
-                
                 paymentOptions.forEach(opt => opt.classList.remove('selected'));
                 this.classList.add('selected');
                 selectedPaymentStatus = newPaymentStatus;
@@ -1621,7 +1839,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 return;
             }
-            
             const paymentInput = document.createElement('input');
             paymentInput.type = 'hidden';
             paymentInput.name = 'is_paid';
@@ -1630,42 +1847,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         paymentModal.addEventListener('click', function(e) {
-            if (e.target === paymentModal) {
-                closePaymentModal();
-            }
+            if (e.target === paymentModal) closePaymentModal();
         });
     }
 
-    // History Modal Event Listeners
     if (historyModal) {
         function closeHistoryModal() {
             historyModal.classList.remove('active');
         }
-
         if (closeHistoryBtn) closeHistoryBtn.addEventListener('click', closeHistoryModal);
         if (closeHistoryBtn2) closeHistoryBtn2.addEventListener('click', closeHistoryModal);
-
         historyModal.addEventListener('click', function(e) {
-            if (e.target === historyModal) {
-                closeHistoryModal();
-            }
+            if (e.target === historyModal) closeHistoryModal();
         });
     }
 });
 
-// Global function to show order history
 function showOrderHistory(orderId) {
     fetch(`/staff/customer-order/${orderId}/history/json`)
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
+            if (!response.ok) throw new Error('Network response was not ok');
             return response.json();
         })
         .then(data => {
             document.getElementById('historyOrderId').textContent = orderId.substring(0, 8);
             const timeline = document.getElementById('historyTimeline');
-            
             if (data.histories.length === 0) {
                 timeline.innerHTML = '<p>No history available for this order.</p>';
             } else {
@@ -1685,7 +1891,6 @@ function showOrderHistory(orderId) {
                     </div>
                 `).join('');
             }
-            
             document.getElementById('historyModal').classList.add('active');
         })
         .catch(error => {
