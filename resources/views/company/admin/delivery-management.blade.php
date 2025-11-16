@@ -173,11 +173,18 @@
                         </tbody>
                     </table>
 
-                    <div class="pagination-container">
-                        {{ $orders->appends(request()->query())->links() }}
-                    </div>
                 </div>
+                    <div class="pagination">
+                        <div class="count">
+                            Showing {{ $orders->firstItem() }} to {{ $orders->lastItem() }} out of {{ $orders->total() }} results
+                        </div>
 
+                        <div class="pagination-number">
+                            <div class="page-number">
+                                {{ $orders->appends(request()->query())->render('partials.paginator') }}
+                            </div>
+                        </div>
+                    </div>
             </main>
 
         </section>

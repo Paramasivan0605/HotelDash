@@ -14,7 +14,8 @@
     <!-- Sidebar -->
     <div class="sidebar">
         
-<a href="{{ route('admin-dashboard') }}" class="logo">Madras<br>darbar</a>        <ul class="side-menu">
+<a href="{{ route('admin-dashboard') }}" class="logo">Madras darbar</a>    
+    <ul class="side-menu">
             <li class="{{ request()->routeIs(['admin-dashboard', 'login']) ? 'active' : '' }}">
                 <a href="{{ route('admin-dashboard') }}"><i class='bx bxs-dashboard'></i>Dashboard</a>
             </li>

@@ -1,46 +1,59 @@
 @extends('company.admin.main')
-
 @section('title', 'Food Location')
-
 @section('content')
 
 <div class="food-menu-index">
     <section>
         <main>
 
-            <!-- ✅ Success Message -->
             @if (session('success-message'))
-                <div class="alert alert-success d-flex align-items-center mb-4" role="alert">
-                    <i class='bx bxs-check-circle me-2 fs-5'></i>
-                    <div>{{ session('success-message') }}</div>
+                <div class="success-message left-green">
+                    <i class='bx bxs-check-circle'></i>
+                    <div class="text">
+                        <span>Success</span>
+                        <span class="message">{{ session('success-message') }}</span>
+                    </div>
                 </div>
             @endif
 
-            <!-- ✅ Header Section -->
-            <div class="header"> 
-                <div class="left"> 
-                    <h1>Food Location</h1> 
+            <!-- Header -->
+            <div class="header">
+                <div class="left">
+                    <h1>Food Location</h1>
                 </div>
-                <a href="{{ route('food-location-create') }}" class="create"> 
-                    <span>Add Food Location </span> 
+                <a href="{{ route('food-location-create') }}" class="create">
+                    <span>Add Food Location</span>
                 </a>
             </div>
 
-            <!-- ✅ Data Card -->
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
+            <!-- Card -->
+            <div class="custom-card1">
+                <div class="container">
+                    <div class="header">
+                        <i class='bx bx-detail'></i>
+                        <h3>Location Wise Price</h3>
+                        <i class='bx bx-filter'></i>
 
-                    <!-- ✅ Table Wrapper -->
-                    <div class="table-responsive">
-                        <table id="foodTable" class="table align-middle table-striped table-hover mb-0">
-                            <thead class="table-light">
+                        <form action="" method="GET" id="search-form">
+                            <div class="search-field">
+                                <i class='bx bx-search' id="search-button"></i>
+                                <input type="text" name="search" placeholder="Search" value="{{ request('search') }}">
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="table-wrapper">
+                        <table class="table-custom">
+                            <thead>
                                 <tr>
-                                    <th scope="col" style="width: 5%;">#</th>
-                                    <th scope="col">Food Name</th>
-                                    <th scope="col">Location</th>
-                                    <th scope="col" style="width: 15%;">Price</th>
+                                    <th>#</th>
+                                    <th>Food Name</th>
+                                    <th>Location</th>
+                                    <th>Price</th>
                                 </tr>
                             </thead>
+
                             <tbody>
                                 @forelse ($food as $index => $item)
                                     <tr>
@@ -51,18 +64,24 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="text-center py-4 text-muted">
-                                            <i class='bx bx-info-circle me-1'></i> No Food Locations Found
-                                        </td>
+                                        <td colspan="4" class="text-center">No Food Locations Found</td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
 
-                    <!-- ✅ Pagination -->
-                    <div class="d-flex justify-content-center mt-4">
-                        {{ $food->links('pagination::bootstrap-5') }}
+                    <!-- Pagination -->
+                    <div class="pagination">
+                        <div class="count">
+                            Showing {{ $food->firstItem() }} to {{ $food->lastItem() }} out of {{ $food->total() }} results
+                        </div>
+
+                        <div class="pagination-number">
+                            <div class="page-number">
+                                {{ $food->render('partials.paginator') }}
+                            </div>
+                        </div>
                     </div>
 
                 </div>
@@ -73,6 +92,7 @@
 </div>
 
 @endsection
+
 
 
 @section('scripts')
