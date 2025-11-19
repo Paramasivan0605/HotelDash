@@ -169,6 +169,7 @@ class FoodMenuController extends Controller
     public function update(Request $request, $id) : RedirectResponse
     {
         $menu = FoodMenu::findOrFail($id);
+        $category = FoodCategory::findOrFail($menu->category_id);
 
         if ($request->anyFilled(['name', 'description', 'price', 'category', 'image'])) {
 
@@ -189,27 +190,30 @@ class FoodMenuController extends Controller
             if ($request->filled('category')) {
                 $updateData['category'] = $request->input('category');
             }
+           if ($request->hasFile('category_image')) {
 
-            if ($request->hasFile('image')) {
+    // delete old image
+    if ($category->image && file_exists($_SERVER['DOCUMENT_ROOT'] . '/' . $category->image)) {
+        unlink($_SERVER['DOCUMENT_ROOT'] . '/' . $category->image);
+    }
 
-                // check if image path exists then delete the path inside storage
-                $image = $menu->image;
+    $file = $request->file('category_image');
+    $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
 
-                if ($image) {
-                    Storage::delete($image);
-                }
+    // Hostinger correct absolute path
+    $destinationPath = $_SERVER['DOCUMENT_ROOT'] . '/images/food-category';
 
-                // Get the original file name
-                $file = $request->file('image');
+    if (!file_exists($destinationPath)) {
+        mkdir($destinationPath, 0755, true);
+    }
 
-                // Generate a unique name for the uploaded file
-                $fileName = $file->hashName();
+    $file->move($destinationPath, $fileName);
 
-                // Store the file with the new name
-                $imagePath = $file->storeAs('images/food-menu', $fileName);
+    // Save relative path for asset()
+    $category->image = 'images/food-category/' . $fileName;
+    $category->save();
+}
 
-                $updateData['image'] = $imagePath;
-            }
 
             $updated = $menu->update($updateData);
 

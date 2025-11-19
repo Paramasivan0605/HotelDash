@@ -40,13 +40,13 @@
                             <div class="drag-area">
                                 <i class='bx bxs-cloud-upload'></i>
                                 <h2 class="drag-text">Drag and drop to upload image</h2>
-                                <input type="file" hidden name="image" accept="image/*" class="select-image-input">
+                                <input type="file" hidden name="category_image" accept="image/*" class="select-image-input">
                             </div>
 
                             <div class="details">
                                 <div class="label">
                                     <span>Name</span>
-                                    <input type="text" name="name" placeholder="{{ $menu->name }}">
+                                    <input type="text" name="name" placeholder="{{ $menu->name }}" value="{{ $menu->name}}">
 
                                     <span>Category</span>
                                     <div class="dropdown">
@@ -61,7 +61,7 @@
                                     </div>
 
                                     <span>Price</span>
-                                    <input type="text" name="price" placeholder="{{ $menu->price }}">
+                                    <input type="text" name="price" placeholder="{{ $menu->price }}" value="{{$menu->price}}">
 
                                     <span>Description</span>
                                     <input type="text" name="description" placeholder="Description line 1"
