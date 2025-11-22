@@ -54,32 +54,45 @@
   </div>
 </div>
 
-{{-- Location Header --}}
-<div class="location-header-section">
-    <div class="location-header-overlay"></div>
-    <div class="container py-5 position-relative" style="margin-top: 3rem;">
-        <div class="row align-items-center g-4">
-            <div class="col-lg-8">
-                <div class="location-info-card">
-                    <div class="location-icon">
-                        <i class='bx bx-map-pin'></i>
-                    </div>
-                    <div class="location-details">
-                        <span class="location-badge">📍 Now Serving</span>
-                        <h1 class="location-name">{{ $location->location_name }}</h1>
-                        <div class="location-meta">
-                            <span class="currency-pill">
-                                <i class='bx bx-dollar-circle'></i>
-                                {{ $location->currency }}
-                            </span>
-                            <span class="location-status">
-                                <i class='bx bx-time-five'></i>
-                                Open Now
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+{{-- Header Section --}}
+<div class="top-bar clean-header">
+    <div class="location-clean">
+        <span class="deliver-label">Delivering to</span>
+        <span class="deliver-location">{{ $location->location_name }}</span>
+    </div>
+</div>
+
+
+
+    {{-- Search Bar --}}
+
+
+    {{-- Banner Section --}}
+    {{-- Banner Section - Updated for Beautiful Desktop + Perfect Mobile --}}
+<div class="banner-section">
+    <div class="container-fluid p-0">
+        <div class="banner-wrapper">
+            @php
+                $banner = \App\Models\Banner::latest()->first();
+            @endphp
+
+            @if($banner && $banner->image)
+                <img src="{{ asset($banner->image) }}" 
+                     alt="Promotion Banner" 
+                     class="banner-image-desktop">
+            @else
+                <img src="{{ asset('images/default-banner.jpg') }}" 
+                     alt="Default Banner" 
+                     class="banner-image-desktop">
+            @endif
+        </div>
+    </div>
+</div>
+        <div class="search-container-wrapper">
+        <div class="search-box">
+            <i class='bx bx-search'></i>
+            <input type="text" placeholder='Search for dishes...' class="search-input">
+            <i class='bx bx-microphone microphone-icon'></i>
         </div>
     </div>
 </div>
@@ -87,24 +100,24 @@
 {{-- Categories Section --}}
 @if(!$categories->isEmpty())
 <div class="categories-section">
-    <div class="container py-4">
-        <div class="categories-scroll-container">
-            <div class="categories-grid">
-                <button class="category-card active" data-category="all">
-                    <div class="category-icon">🍽️</div>
-                    <h4>All Items</h4>
+    <div class="categories-container">
+        <div class="categories-scroll">
+            <div class="categories-list">
+                <button class="category-item active" data-category="all">
+                    <div class="category-icon-wrapper">🍽️</div>
+                    <span>All Items</span>
                 </button>
                 
                 @foreach($categories as $category)
-                    <button class="category-card" data-category="{{ $category->id }}">
-                        <div class="category-icon">
+                    <button class="category-item" data-category="{{ $category->id }}">
+                        <div class="category-icon-wrapper">
                             @if($category->image)
                                 <img src="{{ asset($category->image) }}" alt="{{ $category->name }}">
                             @else
                                 🍴
                             @endif
                         </div>
-                        <h4>{{ $category->name }}</h4>
+                        <span>{{ $category->name }}</span>
                     </button>
                 @endforeach
             </div>
@@ -113,1020 +126,1081 @@
 </div>
 @endif
 
-{{-- Food Menu Section --}}
-<div id="menuSection" class="menu-container" style="display:none;">
-    <div class="container py-5">
-        <div class="menu-section-header">
-            <h2 class="section-title" id="categoryTitle">Our Delicious Menu</h2>
-        </div>
-        
-        @if($foodMenu->isEmpty())
-            <div class="empty-menu-state">
-                <div class="empty-icon">🍽️</div>
-                <h3>No Menu Items Available</h3>
-                <p>Check back soon for delicious options!</p>
+{{-- Menu Section --}}
+<div class="full-bg-wrapper">
+
+    <div id="menuSection" class="menu-section">
+        <div class="menu-container-wrapper">
+            <div class="menu-header">
+                <h2 class="menu-title" id="categoryTitle">Our Delicious Menu</h2>
             </div>
-        @else
-            <div class="food-menu-grid">
-                @foreach($foodMenu as $item)
-                    @php
-                        $categoryImage = '';
-                        if($item->category_id && $categories->where('id', $item->category_id)->first()) {
-                            $category = $categories->where('id', $item->category_id)->first();
-                            $categoryImage = $category->image ? asset($category->image) : '';
-                        }
-                    @endphp
-                    
-                    <div class="food-item-card" data-category="{{ $item->category_id ?? 'uncategorized' }}">
-                        <div class="card-background">
-                            @if($categoryImage)
-                                <img src="{{ $categoryImage }}" alt="{{ $item->category ?? 'Food Item' }}" class="category-bg-image">
-                            @else
-                                <div class="animated-gradient-bg"></div>
-                            @endif
-                        </div>
+            
+            @if($foodMenu->isEmpty())
+                <div class="empty-state">
+                    <div class="empty-icon">🍽️</div>
+                    <h3>No Menu Items Available</h3>
+                    <p>Check back soon for delicious options!</p>
+                </div>
+            @else
+                <div class="menu-grid">
+                    @foreach($foodMenu as $item)
+                        @php
+                            $categoryImage = '';
+                            if($item->category_id && $categories->where('id', $item->category_id)->first()) {
+                                $category = $categories->where('id', $item->category_id)->first();
+                                $categoryImage = $category->image ? asset($category->image) : '';
+                            }
+                        @endphp
                         
-                        <div class="card-content-wrapper">
-                            @if($item->category)
-                                <div class="item-category-tag">
-                                    <i class='bx bx-food-tag'></i>
-                                    {{ $item->category }}
-                                </div>
-                            @endif
-                            
-                            <div class="item-info">
-                                <h3 class="item-name">{{ $item->name }}</h3>
+                        <div class="menu-card" data-category="{{ $item->category_id ?? 'uncategorized' }}">
+                            <div class="menu-card-body">
+                                @if($item->category)
+                                    <div class="menu-card-tag">{{ $item->category }}</div>
+                                @endif
                                 
-                                <div class="item-footer">
-                                    <div class="item-price">
-                                        <span class="currency">{{ $location->currency }}</span>
-                                        <span class="price">{{ number_format($item->price, 2) }}</span>
+                                <h3 class="menu-card-title">{{ $item->name }}</h3>
+                                
+                                {{-- @if($item->description)
+                                    <p class="menu-card-description">{{ Str::limit($item->description, 50) }}</p>
+                                @endif --}}
+                                
+                                <div class="menu-card-bottom">
+                                    <div class="menu-card-price">
+                                        <span class="price-value">{{ $location->currency }} {{ number_format($item->price, 2) }}</span>
                                     </div>
                                     
-                                    <button class="btn-add-item" 
+                                    <button class="add-btn-new" 
                                             data-food-id="{{ $item->id }}" 
                                             data-food-name="{{ $item->name }}" 
                                             data-food-price="{{ $item->price }}"
-                                            data-food-category="{{ $item->category ?? '' }}"
-                                            data-food-description="{{ $item->description ?? '' }}"
-                                            data-category-image="{{ $categoryImage }}"
-                                            data-delivery-type=""
-                                            data-location-id=""
                                             data-bs-toggle="modal" 
                                             data-bs-target="#itemModal{{ $item->id }}">
-                                        <i class='bx bx-cart-add'></i>
+                                        <i class='bx bx-plus'></i>
+                                        Add
                                     </button>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {{-- Enhanced Modal with Background --}}
-                    <div class="modal fade item-modal" id="itemModal{{ $item->id }}" tabindex="-1">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content">
-                                <div class="modal-background">
-                                    @if($categoryImage)
-                                        <img src="{{ $categoryImage }}" alt="{{ $item->category ?? 'Food Item' }}">
-                                    @else
-                                        <div class="animated-gradient-bg"></div>
-                                    @endif
-                                </div>
-                                
-                                <div class="modal-header">
-                                    <div class="modal-header-content">
-                                        <i class='bx bx-dish modal-icon'></i>
-                                        <h3 class="modal-title">{{ $item->name }}</h3>
-                                    </div>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal">X</button>
-                                </div>
-                                
-                                <div class="modal-body">
-                                    @if($item->category)
-                                        <div class="modal-category">
-                                            <i class='bx bx-category-alt'></i>
-                                            <span>{{ $item->category }}</span>
+                        {{-- Item Detail Modal --}}
+                        <div class="modal fade" id="itemModal{{ $item->id }}" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content item-modal">
+                                    <div class="modal-header">
+                                        <div class="modal-header-info">
+                                            <i class='bx bx-dish'></i>
+                                            <h3 class="modal-title">{{ $item->name }}</h3>
                                         </div>
-                                    @endif
-                                    
-                                    @if($item->description)
-                                        <div class="modal-description">
-                                            <div class="description-header">
-                                                <i class='bx bx-info-circle'></i>
-                                                <span>About this dish</span>
-                                            </div>
-                                            <div class="description-content">
-                                                {{ $item->description }}
-                                            </div>
-                                        </div>
-                                    @endif
-                                    
-                                    <div class="modal-price-box">
-                                        <div class="price-box-header">
-                                            <i class='bx bx-purchase-tag'></i>
-                                            <span>Price</span>
-                                        </div>
-                                        <span class="modal-price-value">
-                                            {{ $location->currency }} {{ number_format($item->price, 2) }}
-                                        </span>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal">
+                                            <i class='bx bx-x'></i>
+                                        </button>
                                     </div>
                                     
-                                    <button type="button" 
-                                            class="btn-confirm-add add-to-cart"
-                                            data-food-id="{{ $item->id }}" 
-                                            data-food-name="{{ $item->name }}" 
-                                            data-food-price="{{ $item->price }}"
-                                            data-delivery-type="{{ $item->delivery_type ?? '' }}"
-                                            data-location-id="{{ $location->location_id }}"
-                                            data-bs-dismiss="modal">
-                                        <i class='bx bx-cart-add'></i>
-                                        Add to Cart
-                                    </button>
+                                    <div class="modal-body">
+                                        @if($item->category)
+                                            <div class="modal-category">
+                                                <i class='bx bx-category-alt'></i>
+                                                <span>{{ $item->category }}</span>
+                                            </div>
+                                        @endif
+                                        
+                                        @if($item->description)
+                                            <div class="modal-description">
+                                                <div class="description-label">
+                                                    <i class='bx bx-info-circle'></i>
+                                                    <span>About this dish</span>
+                                                </div>
+                                                <p>{{ $item->description }}</p>
+                                            </div>
+                                        @endif
+                                        
+                                        <div class="modal-price-section">
+                                            <div class="price-label">
+                                                <i class='bx bx-purchase-tag'></i>
+                                                <span>Price</span>
+                                            </div>
+                                            <span class="price-amount">
+                                                {{ $location->currency }} {{ number_format($item->price, 2) }}
+                                            </span>
+                                        </div>
+                                        
+                                        <button type="button" 
+                                                class="add-to-cart-btn add-to-cart"
+                                                data-food-id="{{ $item->id }}" 
+                                                data-food-name="{{ $item->name }}" 
+                                                data-food-price="{{ $item->price }}"
+                                                data-food-category="{{ $item->category ?? '' }}"
+                                                data-food-description="{{ $item->description ?? '' }}"
+                                                data-category-image="{{ $categoryImage }}"
+                                                data-delivery-type=""
+                                                data-location-id="{{ $location->location_id }}"
+                                                data-bs-dismiss="modal">
+                                            <i class='bx bx-cart-add'></i>
+                                            Add to Cart
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                @endforeach
-            </div>
-        @endif
+                    @endforeach
+                </div>
+            @endif
+        </div>
     </div>
 </div>
-
 <style>
-    /* Color Palette */
-    :root {
-        --primary-red: #dc2626;
-        --secondary-red: #ef4444;
-        --dark-red: #991b1b;
-        --light-red: #fee2e2;
-        --accent-orange: #f97316;
-        --red-gradient: linear-gradient(135deg, #dc2626 0%, #f97316 100%);
-        --dark-gradient: linear-gradient(135deg, #991b1b 0%, #dc2626 100%);
+    .full-bg-wrapper {
+    background: url('/mnt/data/28dcc8a0-6cf8-4280-b368-27032544a3be.png');
+    background-size: cover;      /* covers full area like screenshot */
+    background-position: center; /* centers image */
+    background-repeat: no-repeat;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+:root {
+    --primary-red: #dc2626;
+    --dark-red: #991b1b;
+    --light-red: #fee2e2;
+    --white: #ffffff;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-500: #6b7280;
+    --gray-800: #1f2937;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Container */
+.top-bar-container,
+.search-container-wrapper,
+.banner-container,
+.categories-container,
+.menu-container-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.top-bar-container {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.search-container-wrapper {
+    margin-top: -1.5rem;
+    position: relative;
+    z-index: 10;
+}
+
+.banner-container {
+    padding: 0 1rem;
+}
+
+.categories-container {
+    padding: 1rem;
+}
+
+.menu-container-wrapper {
+    padding: 2rem 1rem;
+}
+
+/* Flex Utilities */
+.top-bar-left,
+.top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.logo-img {
+    height: 40px;
+}
+/* === Beautiful Banner - Desktop & Mobile Perfect === */
+.banner-section {
+    margin: 1rem 0 1.5rem;
+    padding: 0 1rem;
+    border-radius: 1.5rem;
+    overflow: hidden;
+}
+
+.banner-wrapper {
+    position: relative;
+    width: 100%;
+    height: 280px; /* Desktop height */
+    border-radius: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(220, 38, 38, 0.15);
+    border: 4px solid #fff;
+}
+
+.banner-image-desktop {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.banner-image-desktop:hover {
+    transform: scale(1.05);
+}
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+    .banner-section {
+        margin: 0.75rem 0 1.25rem;
+        padding: 0 0.75rem;
     }
 
-    /* Delivery Modal */
-    .delivery-modal-header {
-        background: var(--red-gradient);
-        padding: 2.5rem 2rem 2rem;
-        text-align: center;
-        color: white;
+    .banner-wrapper {
+        height: 200px;
+        border-radius: 1.2rem;
+        box-shadow: 0 8px 20px rgba(220, 38, 38, 0.12);
+        border: 3px solid #fff;
     }
+}
 
-    .icon-container {
-        width: 70px;
-        height: 70px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1.5rem;
-        font-size: 2.2rem;
-        animation: bounceIn 0.6s ease;
+@media (max-width: 480px) {
+    .banner-wrapper {
+        height: 180px;
+        border-radius: 1rem;
     }
+}
+.cart-btn,
+.profile-btn {
+    position: relative;
+}
 
-    @keyframes bounceIn {
-        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-        40% { transform: translateY(-20px); }
-        60% { transform: translateY(-10px); }
-    }
+.cart-btn i,
+.profile-btn i {
+    font-size: 2rem;
+}
 
-    .modal-title-custom {
-        font-size: 1.75rem;
-        font-weight: 800;
-        margin: 0 0 0.5rem;
-    }
+/* Header Styles */
+.header-wrapper {
+    background: transparent !important;
+}
+.top-bar {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0.5rem 0;  
+}
 
-    .modal-subtitle {
-        margin: 0;
-        opacity: 0.9;
-        font-size: 1rem;
-    }
+.new-top-left {
+    align-items: flex-start;
+}
 
-    .delivery-options-grid {
-        display: grid;
+.logo-img,
+.profile-btn,
+.top-bar-right {
+    display: none !important;
+}
+
+
+.top-bar {
+    background: linear-gradient(135deg, var(--primary-red) 0%, var(--dark-red) 100%);
+    color: var(--white);
+}
+
+.location-label {
+    font-size: 0.75rem;
+    opacity: 0.9;
+}
+
+.location-name-text {
+    font-weight: 700;
+    font-size: 1.125rem;
+    margin-top: 0.25rem;
+}
+
+.location-address {
+    font-size: 0.75rem;
+    opacity: 0.85;
+    margin-top: 0.125rem;
+}
+
+.cart-btn, .profile-btn {
+    background: transparent;
+    border: none;
+    color: var(--white);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.cart-btn:hover, .profile-btn:hover {
+    transform: scale(1.1);
+}
+.location-clean span {
+    color: #e20a0f !important;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--white);
+    color: var(--primary-red);
+    font-size: 0.75rem;
+    font-weight: 700;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Search Bar */
+.search-container {
+    margin-top: -1.5rem;
+    position: relative;
+    z-index: 10;
+}
+.search-container-wrapper {
+    margin-top: 1rem !important;
+    margin-bottom: 1.5rem;
+}
+
+.search-box {
+    background: var(--white);
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: 2px solid var(--gray-100);
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    color: var(--gray-800);
+}
+
+.search-input::placeholder {
+    color: var(--gray-500);
+}
+
+.search-box i {
+    font-size: 1.25rem;
+}
+/* CLEAN MODERN HEADER */
+.clean-header {
+    background: transparent !important;
+    padding: 10px 15px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-end;
+    height: 70px;
+    backdrop-filter: blur(2px);
+    position: relative;
+    z-index: 10;
+}
+
+.location-clean {
+    display: flex;
+    flex-direction: column;
+    color: #ffffff;
+    margin-left: 5px;
+}
+
+.deliver-label {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.deliver-location {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 20px;
+}
+
+/* REMOVE LOGO + CART + ICON AREA */
+.top-bar-left img,
+.top-bar-right,
+.profile-btn {
+    display: none !important;
+}
+
+/* REMOVE WHITE BACKGROUND ABOVE */
+.header-wrapper {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.search-box .bx-search {
+    color: var(--gray-500);
+}
+
+.microphone-icon {
+    color: var(--primary-red);
+    cursor: pointer;
+}
+
+/* Banner */
+.banner-section {
+    padding: 2rem 0;
+}
+
+.banner-image-wrapper {
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.banner-image {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+
+/* Categories */
+.categories-section {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+
+.categories-scroll {
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-red) var(--gray-100);
+}
+
+.categories-scroll::-webkit-scrollbar {
+    height: 6px;
+}
+
+.categories-scroll::-webkit-scrollbar-track {
+    background: var(--gray-100);
+}
+
+.categories-scroll::-webkit-scrollbar-thumb {
+    background: var(--primary-red);
+    border-radius: 10px;
+}
+
+.categories-list {
+    display: flex;
+    gap: 1rem;
+    min-width: min-content;
+}
+
+.category-item {
+    background: var(--white);
+    border: 2px solid var(--gray-200);
+    border-radius: 1rem;
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.3s;
+    font-weight: 600;
+    color: var(--gray-800);
+}
+
+.category-item:hover,
+.category-item.active {
+    background: var(--primary-red);
+    border-color: var(--primary-red);
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
+.category-icon-wrapper {
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.category-icon-wrapper img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Menu Section */
+.menu-section {
+    background: transparent !important; /* allow background image to show */
+    min-height: 100vh;
+}
+
+
+.menu-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.menu-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--gray-800);
+}
+
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.menu-card {
+    background: rgba(255, 255, 255, 0.8); /* slight transparency */
+    backdrop-filter: blur(6px);    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s;
+    border: 1px solid var(--gray-100);
+}
+
+.menu-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.1);
+    border-color: var(--primary-red);
+}
+
+.menu-card.hidden {
+    display: none;
+}
+
+.menu-card-body {
+    padding: 0.875rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.menu-card-tag {
+    background: var(--light-red);
+    color: var(--primary-red);
+    font-size: 0.625rem;
+    font-weight: 700;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    width: fit-content;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.menu-card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin: 0;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.4rem;
+}
+
+.menu-card-description {
+    font-size: 0.7rem;
+    color: var(--gray-500);
+    line-height: 1.3;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.menu-card-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.25rem;
+    padding-top: 0.625rem;
+    border-top: 1px solid var(--gray-100);
+}
+
+.menu-card-price {
+    display: flex;
+    flex-direction: column;
+}
+
+.price-value {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--primary-red);
+}
+
+.add-btn-new {
+    background: var(--primary-red);
+    color: var(--white);
+    border: none;
+    padding: 0.4rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.add-btn-new:hover {
+    background: var(--dark-red);
+    transform: scale(1.05);
+}
+
+.add-btn-new i {
+    font-size: 1rem;
+}
+
+/* Modal Styles */
+.item-modal .modal-content {
+    border: none;
+    border-radius: 1.5rem;
+    overflow: hidden;
+}
+
+.item-modal .modal-header {
+    background: var(--white);
+    border-bottom: 3px solid var(--primary-red);
+    padding: 1.5rem;
+}
+
+.modal-header-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-header-info i {
+    font-size: 2rem;
+    color: var(--primary-red);
+}
+
+.item-modal .modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-800);
+}
+
+.item-modal .btn-close {
+    background: var(--primary-red);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    border: none;
+    cursor: pointer;
+}
+
+.item-modal .modal-body {
+    padding: 1.5rem;
+}
+
+.modal-category {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--light-red);
+    color: var(--dark-red);
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.modal-description {
+    margin-bottom: 1rem;
+    background: var(--gray-50);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border-left: 4px solid var(--primary-red);
+}
+
+.description-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: 0.5rem;
+}
+
+.modal-description p {
+    color: var(--gray-500);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.modal-price-section {
+    background: var(--primary-red);
+    padding: 1rem 1.25rem;
+    border-radius: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.price-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--white);
+    font-weight: 600;
+}
+
+.price-amount {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--white);
+}
+
+.add-to-cart-btn {
+    width: 100%;
+    background: var(--dark-red);
+    color: var(--white);
+    border: none;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.add-to-cart-btn:hover {
+    background: var(--primary-red);
+    transform: translateY(-2px);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--white);
+    border-radius: 1rem;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: var(--gray-500);
+}
+
+/* Delivery Modal */
+.delivery-modal-header {
+    background: linear-gradient(135deg, var(--primary-red) 0%, var(--dark-red) 100%);
+    padding: 2rem;
+    text-align: center;
+    color: var(--white);
+}
+
+.icon-container {
+    width: 64px;
+    height: 64px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 2rem;
+}
+
+.modal-title-custom {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.modal-subtitle {
+    opacity: 0.9;
+}
+
+.delivery-options-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    padding: 1.5rem;
+}
+
+.delivery-option-card {
+    background: var(--white);
+    border: 2px solid var(--gray-200);
+    border-radius: 1rem;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.delivery-option-card:hover {
+    border-color: var(--primary-red);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(220, 38, 38, 0.2);
+}
+
+.option-icon {
+    font-size: 3rem;
+    margin-bottom: 0.75rem;
+}
+
+.delivery-option-card h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0.5rem 0;
+    color: var(--gray-800);
+}
+
+.delivery-option-card p {
+    color: var(--gray-500);
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.option-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--primary-red);
+    color: var(--white);
+    padding: 0.25rem 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .menu-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 1.25rem;
-        padding: 1.75rem;
+        gap: 0.625rem;
+    }
+    
+    .delivery-options-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .banner-image {
+        height: 180px;
     }
 
-    .delivery-option-card {
-        background: white;
-        border: 2px solid #e5e7eb;
-        border-radius: 16px;
-        padding: 1.75rem 1.25rem;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
+    .menu-card-title {
+        font-size: 0.875rem;
     }
 
-    .delivery-option-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: var(--red-gradient);
-        transition: left 0.3s ease;
-        z-index: 0;
+    .menu-card-description {
+        font-size: 0.675rem;
     }
 
-    .delivery-option-card:hover::before {
-        left: 0;
-    }
-
-    .delivery-option-card:hover {
-        border-color: var(--primary-red);
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(220, 38, 38, 0.25);
-    }
-
-    .delivery-option-card:hover * {
-        color: white;
-        position: relative;
-        z-index: 1;
-    }
-
-    .option-icon {
-        font-size: 3.5rem;
-        margin-bottom: 1rem;
-        transition: all 0.3s ease;
-    }
-
-    .delivery-option-card:hover .option-icon {
-        transform: scale(1.15);
-    }
-
-    .delivery-option-card h4 {
-        font-size: 1.15rem;
-        font-weight: 700;
-        margin: 0.5rem 0;
-        color: #1f2937;
-        transition: color 0.3s ease;
-    }
-
-    .delivery-option-card p {
-        color: #6b7280;
-        margin: 0;
-        font-size: 0.9rem;
-        transition: color 0.3s ease;
-    }
-
-    .option-badge {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        background: var(--red-gradient);
-        color: white;
-        padding: 0.35rem 0.7rem;
-        border-radius: 15px;
-        font-size: 0.7rem;
-        font-weight: 700;
-        z-index: 2;
-    }
-
-   
-    /* Location Header Section */
-    .location-header-section {
-        background: var(--red-gradient);
-        position: relative;
-        min-height: 280px;
-        display: flex;
-        align-items: center;
-        overflow: hidden;
-    }
-
-    .location-header-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-image: url('{{ asset('images/bg-image.jpeg') }}');
-        background-size: 100px 100px;
-        opacity: 0.3;
-    }
-
-    .location-info-card {
-        background: var(--red-gradient);
-        backdrop-filter: blur(20px);
-        border-radius: 24px;
-        padding: 2rem;
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-    }
-
-    .location-icon {
-        width: 80px;
-        height: 80px;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2.5rem;
-        color: white;
-        flex-shrink: 0;
-    }
-
-    .location-badge {
-        display: inline-block;
-        background: rgba(255, 255, 255, 0.3);
-        color: white;
-        padding: 0.4rem 1rem;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-
-    .location-name {
-        font-size: 2.5rem;
-        font-weight: 900;
-        color: white;
-        margin: 0.5rem 0;
-        line-height: 1.2;
-        letter-spacing: -1px;
-    }
-
-    .location-meta {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .currency-pill,
-    .location-status {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: rgba(255, 255, 255, 0.3);
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 0.95rem;
-    }
-
-    /* Categories */
-    .categories-section {
-        background: white;
-        border-bottom: 2px solid #f3f4f6;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    }
-
-    .categories-scroll-container {
-        overflow-x: auto;
-        scrollbar-width: thin;
-        scrollbar-color: var(--primary-red) #f3f4f6;
-    }
-
-    .categories-scroll-container::-webkit-scrollbar {
-        height: 6px;
-    }
-
-    .categories-scroll-container::-webkit-scrollbar-track {
-        background: #f3f4f6;
-        border-radius: 10px;
-    }
-
-    .categories-scroll-container::-webkit-scrollbar-thumb {
-        background: var(--red-gradient);
-        border-radius: 10px;
-    }
-
-    .categories-grid {
-        display: flex;
-        gap: 1rem;
-        padding: 0.5rem 0;
-        min-width: min-content;
-    }
-
-    .category-card {
-        background: white;
-        border: 2px solid #e5e7eb;
-        border-radius: 16px;
-        padding: 1rem 1.5rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 0.65rem;
-        white-space: nowrap;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .category-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: var(--red-gradient);
-        transition: left 0.3s ease;
-        z-index: 0;
-    }
-
-    .category-card:hover::before,
-    .category-card.active::before {
-        left: 0;
-    }
-
-    .category-card:hover,
-    .category-card.active {
-        border-color: var(--primary-red);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(220, 38, 38, 0.25);
-    }
-
-    .category-card:hover *,
-    .category-card.active * {
-        color: white;
-        position: relative;
-        z-index: 1;
-    }
-
-    .category-icon {
-        font-size: 1.75rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-    }
-
-    .category-icon img {
-        width: 35px;
-        height: 35px;
-        object-fit: cover;
-        border-radius: 50%;
-    }
-
-    .category-card h4 {
-        margin: 0;
-        font-size: 0.95rem;
-        font-weight: 700;
-        color: #1f2937;
-        transition: color 0.3s ease;
-    }
-
-    /* Menu Section */
-    .menu-container {
-        background-image: url('{{ asset('images/bg-image.jpeg') }}');
-        min-height: 100vh;
-        padding: 2rem 0;
-    }
-
-    .menu-section-header {
-        text-align: center;
-        margin-bottom: 2.5rem;
-    }
-
-    .section-title {
-        font-size: 2rem;
-        font-weight: 800;
-        color: #1f2937;
-        margin: 0;
-        letter-spacing: -0.5px;
-    }
-
-    /* Food Menu Grid */
-    .food-menu-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 1.5rem;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 1rem;
-    }
-
-    .food-item-card {
-        background: white;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-        position: relative;
-        border: 2px solid transparent;
-        min-height: 180px;
-    }
-
-    .food-item-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 35px rgba(220, 38, 38, 0.2);
-        border-color: var(--primary-red);
-    }
-
-    .food-item-card.hidden {
-        display: none;
-    }
-
-    .card-background {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 0;
-        overflow: hidden;
-    }
-
-    .category-bg-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        filter: blur(8px) brightness(0.7);
-        transform: scale(1.1);
-        transition: all 0.5s ease;
-    }
-
-    .food-item-card:hover .category-bg-image {
-        filter: blur(10px) brightness(0.6);
-        transform: scale(1.15);
-    }
-
-    .animated-gradient-bg {
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, #dc2626 0%, #f97316 100%);
-        filter: blur(8px);
-        animation: gradientShift 3s ease infinite;
-        background-size: 200% 200%;
-    }
-
-    @keyframes gradientShift {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-
-    .card-content-wrapper {
-        position: relative;
-        z-index: 1;
-        padding: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        min-height: 180px;
-    }
-
-    .item-category-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: var(--red-gradient);
-        color: white;
-        padding: 0.5rem 1.1rem;
-        border-radius: 25px;
+    .add-btn-new {
+        padding: 0.375rem 0.625rem;
         font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        width: fit-content;
-        box-shadow: 0 2px 10px rgba(220, 38, 38, 0.3);
     }
 
-    .item-category-tag i {
-        font-size: 1rem;
+    .price-value {
+        font-size: 0.9rem;
     }
 
-    .item-info {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        flex: 1;
+    .menu-card-body {
+        padding: 0.75rem;
     }
+}
 
-    .item-name {
-        font-size: 1.35rem;
-        font-weight: 800;
-        color: #1f2937;
-        margin: 0;
-        line-height: 1.3;
-    }
-
-    .item-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-top: 1rem;
-        border-top: 2px solid #f3f4f6;
-        margin-top: auto;
-    }
-
-    .item-price {
-        display: flex;
-        align-items: baseline;
-        gap: 0.3rem;
-        color: var(--primary-red);
-        font-weight: 900;
-    }
-
-    .item-price .currency {
-        font-size: 1rem;
-    }
-
-    .item-price .price {
-        font-size: 1.75rem;
-    }
-
-    .btn-add-item {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        background: var(--red-gradient);
-        border: none;
-        color: white;
-        font-size: 1.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(220, 38, 38, 0.35);
-    }
-
-    .btn-add-item:hover {
-        transform: scale(1.15) rotate(90deg);
-        box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
-    }
-
-    .btn-add-item i {
-        transition: transform 0.3s ease;
-    }
-
-    /* Modal */
-    .item-modal .modal-content {
-        border: none;
-        border-radius: 24px;
-        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
-        overflow: hidden;
-        position: relative;
-    }
-
-    .modal-background {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 0;
-    }
-
-    .modal-background img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        filter: blur(20px) brightness(0.5);
-    }
-
-    .item-modal .modal-header {
-        background: rgba(255, 255, 255, 0.98);
-        backdrop-filter: blur(15px);
-        color: #1f2937;
-        padding: 1.75rem 2rem;
-        border: none;
-        border-radius: 24px 24px 0 0;
-        position: relative;
-        z-index: 1;
-        border-bottom: 3px solid var(--primary-red);
-    }
-
-    .modal-header-content {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .modal-icon {
-        font-size: 2rem;
-        color: var(--primary-red);
-        animation: bounce 2s infinite;
-    }
-
-    @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-5px); }
-    }
-
-    .item-modal .modal-title {
-        font-size: 1.65rem;
-        font-weight: 900;
-        margin: 0;
-        color: #1f2937;
-    }
-
-    .item-modal .btn-close {
-        background: var(--red-gradient);
-        border-radius: 50%;
-        opacity: 1;
-        width: 35px;
-        height: 35px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        color: white;
-    }
-
-    .item-modal .btn-close:hover {
-        transform: rotate(90deg) scale(1.1);
-        box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
-    }
-
-    .item-modal .modal-body {
-        padding: 2rem;
-        position: relative;
-        z-index: 1;
-        /* background: rgba(255, 255, 255, 0.98); */
-        backdrop-filter: blur(15px);
-        max-height: 70vh;
-        overflow-y: auto;
-    }
-
-    .modal-category {
-        display: flex;
-        align-items: center;
-        gap: 0.65rem;
-        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-        color: var(--dark-red);
-        padding: 0.85rem 1.35rem;
-        border-radius: 15px;
-        font-weight: 700;
-        margin-bottom: 1.5rem;
-        font-size: 0.95rem;
-        border: 2px solid var(--light-red);
-    }
-
-    .modal-category i {
-        font-size: 1.4rem;
-        color: var(--primary-red);
-    }
-
-    .modal-description {
-        margin-bottom: 1.5rem;
-        background: #f9fafb;
-        padding: 1.25rem;
-        border-radius: 12px;
-        border-left: 4px solid var(--primary-red);
-    }
-
-    .description-header {
-        display: flex;
-        align-items: center;
+@media (max-width: 480px) {
+    .menu-grid {
+        grid-template-columns: repeat(2, 1fr);
         gap: 0.5rem;
-        font-weight: 700;
-        color: #374151;
-        margin-bottom: 0.75rem;
-        font-size: 1rem;
     }
 
-    .description-header i {
-        font-size: 1.3rem;
-        color: var(--primary-red);
+    .menu-card-title {
+        font-size: 0.8rem;
+        min-height: 2rem;
     }
 
-    .description-content {
-        color: #6b7280;
-        font-size: 1rem;
-        line-height: 1.7;
-        margin: 0;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        max-height: 150px;
-        overflow-y: auto;
-        padding-right: 5px;
+    .menu-card-body {
+        padding: 0.625rem;
     }
 
-    /* Scrollbar for description */
-    .description-content::-webkit-scrollbar {
-        width: 4px;
+    .add-btn-new {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.7rem;
+        gap: 0.2rem;
     }
 
-    .description-content::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
+    .price-value {
+        font-size: 0.85rem;
     }
-
-    .description-content::-webkit-scrollbar-thumb {
-        background: var(--primary-red);
-        border-radius: 10px;
-    }
-
-    .modal-price-box {
-        background: var(--red-gradient);
-        padding: 1.35rem 1.65rem;
-        border-radius: 16px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 6px 20px rgba(220, 38, 38, 0.3);
-    }
-
-    .price-box-header {
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-        color: white;
-        font-weight: 600;
-        font-size: 1rem;
-    }
-
-    .price-box-header i {
-        font-size: 1.5rem;
-    }
-
-    .modal-price-value {
-        font-size: 2rem;
-        font-weight: 900;
-        color: white;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-
-    .btn-confirm-add {
-        width: 100%;
-        background: var(--dark-gradient);
-        color: white;
-        border: none;
-        padding: 1.15rem;
-        border-radius: 14px;
-        font-size: 1.15rem;
-        font-weight: 800;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.85rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 6px 20px rgba(153, 27, 27, 0.35);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .btn-confirm-add:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 30px rgba(153, 27, 27, 0.45);
-    }
-
-    .btn-confirm-add i {
-        font-size: 1.5rem;
-        animation: cartShake 1s infinite;
-    }
-
-    @keyframes cartShake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-3px); }
-        75% { transform: translateX(3px); }
-    }
-
-    /* Empty State */
-    .empty-menu-state {
-        text-align: center;
-        padding: 4rem 2rem;
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    }
-
-    .empty-icon {
-        font-size: 5rem;
-        margin-bottom: 1.5rem;
-        opacity: 0.5;
-    }
-
-    .empty-menu-state h3 {
-        font-size: 1.75rem;
-        font-weight: 800;
-        color: #1f2937;
-        margin-bottom: 0.75rem;
-    }
-
-    .empty-menu-state p {
-        color: #6b7280;
-        font-size: 1.1rem;
-    }
-
-    /* Responsive */
-    @media (max-width: 992px) {
-        .delivery-options-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .location-info-card {
-            flex-direction: column;
-            text-align: center;
-        }
-
-        .food-menu-grid {
-            grid-template-columns: 1fr;
-            padding: 0 0.5rem;
-        }
-
-        .section-title {
-            font-size: 1.65rem;
-        }
-
-        .item-modal .modal-body {
-            padding: 1.5rem;
-            max-height: 60vh;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .location-name {
-            font-size: 1.65rem;
-        }
-
-        .section-title {
-            font-size: 1.4rem;
-        }
-
-        .item-modal .modal-body {
-            padding: 1.25rem;
-        }
-
-        .modal-price-value {
-            font-size: 1.5rem;
-        }
-
-        .description-content {
-            max-height: 120px;
-        }
-    }
-
-    /* Animations */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .food-item-card {
-        animation: fadeInUp 0.5s ease backwards;
-    }
-
-    .food-item-card:nth-child(1) { animation-delay: 0.05s; }
-    .food-item-card:nth-child(2) { animation-delay: 0.1s; }
-    .food-item-card:nth-child(3) { animation-delay: 0.15s; }
-    .food-item-card:nth-child(4) { animation-delay: 0.2s; }
-    .food-item-card:nth-child(5) { animation-delay: 0.25s; }
-    .food-item-card:nth-child(6) { animation-delay: 0.3s; }
+}
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const categoryCards = document.querySelectorAll('.category-card');
-    const foodItems = document.querySelectorAll('.food-item-card');
+    // Show menu section on page load
+    const menuSection = document.getElementById('menuSection');
+    if (menuSection) {
+        menuSection.style.display = 'block';
+    }
+
+    // Category filtering
+    const categoryCards = document.querySelectorAll('.category-item');
+    const foodItems = document.querySelectorAll('.menu-card');
     const categoryTitle = document.getElementById('categoryTitle');
     
     categoryCards.forEach(card => {
         card.addEventListener('click', function() {
             const selectedCategory = this.getAttribute('data-category');
             
+            // Update active state
             categoryCards.forEach(c => c.classList.remove('active'));
             this.classList.add('active');
             
+            // Filter menu items
+            let visibleCount = 0;
             foodItems.forEach(item => {
                 const itemCategory = item.getAttribute('data-category');
                 
                 if (selectedCategory === 'all') {
                     item.classList.remove('hidden');
+                    visibleCount++;
                     categoryTitle.textContent = 'Our Delicious Menu';
                 } else {
                     if (itemCategory === selectedCategory) {
                         item.classList.remove('hidden');
+                        visibleCount++;
                     } else {
                         item.classList.add('hidden');
                     }
-                    const categoryName = this.querySelector('h4').textContent;
+                    const categoryName = this.querySelector('span').textContent;
                     categoryTitle.textContent = categoryName;
                 }
             });
+
+            // Show menu section if hidden
+            if (menuSection) {
+                menuSection.style.display = 'block';
+            }
             
-            document.getElementById('menuSection').scrollIntoView({ 
+            // Scroll to menu section
+            menuSection.scrollIntoView({ 
                 behavior: 'smooth', 
                 block: 'start' 
             });
+
+            console.log(`Filtered to category: ${selectedCategory}, showing ${visibleCount} items`);
+        });
+    });
+
+    // Add to cart functionality
+    const addToCartButtons = document.querySelectorAll('.add-to-cart');
+    
+    addToCartButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Get data from button
+            const foodId = this.getAttribute('data-food-id');
+            const foodName = this.getAttribute('data-food-name');
+            const foodPrice = this.getAttribute('data-food-price');
+            const deliveryType = this.getAttribute('data-delivery-type') || '';
+            const locationId = this.getAttribute('data-location-id');
+            
+            // Check if delivery type is selected (if required)
+            if (!deliveryType) {
+                // Show delivery option modal first
+                const deliveryModal = new bootstrap.Modal(document.getElementById('deliveryOptionModal'));
+                deliveryModal.show();
+                
+                // Store item data for later
+                sessionStorage.setItem('pendingCartItem', JSON.stringify({
+                    foodId: foodId,
+                    foodName: foodName,
+                    foodPrice: foodPrice,
+                    locationId: locationId
+                }));
+                
+                return;
+            }
+            
+            // Add to cart logic
+            addItemToCart(foodId, foodName, foodPrice, deliveryType, locationId);
+        });
+    });
+
+    // Handle delivery option selection
+    const deliveryOptions = document.querySelectorAll('.delivery-option-card');
+    
+    deliveryOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const deliveryType = this.getAttribute('data-option');
+            const locationId = this.getAttribute('data-location-id');
+            
+            // Get pending item from session storage
+            const pendingItem = sessionStorage.getItem('pendingCartItem');
+            
+            if (pendingItem) {
+                const item = JSON.parse(pendingItem);
+                addItemToCart(item.foodId, item.foodName, item.foodPrice, deliveryType, locationId);
+                sessionStorage.removeItem('pendingCartItem');
+            }
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('deliveryOptionModal'));
+            modal.hide();
+        });
+    });
+
+    // Fix for modal aria-hidden focus issue
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        modal.addEventListener('hidden.bs.modal', function() {
+            // Remove focus from any buttons inside the modal
+            const focusedElement = this.querySelector(':focus');
+            if (focusedElement) {
+                focusedElement.blur();
+            }
+        });
+        
+        modal.addEventListener('hide.bs.modal', function() {
+            // Remove focus before hiding
+            const focusedElement = this.querySelector(':focus');
+            if (focusedElement) {
+                focusedElement.blur();
+            }
         });
     });
 });

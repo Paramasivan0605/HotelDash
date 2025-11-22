@@ -37,6 +37,11 @@
             {{-- <li class="{{ request()->routeIs(['promotion-discount', 'promotion-discount-create', 'promotion-discount-show', 'promotion-discount-edit']) ? 'active' : '' }}">
                 <a href="{{ route('promotion-discount') }}"><i class='bx bxs-offer'></i>Promotions & Discounts</a>
             </li> --}}
+<li class="{{ request()->routeIs('banners.*') ? 'active' : '' }}">
+    <a href="{{ route('banners.index') }}">
+        <i class='bx bxs-image-alt'></i> Advert Banners
+    </a>
+</li>
             <li class="{{ request()->routeIs('delivery-management') ? 'active' : '' }}">
                 <a href="{{ route('delivery-management') }}"><i class='bx bxs-truck'></i>Delivery Management</a>
             </li>

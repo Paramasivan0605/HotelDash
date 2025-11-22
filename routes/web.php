@@ -145,6 +145,17 @@ Route::prefix('admin')->middleware('auth', 'isAdmin')->group(function () {
         'show' => 'promotion-discount-show',
         'edit' => 'promotion-discount-edit',
     ]);
+// Custom resource with different method & route names
+// In your admin routes file (e.g. routes/web.php or routes/admin.php)
+
+Route::prefix('banners')->name('banners.')->group(function () {
+    Route::get('/', [PromotionDiscountController::class, 'bannerIndex'])->name('index');
+    Route::get('/create', [PromotionDiscountController::class, 'bannerCreate'])->name('create');
+    Route::post('/', [PromotionDiscountController::class, 'bannerStore'])->name('store');
+    Route::get('/{id}/edit', [PromotionDiscountController::class, 'bannerEdit'])->name('edit');
+    Route::put('/{id}', [PromotionDiscountController::class, 'bannerUpdate'])->name('update');
+    Route::delete('/{id}', [PromotionDiscountController::class, 'bannerDestroy'])->name('destroy');
+});
 
     Route::post('/promotion-discount/create', [PromotionEventController::class, 'store'])->name('promotion-event');
 

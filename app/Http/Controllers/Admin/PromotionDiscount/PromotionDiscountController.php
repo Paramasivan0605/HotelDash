@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\PromotionDiscount;
 
 use App\Enums\CouponStatusEnum;
 use App\Http\Controllers\Controller;
+use App\Models\Banner;
 use App\Models\PromotionDiscount;
 use App\Models\PromotionEvent;
 use Illuminate\Http\RedirectResponse;
@@ -183,4 +184,93 @@ class PromotionDiscountController extends Controller
 
         return implode(';', $styling);
     }
+public function bannerIndex(Request $request)
+{
+    $banners = Banner::query()
+        ->when($request->search, fn($q) => $q->where('image', 'like', "%{$request->search}%"))
+        ->latest()
+        ->paginate(12); // ← THIS MUST BE paginate(), NOT get() !
+
+    return view('company.admin.advert-banner.index', compact('banners'));
+}
+
+public function bannerCreate()
+{
+    return view('company.admin.advert-banner.create');
+}
+
+public function bannerStore(Request $request): RedirectResponse
+{
+    $request->validate([
+        'image' => 'required|image|mimes:jpg,jpeg,png,webp,gif|max:2048', // max 2MB
+    ]);
+
+    $file = $request->file('image');
+
+    // Generate unique filename
+    $fileName = uniqid('banner_') . '.' . $file->getClientOriginalExtension();
+
+    // Move directly to public folder (just like your food menu)
+    $file->move(public_path('images/banners'), $fileName);
+
+    // Save only the relative path
+    $imagePath = 'images/banners/' . $fileName;
+
+    Banner::create([
+        'image' => $imagePath,
+    ]);
+
+    return redirect()
+        ->route('banners.index')
+        ->with('success', 'Banner uploaded successfully!');
+}
+
+public function bannerEdit($id)
+{
+    $banner = Banner::findOrFail($id);
+    return view('company.admin.advert-banner.edit', compact('banner'));
+}
+
+public function bannerUpdate(Request $request, $id): RedirectResponse
+{
+    $request->validate([
+        'image' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:2048',
+    ]);
+
+    $banner = Banner::findOrFail($id);
+
+    if ($request->hasFile('image')) {
+        // Delete old image
+        if ($banner->image && file_exists(public_path($banner->image))) {
+            unlink(public_path($banner->image));
+        }
+
+        // Upload new one
+        $file = $request->file('image');
+        $fileName = uniqid('banner_') . '.' . $file->getClientOriginalExtension();
+        $file->move(public_path('images/banners'), $fileName);
+
+        $banner->image = 'images/banners/' . $fileName;
+    }
+
+    $banner->save();
+
+    return redirect()
+        ->route('banners.index')
+        ->with('success', 'Banner updated successfully!');
+}
+
+public function bannerDestroy($id): RedirectResponse
+{
+    $banner = Banner::findOrFail($id);
+
+    // Delete physical file
+    if ($banner->image && file_exists(public_path($banner->image))) {
+        unlink(public_path($banner->image));
+    }
+
+    $banner->delete();
+
+    return back()->with('success', 'Banner deleted successfully!');
+}
 }
