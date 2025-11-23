@@ -3,258 +3,226 @@
 @section('title', 'My Orders')
 
 @section('content')
-<div class="container mt-4 mb-5" style="max-width: 1420px;">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="text-dark fw-bold mb-0">
-                    <i class="bi bi-receipt text-danger me-2"></i>My Orders
-                </h1>
-                <span class="badge bg-danger bg-gradient px-4 py-2 rounded-pill fs-6 shadow-sm">
-                    {{ $orders->count() }} {{ $orders->count() == 1 ? 'Order' : 'Orders' }}
-                </span>
-            </div>
-            
-            @if($orders->count() > 0)
-                <!-- Desktop/Tablet Table View -->
-                <div class="d-none d-md-block">
-                    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="bg-dark text-white">
-                                    <tr>
-                                        <th class="py-3 px-4 fw-semibold text-nowrap">Order ID</th>
-                                        <th class="py-3 px-4 fw-semibold text-nowrap">Date & Time</th>
-                                        <th class="py-3 px-4 fw-semibold text-nowrap">Delivery</th>
-                                        <th class="py-3 px-4 fw-semibold text-nowrap">Payment</th>
-                                        <th class="py-3 px-4 fw-semibold text-nowrap">Payment Status</th>
-                                        <th class="py-3 px-4 fw-semibold text-nowrap">Total</th>
-                                        <th class="py-3 px-4 fw-semibold text-nowrap">Status</th>
-                                        <th class="py-3 px-4 fw-semibold text-center text-nowrap">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white">
-                                    @foreach($orders as $order)
-                                    <tr>
-                                        <td class="py-3 px-4">
-                                            <span class="fw-bold text-primary text-nowrap">#{{ $order->id }}</span>
-                                        </td>
-                                        <td class="py-3 px-4">
-                                            <div class="fw-semibold text-dark text-nowrap">{{ $order->created_at->format('M d, Y') }}</div>
-                                            <small class="text-muted text-nowrap">{{ $order->created_at->format('h:i A') }}</small>
-                                        </td>
-                                        <td class="py-3 px-4">
-                                            <span class="badge bg-info px-3 py-2 text-nowrap">
-                                                {{ $order->delivery_type }}
-                                            </span>
-                                        </td>
-                                        <td class="py-3 px-4">
-                                            <span class="badge bg-{{ $order->payment_type == 'cash' ? 'success' : 'primary' }} px-3 py-2 text-nowrap">
-                                                {{ ucfirst($order->payment_type) }}
-                                            </span>
-                                        </td>
-                                        <td class="py-3 px-4">
-                                            @if($order->isPaid)
-                                                <span class="badge bg-success px-3 py-2 text-nowrap">
-                                                    <i class="bi bi-check-circle me-1"></i>Paid
-                                                </span>
-                                            @else
-                                                <span class="badge bg-danger px-3 py-2 text-nowrap">
-                                                    <i class="bi bi-x-circle me-1"></i>Not Paid
-                                                </span>
-                                            @endif
-                                        </td>
-                                        <td class="py-3 px-4">
-                                            <span class="fw-bold text-success fs-5 text-nowrap">
-                                                {{ $order->location->currency }} {{ number_format($order->order_total_price, 2) }}
-                                            </span>                                        </td>
-                                        <td class="py-3 px-4">
-                                            <span class="badge {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusClass($order->order_status) }} px-3 py-2 text-nowrap">
-                                                {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusDisplay($order->order_status) }}
-                                            </span>
-                                        </td>
-                                        <td class="py-3 px-4 text-center">
-                                            <a href="{{ route('orders.details', $order->id) }}" class="btn btn-dark btn-sm px-3 rounded-pill d-inline-flex align-items-center text-nowrap">
-                                                <i class="bi bi-eye me-1"></i><span>View</span>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+<div class="container-fluid px-3 py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h4 fw-bold text-dark mb-1">My Orders</h1>
+            <p class=" small mb-0" style="color:red;">{{ $orders->count() }} {{ $orders->count() == 1 ? 'order' : 'orders' }}</p>
+        </div>
+        <a href="{{ route('location.menu', ['id' => session('location_id')]) }}" class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-plus"></i> New Order
+        </a>
+    </div>
+
+    @if($orders->count() > 0)
+        <!-- Orders List -->
+        <div class="orders-list">
+            @foreach($orders as $order)
+            <div class="order-card mb-3">
+                <!-- Order Header -->
+                <div class="order-header d-flex justify-content-between align-items-center p-3 border-bottom">
+                    <div>
+                        <div class="fw-bold text-dark">Order #{{ $order->id }}</div>
+                        <small class="text-muted">{{ $order->created_at->format('M d, Y • h:i A') }}</small>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold text-dark">{{ $order->location->currency }} {{ number_format($order->order_total_price, 2) }}</div>
+                        <span class="badge {{ $order->isPaid ? 'bg-success' : 'bg-danger' }} text-white small">
+                            {{ $order->isPaid ? 'Paid' : 'Not Paid' }}
+                        </span>
                     </div>
                 </div>
 
-                <!-- Mobile Card View -->
-                <div class="d-md-none">
-                    @foreach($orders as $order)
-                    <div class="card border-0 shadow rounded-4 mb-3">
-                        <div class="card-body p-0 bg-white">
-                            <!-- Header -->
-                            <div class="bg-dark text-white p-3">
-                                <h5 class="mb-2 fw-bold">#{{ $order->id }}</h5>
-                                <span class="badge {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusClass($order->order_status) }} px-3 py-2">
-                                    {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusDisplay($order->order_status) }}
-                                </span>
+                <!-- Order Details -->
+                <div class="order-body p-3">
+                    <!-- Status -->
+                    <div class="status-section mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Status</span>
+                            <span class="status-badge {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusClass($order->order_status) }}">
+                                {{ App\Http\Controllers\Staff\Order\OrderControler::getStatusDisplay($order->order_status) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Delivery & Payment -->
+                    <div class="details-section mb-3">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="text-muted small mb-1">Delivery Type</div>
+                                <div class="fw-medium text-dark">{{ $order->delivery_type }}</div>
                             </div>
-                            
-                            <!-- Body -->
-                            <div class="p-3">
-                                <!-- Date & Time -->
-                                <div class="mb-3">
-                                    <small class="text-muted d-block mb-1">
-                                        <i class="bi bi-calendar3 me-1"></i>Date & Time
-                                    </small>
-                                    <div class="fw-semibold text-dark">{{ $order->created_at->format('M d, Y') }}</div>
-                                    <small class="text-muted">{{ $order->created_at->format('h:i A') }}</small>
-                                </div>
-                                
-                                <!-- Delivery & Payment -->
-                                <div class="row g-2 mb-3">
-                                    <div class="col-6">
-                                        <small class="text-muted d-block mb-1">
-                                            <i class="bi bi-truck me-1"></i>Delivery
-                                        </small>
-                                        <span class="badge bg-info w-100 py-2">
-                                            {{ $order->delivery_type }}
-                                        </span>
-                                    </div>
-                                    <div class="col-6">
-                                        <small class="text-muted d-block mb-1">
-                                            <i class="bi bi-wallet2 me-1"></i>Payment
-                                        </small>
-                                        <span class="badge bg-{{ $order->payment_type == 'cash' ? 'success' : 'primary' }} w-100 py-2">
-                                            {{ ucfirst($order->payment_type) }}
-                                        </span>
-                                    </div>
-                                </div>
-                                
-                                <!-- Payment Status -->
-                                <div class="mb-3">
-                                    <small class="text-muted d-block mb-1">
-                                        <i class="bi bi-credit-card-2-back me-1"></i>Payment Status
-                                    </small>
-                                    @if($order->isPaid)
-                                        <span class="badge bg-success px-3 py-2">
-                                            <i class="bi bi-check-circle me-1"></i>Paid
-                                        </span>
-                                    @else
-                                        <span class="badge bg-danger px-3 py-2">
-                                            <i class="bi bi-x-circle me-1"></i>Not Paid
-                                        </span>
-                                    @endif
-                                </div>
-                                
-                                <!-- Total Amount -->
-                                <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded-3 mb-3">
-                                    <span class="text-muted fw-semibold">Total Amount</span>
-                                    <span class="fw-bold text-success fs-4"> {{ $order->location->currency }} {{ number_format($order->order_total_price, 2) }}</span>
-                                </div>
-                                
-                                <!-- Action Button -->
-                                <div class="d-grid">
-                                    <a href="{{ route('orders.details', $order->id) }}" class="btn btn-dark py-2 rounded-pill">
-                                        <i class="bi bi-eye me-2"></i>View Details
-                                    </a>
-                                </div>
+                            <div class="col-6">
+                                <div class="text-muted small mb-1">Payment</div>
+                                <div class="fw-medium text-dark text-capitalize">{{ $order->payment_type }}</div>
                             </div>
                         </div>
                     </div>
-                    @endforeach
-                </div>
-            @else
-                <!-- No Orders Card -->
-                <div class="row justify-content-center">
-                    <div class="col-12 col-lg-8">
-                        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                            <div class="card-body text-center p-5 bg-white">
-                                <div class="mb-4">
-                                    <div class="rounded-circle bg-danger bg-opacity-10 d-inline-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
-                                        <i class="bi bi-cart-x display-3 text-danger"></i>
-                                    </div>
-                                </div>
-                                <h2 class="fw-bold text-dark mb-3">No Orders Yet</h2>
-                                <p class="text-muted mb-4 fs-5">
-                                    You haven't placed any orders yet.<br>
-                                    Start exploring our delicious menu!
-                                </p>
-                                <a href="{{ route('location.menu', ['id' => session('location_id')]) }}" class="btn btn-danger btn-lg px-5 py-3 rounded-pill shadow">
-                                    <i class="bi bi-menu-button-wide me-2"></i>Browse Menu
-                                </a>
-                            </div>
-                        </div>
+
+                    <!-- Action Button -->
+                    <div class="action-section">
+                        <a href="{{ route('orders.details', $order->id) }}" class="btn btn-outline-dark w-100 py-2">
+                            <i class="bi bi-eye me-2"></i>View Details
+                        </a>
                     </div>
                 </div>
-            @endif
+            </div>
+            @endforeach
         </div>
-    </div>
+    @else
+        <!-- Empty State -->
+        <div class="empty-state text-center py-5">
+            <div class="empty-icon mb-4">
+                <i class="bi bi-bag-x display-1 text-muted"></i>
+            </div>
+            <h3 class="h5 fw-bold text-dark mb-2">No orders yet</h3>
+            <p class="text-muted mb-4">You haven't placed any orders yet</p>
+            <a href="{{ route('location.menu', ['id' => session('location_id')]) }}" class="btn btn-danger px-4">
+                Browse Menu
+            </a>
+        </div>
+    @endif
 </div>
 
 <style>
-    /* Status Badge Styles */
-    .status-ordered {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        color: white !important;
+    /* Base Styles */
+    body {
+        background-image: url('{{ asset('images/bg-image.jpeg') }}');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
-    .status-preparing {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
-        color: white !important;
+    /* Order Card */
+    .order-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e9ecef;
+        overflow: hidden;
+        transition: all 0.2s ease;
     }
 
-    .status-ready {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
-        color: white !important;
+    .order-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     }
 
-    .status-delivery {
-        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
-        color: white !important;
+    /* Order Header */
+    .order-header {
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
     }
 
-    .status-delivered {
-        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
-        color: white !important;
+    /* Status Badges - Simplified */
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
     }
 
-    .status-completed {
-        background: linear-gradient(135deg, #30cfd0 0%, #330867 100%) !important;
-        color: white !important;
+    .status-ordered { background: #e3f2fd; color: #1976d2; }
+    .status-preparing { background: #fff3e0; color: #f57c00; }
+    .status-ready { background: #e8f5e8; color: #388e3c; }
+    .status-delivery { background: #fff8e1; color: #ffa000; }
+    .status-delivered { background: #f3e5f5; color: #7b1fa2; }
+    .status-completed { background: #e8f5e8; color: #388e3c; }
+    .status-cancelled { background: #ffebee; color: #d32f2f; }
+
+    /* Buttons */
+    .btn {
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s ease;
     }
 
-    .status-cancelled {
-        background: linear-gradient(135deg, #ff6b6b 0%, #c92a2a 100%) !important;
-        color: white !important;
-    }
-    
-    /* Table Styles */
-    .table-hover tbody tr {
-        transition: all 0.3s ease;
-    }
-    
-    .table-hover tbody tr:hover {
-        background-color: rgba(0, 0, 0, 0.02) !important;
-        transform: scale(1.01);
-    }
-    
-    /* Card Styles */
-    .card {
-        transition: all 0.3s ease;
-    }
-    
-    .card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.2) !important;
+    .btn-danger {
+        background: #dc2626;
+        border: none;
     }
 
-    /* Additional alignment fixes */
-    .btn.d-inline-flex {
-        white-space: nowrap;
+    .btn-danger:hover {
+        background: #b91c1c;
+        transform: translateY(-1px);
     }
-    
-    .text-nowrap {
-        white-space: nowrap !important;
+
+    .btn-outline-dark {
+        border: 1px solid #6c757d;
+        color: #6c757d;
+    }
+
+    .btn-outline-dark:hover {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-outline-danger {
+        border: 1px solid #dc2626;
+        color: #dc2626;
+    }
+
+    .btn-outline-danger:hover {
+        background: #dc2626;
+        color: white;
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 3rem 1rem;
+    }
+
+    .empty-icon {
+        opacity: 0.5;
+    }
+
+    /* Text Colors */
+    .text-dark {
+        color: #1f2937 !important;
+    }
+
+    .text-muted {
+        color: #6b7280 !important;
+    }
+
+    /* Badges */
+    .badge {
+        font-size: 0.7rem;
+        font-weight: 500;
+        padding: 4px 8px;
+        border-radius: 12px;
+    }
+
+    /* Responsive */
+    @media (max-width: 576px) {
+        .container-fluid {
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+        
+        .order-card {
+            border-radius: 10px;
+        }
+        
+        .order-header,
+        .order-body {
+            padding: 16px;
+        }
+    }
+
+    /* Smooth transitions */
+    .order-card,
+    .btn,
+    .badge {
+        transition: all 0.2s ease;
+    }
+
+    /* Focus states */
+    .btn:focus {
+        box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25);
     }
 </style>
 @endsection

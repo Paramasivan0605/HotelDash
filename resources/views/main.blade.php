@@ -160,7 +160,7 @@
         opacity: 0.5;
     }
 
-    /* Mobile Navigation */
+    /* Mobile Navigation - FIXED */
     @media (max-width: 991.98px) {
         .navbar-collapse {
             background: rgba(226, 0, 6, 0.98);
@@ -170,12 +170,26 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
 
+        .navbar-collapse.show {
+            display: block !important;
+        }
+
         .logo-section img {
             height: 45px;
         }
 
         .logo-section span {
             font-size: 1.25rem;
+        }
+
+        /* Ensure navbar items are visible */
+        .navbar-nav {
+            text-align: center;
+        }
+
+        .navbar-nav .nav-link {
+            padding: 0.8rem 1rem !important;
+            margin: 0.25rem 0;
         }
     }
 
@@ -236,20 +250,28 @@
         }
     }
 
-    /* Hamburger Icon Modern Style */
+    /* Hamburger Icon Modern Style - FIXED */
     .navbar-toggler {
         border: none;
         padding: 0.5rem;
         border-radius: 10px;
         transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.1);
     }
 
     .navbar-toggler:focus {
         box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+        outline: none;
+    }
+
+    .navbar-toggler[aria-expanded="true"] {
+        background: rgba(255, 255, 255, 0.2);
     }
 
     .navbar-toggler-icon {
         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2.5' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        width: 1.5em;
+        height: 1.5em;
     }
 
     /* ============ CART OFFCANVAS (ORIGINAL DESIGN) ============ */
@@ -866,7 +888,7 @@
 
 <body data-customer-id="{{ session('customer_id') ?? '' }}">
 
-   <!-- Modern Navigation Bar - Only show if not hiding layout -->
+   <!-- FIXED NAVIGATION BAR -->
     @if(!isset($hideLayout) || !$hideLayout)
     <nav class="topbar navbar navbar-expand-lg navbar-light py-2">
         <div class="container">
@@ -876,19 +898,25 @@
                 <span class="d-none d-sm-inline"></span>
             </a>
 
-            <!-- Mobile: Cart + Hamburger -->
+            <!-- FIXED: Mobile Cart + Hamburger -->
             <div class="mobile-cart-wrapper d-lg-none">
                 <button class="btn cart-btn position-relative" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
                     <i class='bx bx-cart fs-5'></i>
                     <span class="cart-badge" id="cart-quantity-mobile">0</span>
                 </button>
                 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <!-- FIXED: Proper Bootstrap toggle attributes -->
+                <button class="navbar-toggler" type="button" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#navbarNav" 
+                        aria-controls="navbarNav" 
+                        aria-expanded="false" 
+                        aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
             </div>
 
-            <!-- Navigation Links -->
+            <!-- FIXED: Navigation Links -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto">
                     @if (session()->has('location_id'))
@@ -1287,6 +1315,65 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/public.js') }}"></script>
+ <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded - initializing navbar');
+            
+            // Force navbar to work properly
+            const navbarToggler = document.querySelector('.navbar-toggler');
+            const navbarCollapse = document.querySelector('.navbar-collapse');
+            
+            if (navbarToggler && navbarCollapse) {
+                console.log('Navbar elements found');
+                
+                navbarToggler.addEventListener('click', function() {
+                    console.log('Navbar toggler clicked');
+                    const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                    this.setAttribute('aria-expanded', !isExpanded);
+                    navbarCollapse.classList.toggle('show');
+                    
+                    // Force display block when showing
+                    if (navbarCollapse.classList.contains('show')) {
+                        navbarCollapse.style.display = 'block';
+                        navbarCollapse.style.visibility = 'visible';
+                        navbarCollapse.style.opacity = '1';
+                    } else {
+                        navbarCollapse.style.display = 'none';
+                    }
+                });
+            } else {
+                console.log('Navbar elements not found:', {
+                    toggler: !!navbarToggler,
+                    collapse: !!navbarCollapse
+                });
+            }
+            
+            // Close navbar when clicking on a link (mobile)
+            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth < 992) {
+                        const navbarCollapse = document.querySelector('.navbar-collapse');
+                        const navbarToggler = document.querySelector('.navbar-toggler');
+                        
+                        if (navbarCollapse) {
+                            navbarCollapse.classList.remove('show');
+                            navbarCollapse.style.display = 'none';
+                        }
+                        if (navbarToggler) {
+                            navbarToggler.setAttribute('aria-expanded', 'false');
+                        }
+                    }
+                });
+            });
+        });
+
+        // Additional safety check
+        window.addEventListener('load', function() {
+            console.log('Page fully loaded');
+        });
+    </script>
+
 
 </body>
 </html>

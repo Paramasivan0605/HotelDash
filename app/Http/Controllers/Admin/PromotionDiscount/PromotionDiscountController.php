@@ -211,7 +211,7 @@ public function bannerStore(Request $request): RedirectResponse
     $fileName = uniqid('banner_') . '.' . $file->getClientOriginalExtension();
 
     // Move directly to public folder (just like your food menu)
-    $file->move(public_path('images/banners'), $fileName);
+    $file->move('images/banners', $fileName);
 
     // Save only the relative path
     $imagePath = 'images/banners/' . $fileName;
