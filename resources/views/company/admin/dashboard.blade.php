@@ -64,20 +64,26 @@
                             <p>Total Orders</p>
                         </span>
                     </li>
-                    <li>
-                        <i class='bx bx-line-chart'></i>
-                        <span class="info">
-                            <h3>฿ {{ number_format(@$totalThbAmount, 2) }}</h3>
-                            <p>Total Price (THB)</p>
-                        </span>
-                    </li>
-                    <li>
-                        <i class='bx bx-line-chart'></i>
-                        <span class="info">
-                            <h3>Rs {{ number_format(@$totalLkrAmount, 2) }}</h3>
-                            <p>Total Price (LKR)</p>
-                        </span>
-                    </li>
+                    
+                    @if(!$selectedLocation || ($selectedLocationData && $selectedLocationData->currency == 'THB'))
+                        <li>
+                            <i class='bx bx-line-chart'></i>
+                            <span class="info">
+                                <h3>฿ {{ number_format(@$totalThbAmount, 2) }}</h3>
+                                <p>Total Price (THB)</p>
+                            </span>
+                        </li>
+                    @endif
+                    
+                    @if(!$selectedLocation || ($selectedLocationData && $selectedLocationData->currency == 'LKR'))
+                        <li>
+                            <i class='bx bx-line-chart'></i>
+                            <span class="info">
+                                <h3>Rs {{ number_format(@$totalLkrAmount, 2) }}</h3>
+                                <p>Total Price (LKR)</p>
+                            </span>
+                        </li>
+                    @endif
                 </ul>
 
                 <!-- Bottom Section -->

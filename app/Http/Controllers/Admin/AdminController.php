@@ -29,8 +29,11 @@ class AdminController extends Controller
         $lkrQuery = CustomerOrder::join('location', 'customer_orders.location_id', '=', 'location.location_id')
             ->where('location.currency', 'LKR')->where('isPaid',1);
 
-        // Apply location filter if selected
+        // Get selected location details
+        $selectedLocationData = null;
         if ($selectedLocation) {
+            $selectedLocationData = Location::find($selectedLocation);
+            
             // Filter staff by location
             $staffQuery->where('location_id', $selectedLocation);
             
@@ -59,16 +62,16 @@ class AdminController extends Controller
         $locationList = Location::orderBy('location_name')->get();
 
         return view('company.admin.dashboard', [
-            'staffcount'       => $staffcount,
-            'salescount'       => $salescount,
-            'totalThbAmount'   => $totalThbAmount,
-            'totalLkrAmount'   => $totalLkrAmount,
-            'recentOrders'     => $recentOrders,
-            'locationList'     => $locationList,
-            'selectedLocation' => $selectedLocation,
+            'staffcount'           => $staffcount,
+            'salescount'           => $salescount,
+            'totalThbAmount'       => $totalThbAmount,
+            'totalLkrAmount'       => $totalLkrAmount,
+            'recentOrders'         => $recentOrders,
+            'locationList'         => $locationList,
+            'selectedLocation'     => $selectedLocation,
+            'selectedLocationData' => $selectedLocationData,
         ]);
     }
-    
     public function DeliveryManagement(Request $request): View
     {
         // Get filter values
