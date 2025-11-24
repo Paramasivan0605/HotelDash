@@ -87,8 +87,23 @@
 <div class="search-container-wrapper">
     <div class="search-box">
         <i class='bx bx-search'></i>
-        <input type="text" placeholder='Search for dishes...' class="search-input">
-        <i class='bx bx-microphone microphone-icon'></i>
+        <input type="text" 
+               placeholder='Search for dishes or categories...' 
+               class="search-input"
+               id="searchInput"
+               autocomplete="off"
+               aria-label="Search for dishes or categories">
+        <button type="button" 
+                class="search-clear-btn" 
+                id="clearSearch"
+                aria-label="Clear search"
+                style="display: none;">
+            <i class='bx bx-x'></i>
+        </button>
+        <i class='bx bx-microphone microphone-icon' 
+           title="Voice search"
+           role="button"
+           tabindex="0"></i>
     </div>
 </div>
 

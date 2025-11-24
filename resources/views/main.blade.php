@@ -882,11 +882,36 @@
         box-shadow: 0 6px 16px rgba(226, 0, 6, 0.4);
         color: white;
     }
+    /* Search Clear Button */
+    .search-clear-btn {
+        background: none;
+        border: none;
+        color: var(--gray-500);
+        cursor: pointer;
+        padding: 0;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-clear-btn:hover {
+        color: var(--primary-red);
+        transform: scale(1.1);
+    }
+
+    /* Loading state for search */
+    .search-box.searching .bx-search {
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
 </style>
     @yield('styles')
 </head>
 
-<body data-customer-id="{{ session('customer_id') ?? '' }}">
+<body data-customer-id="{{ session('customer_id') ?? '' }}" data-location-id="{{ session('location_id') ?? '' }}">
 
    <!-- FIXED NAVIGATION BAR -->
     @if(!isset($hideLayout) || !$hideLayout)
@@ -999,7 +1024,7 @@
             </div>
 
             <!-- Cart Summary -->
-            <div class="cart-summary">
+            <div class="cart-summary p-3">
                 <div class="row g-0 text-center">
                     <div class="col-6">
                         <small class="d-block text-muted mb-1">Total Items</small>

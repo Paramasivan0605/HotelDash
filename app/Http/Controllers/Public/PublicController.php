@@ -406,6 +406,111 @@ class PublicController extends Controller
             'message' => 'Cart cleared successfully'
         ]);
     }
+    public function searchMenu(Request $request): JsonResponse
+{
+    $locationId = $request->input('location_id');
+    $searchTerm = $request->input('search', '');
+    $categoryId = $request->input('category_id', null);
+
+    // Validate location
+    if (!$locationId) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Location ID is required'
+        ], 422);
+    }
+
+    // Base query - Get food menu with price for this location
+    $query = FoodMenu::select(
+            'food_menus.id',
+            'food_menus.name',
+            'food_menus.description',
+            'food_menus.image',
+            'food_menus.category_id',
+            'food_price.price',
+            'food_categories.name as category_name'
+        )
+        ->join('food_price', 'food_price.food_id', '=', 'food_menus.id')
+        ->leftJoin('food_categories', 'food_categories.id', '=', 'food_menus.category_id')
+        ->where('food_price.location_id', $locationId);
+
+    // Apply search filter
+    if (!empty($searchTerm)) {
+        $query->where(function($q) use ($searchTerm) {
+            $q->where('food_menus.name', 'like', '%' . $searchTerm . '%')
+              ->orWhere('food_categories.name', 'like', '%' . $searchTerm . '%')
+              ->orWhere('food_menus.description', 'like', '%' . $searchTerm . '%');
+        });
+    }
+
+    // Apply category filter
+    if ($categoryId && $categoryId !== 'all') {
+        $query->where('food_menus.category_id', $categoryId);
+    }
+
+    // Execute query
+    $foodItems = $query->orderBy('food_categories.name')
+                      ->orderBy('food_menus.name')
+                      ->get();
+
+    // Get location details for currency
+    $location = Location::find($locationId);
+    $currency = $location ? $location->currency : 'RM';
+
+    // Format response
+    $formattedItems = $foodItems->map(function($item) use ($currency) {
+        return [
+            'id' => $item->id,
+            'name' => $item->name,
+            'description' => $item->description,
+            'image' => $item->image ? asset($item->image) : asset('images/placeholder.jpg'),
+            'price' => $item->price,
+            'formatted_price' => $currency . ' ' . number_format($item->price, 2),
+            'category_id' => $item->category_id,
+            'category_name' => $item->category_name,
+            'currency' => $currency
+        ];
+    });
+
+    // Get matched categories
+    $matchedCategories = $foodItems->pluck('category_id')->unique()->filter()->values();
+
+    return response()->json([
+        'success' => true,
+        'items' => $formattedItems,
+        'count' => $formattedItems->count(),
+        'matched_categories' => $matchedCategories,
+        'search_term' => $searchTerm,
+        'currency' => $currency
+    ]);
+}
+
+// Optional: Get categories for a location
+public function getLocationCategories(Request $request): JsonResponse
+{
+    $locationId = $request->input('location_id');
+
+    if (!$locationId) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Location ID is required'
+        ], 422);
+    }
+
+    // Get categories that have food items in this location
+    $categories = FoodCategory::select('food_categories.*')
+        ->join('food_menus', 'food_menus.category_id', '=', 'food_categories.id')
+        ->join('food_price', 'food_price.food_id', '=', 'food_menus.id')
+        ->where('food_price.location_id', $locationId)
+        ->distinct()
+        ->orderBy('food_categories.name')
+        ->get();
+
+    return response()->json([
+        'success' => true,
+        'categories' => $categories
+    ]);
+}
 
     public function getCart(): JsonResponse
     {

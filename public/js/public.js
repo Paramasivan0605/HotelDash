@@ -62,6 +62,376 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ================== SEARCH FUNCTIONALITY WITH AJAX ==================
+    const searchInput = document.querySelector('.search-input');
+    const menuGrid = document.querySelector('.menu-grid');
+    const categoryButtons = document.querySelectorAll('.category-item');
+    const categoryTitle = document.getElementById('categoryTitle');
+    const clearSearchBtn = document.getElementById('clearSearch');
+    
+    // Get location ID from session or data attribute
+    const locationId = sessionStorage.getItem('location_id') || 
+                       document.body.getAttribute('data-location-id');
+    
+    let searchTimeout;
+    let currentCategory = 'all';
+
+    if (searchInput) {
+        // Search input event listener with debouncing
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.trim();
+            
+            // Show/hide clear button
+            if (clearSearchBtn) {
+                clearSearchBtn.style.display = searchTerm ? 'block' : 'none';
+            }
+            
+            // Clear previous timeout
+            clearTimeout(searchTimeout);
+            
+            // Add searching state
+            searchInput.parentElement.classList.add('searching');
+            
+            // Debounce search - wait 300ms after user stops typing
+            searchTimeout = setTimeout(() => {
+                performSearch(searchTerm, currentCategory);
+            }, 300);
+        });
+
+        // Clear search on Escape key
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                clearSearch();
+            }
+        });
+    }
+
+    // Clear button functionality
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', function() {
+            clearSearch();
+        });
+    }
+
+    // Clear search function
+    function clearSearch() {
+        if (searchInput) {
+            searchInput.value = '';
+        }
+        if (clearSearchBtn) {
+            clearSearchBtn.style.display = 'none';
+        }
+        performSearch('', currentCategory);
+    }
+
+    // Category filter functionality
+    categoryButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const selectedCategory = this.getAttribute('data-category');
+            currentCategory = selectedCategory;
+            
+            // Update active state
+            categoryButtons.forEach(btn => {
+                btn.classList.remove('active', 'search-highlight');
+            });
+            this.classList.add('active');
+
+            // Clear search input
+            if (searchInput) {
+                searchInput.value = '';
+            }
+            if (clearSearchBtn) {
+                clearSearchBtn.style.display = 'none';
+            }
+
+            // Perform search with category filter
+            performSearch('', selectedCategory);
+
+            // Show menu section and scroll
+            if (menuSection) {
+                menuSection.style.display = 'block';
+                menuSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    // Main search function with AJAX
+    function performSearch(searchTerm, categoryId = 'all') {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
+        // Show loading state
+        if (menuGrid) {
+            menuGrid.style.opacity = '0.5';
+            menuGrid.style.pointerEvents = 'none';
+        }
+
+        fetch('/menu/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({
+                location_id: locationId,
+                search: searchTerm,
+                category_id: categoryId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displaySearchResults(data.items, data.count, data.search_term, data.matched_categories, data.currency);
+            } else {
+                showToast(data.message || 'Search failed', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Search error:', error);
+            showToast('Error performing search', 'danger');
+        })
+        .finally(() => {
+            // Remove loading state
+            if (menuGrid) {
+                menuGrid.style.opacity = '1';
+                menuGrid.style.pointerEvents = 'auto';
+            }
+            if (searchInput) {
+                searchInput.parentElement.classList.remove('searching');
+            }
+        });
+    }
+
+    // Display search results
+    function displaySearchResults(items, count, searchTerm, matchedCategories, currency) {
+        if (!menuGrid) return;
+
+        // Clear existing items
+        menuGrid.innerHTML = '';
+
+        // Update category title
+        updateCategoryTitle(searchTerm, count, currentCategory);
+
+        // Highlight matched categories
+        highlightMatchingCategories(matchedCategories);
+
+        // Show menu section
+        if (menuSection) {
+            menuSection.style.display = 'block';
+        }
+
+        // Display items or empty state
+        if (items.length === 0) {
+            showEmptyState(searchTerm);
+        } else {
+            items.forEach(item => {
+                const menuCard = createMenuCard(item, currency);
+                menuGrid.appendChild(menuCard);
+            });
+        }
+    }
+
+    // Create menu card element
+    function createMenuCard(item, currency) {
+        const card = document.createElement('div');
+        card.className = 'menu-card';
+        card.setAttribute('data-category', item.category_id || 'uncategorized');
+        card.style.animation = 'fadeIn 0.3s ease';
+
+        card.innerHTML = `
+            <div class="menu-card-body">
+                ${item.category_name ? `<div class="menu-card-tag">${item.category_name}</div>` : ''}
+                
+                <h3 class="menu-card-title">${item.name}</h3>
+                
+                <div class="menu-card-bottom">
+                    <div class="menu-card-price">
+                        <span class="price-value">${currency} ${parseFloat(item.price).toFixed(2)}</span>
+                    </div>
+                    
+                    <button class="add-btn-new" 
+                            data-food-id="${item.id}" 
+                            data-food-name="${item.name}" 
+                            data-food-price="${item.price}"
+                            data-bs-toggle="modal" 
+                            data-bs-target="#itemModal${item.id}">
+                        <i class='bx bx-plus'></i>
+                        Add
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Create and append modal
+        const modal = createItemModal(item, currency);
+        document.body.appendChild(modal);
+
+        return card;
+    }
+
+    // Create item modal
+    function createItemModal(item, currency) {
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = `itemModal${item.id}`;
+        modal.setAttribute('tabindex', '-1');
+
+        modal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content item-modal">
+                    <div class="modal-header">
+                        <div class="modal-header-info">
+                            <i class='bx bx-dish'></i>
+                            <h3 class="modal-title">${item.name}</h3>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal">
+                            <i class='bx bx-x'></i>
+                        </button>
+                    </div>
+                    
+                    <div class="modal-body">
+                        ${item.category_name ? `
+                            <div class="modal-category">
+                                <i class='bx bx-category-alt'></i>
+                                <span>${item.category_name}</span>
+                            </div>
+                        ` : ''}
+                        
+                        ${item.description ? `
+                            <div class="modal-description">
+                                <div class="description-label">
+                                    <i class='bx bx-info-circle'></i>
+                                    <span>About this dish</span>
+                                </div>
+                                <p>${item.description}</p>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="modal-price-section">
+                            <div class="price-label">
+                                <i class='bx bx-purchase-tag'></i>
+                                <span>Price</span>
+                            </div>
+                            <span class="price-amount">
+                                ${currency} ${parseFloat(item.price).toFixed(2)}
+                            </span>
+                        </div>
+                        
+                        <button type="button" 
+                                class="add-to-cart-btn add-to-cart"
+                                data-food-id="${item.id}" 
+                                data-food-name="${item.name}" 
+                                data-food-price="${item.price}"
+                                data-food-category="${item.category_name || ''}"
+                                data-food-description="${item.description || ''}"
+                                data-delivery-type="${sessionStorage.getItem('delivery_type') || ''}"
+                                data-location-id="${locationId}"
+                                data-bs-dismiss="modal">
+                            <i class='bx bx-cart-add'></i>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        return modal;
+    }
+
+    // Update category title
+    function updateCategoryTitle(searchTerm, count, categoryId) {
+        if (!categoryTitle) return;
+
+        if (searchTerm) {
+            categoryTitle.textContent = `Search results for "${searchTerm}" (${count} item${count !== 1 ? 's' : ''})`;
+        } else if (categoryId === 'all') {
+            categoryTitle.textContent = 'Our Delicious Menu';
+        } else {
+            const activeCategory = document.querySelector('.category-item.active span');
+            const categoryName = activeCategory ? activeCategory.textContent : 'Category';
+            categoryTitle.textContent = categoryName;
+        }
+    }
+
+    // Highlight matching categories
+    function highlightMatchingCategories(matchedCategories) {
+        categoryButtons.forEach(btn => {
+            const categoryId = btn.getAttribute('data-category');
+            
+            // Remove highlight
+            btn.classList.remove('search-highlight');
+            
+            // Add highlight to matched categories
+            if (matchedCategories && matchedCategories.includes(parseInt(categoryId))) {
+                btn.classList.add('search-highlight');
+            }
+        });
+    }
+
+    // Show empty state
+    function showEmptyState(searchTerm) {
+        if (!menuGrid) return;
+
+        menuGrid.innerHTML = `
+            <div class="search-empty-state">
+                <div class="empty-icon">🔍</div>
+                <h3>No Items Found</h3>
+                <p>${searchTerm ? `No results found for "${searchTerm}"` : 'No items available in this category'}</p>
+                <button class="btn btn-primary mt-3" onclick="document.querySelector('.search-input').value = ''; document.querySelector('.search-input').dispatchEvent(new Event('input'));">
+                    <i class='bx bx-refresh'></i> Clear Search
+                </button>
+            </div>
+        `;
+    }
+
+    // Voice search functionality
+    const microphoneIcon = document.querySelector('.microphone-icon');
+    if (microphoneIcon) {
+        microphoneIcon.addEventListener('click', function() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                const recognition = new SpeechRecognition();
+                
+                recognition.lang = 'en-US';
+                recognition.continuous = false;
+                recognition.interimResults = false;
+
+                recognition.onstart = function() {
+                    microphoneIcon.style.color = 'var(--dark-red)';
+                    if (searchInput) {
+                        searchInput.placeholder = 'Listening...';
+                    }
+                };
+
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    if (searchInput) {
+                        searchInput.value = transcript;
+                        performSearch(transcript, currentCategory);
+                    }
+                };
+
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error:', event.error);
+                    if (searchInput) {
+                        searchInput.placeholder = 'Search for dishes...';
+                    }
+                    showToast('Voice search error: ' + event.error, 'warning');
+                };
+
+                recognition.onend = function() {
+                    microphoneIcon.style.color = 'var(--primary-red)';
+                    if (searchInput) {
+                        searchInput.placeholder = 'Search for dishes...';
+                    }
+                };
+
+                recognition.start();
+            } else {
+                showToast('Voice search is not supported in your browser', 'warning');
+            }
+        });
+    }
+
     // ================== CART MANAGEMENT ==================
     const cartList = document.querySelector('.cart-list');
     const addProduct = document.querySelectorAll('.add-to-cart');
@@ -102,14 +472,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ================== ADD TO CART ==================
-    addProduct.forEach(button => {
-        button.addEventListener('click', () => {
+    // Event delegation for dynamically added buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.add-to-cart')) {
+            const button = e.target.closest('.add-to-cart');
             const foodId = button.getAttribute('data-food-id');
             const foodName = button.getAttribute('data-food-name');
             const deliveryType = button.getAttribute('data-delivery-type') || sessionStorage.getItem('delivery_type') || '';
-            const locationId = button.getAttribute('data-location-id') || sessionStorage.getItem('location_id') || '';
+            const locationIdAttr = button.getAttribute('data-location-id') || sessionStorage.getItem('location_id') || '';
 
-            if (!locationId) {
+            if (!locationIdAttr) {
                 showToast('⚠️ Location ID is missing. Please select a location first.', 'warning');
                 return;
             }
@@ -129,7 +501,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     food_id: foodId,
                     quantity: 1,
                     delivery_type: deliveryType,
-                    location_id: locationId
+                    location_id: locationIdAttr
                 })
             })
             .then(response => response.json())
@@ -145,7 +517,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error:', error);
                 showToast('Error adding item to cart', 'danger');
             });
-        });
+        }
     });
 
     // ================== QUANTITY CONTROLS ==================
@@ -193,18 +565,18 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.btn-delivery-option').forEach(button => {
             button.addEventListener('click', function() {
                 const newDeliveryType = this.getAttribute('data-option');
-                const locationId = sessionStorage.getItem('location_id');
+                const locationIdValue = sessionStorage.getItem('location_id');
                 const customerId = document.body.getAttribute('data-customer-id');
                 
                 // Update delivery type
-                updateDeliveryType(newDeliveryType, locationId, customerId);
+                updateDeliveryType(newDeliveryType, locationIdValue, customerId);
                 bsChangeModal.hide();
             });
         });
     }
 
     // Function to update delivery type in cart
-    function updateDeliveryType(newDeliveryType, locationId, customerId) {
+    function updateDeliveryType(newDeliveryType, locationIdValue, customerId) {
         // Show loading state
         const changeBtn = document.getElementById('changeDeliveryType');
         if (changeBtn) {
@@ -221,7 +593,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify({
                 delivery_type: newDeliveryType,
-                location_id: locationId,
+                location_id: locationIdValue,
                 customer_id: customerId
             })
         })

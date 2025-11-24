@@ -68,6 +68,9 @@ Route::middleware(['customer.auth'])->group(function () {
     // Order History Routes
     Route::get('/orders', [PublicController::class, 'orderHistory'])->name('orders.history');
     Route::get('/orders/{orderId}', [PublicController::class, 'orderDetails'])->name('orders.details');
+    // Search Routes
+Route::post('/menu/search', [PublicController::class, 'searchMenu'])->name('menu.search');
+Route::get('/location/categories', [PublicController::class, 'getLocationCategories'])->name('location.categories');
 });
 
 
