@@ -100,10 +100,10 @@
                 style="display: none;">
             <i class='bx bx-x'></i>
         </button>
-        <i class='bx bx-microphone microphone-icon' 
+        {{-- <i class='bx bx-microphone microphone-icon' 
            title="Voice search"
            role="button"
-           tabindex="0"></i>
+           tabindex="0"></i> --}}
     </div>
 </div>
 
