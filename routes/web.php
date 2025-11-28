@@ -99,6 +99,8 @@ Route::prefix('admin')->middleware('auth', 'isAdmin')->group(function () {
         'show' => 'staff-account-show',
         'edit' => 'staff-account-edit',
     ]);
+Route::delete('/staff-account-id/{staff_account_id}', [StaffAccountController::class, 'destroyStaffAccountId'])
+    ->name('staff-account-id.destroy');
 
     // Route for search in staff account module
     Route::get('/staff-search-index', [StaffAccountController::class, 'search_index'])->name('staff-account-search-index');

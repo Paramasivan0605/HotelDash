@@ -75,14 +75,14 @@ class AdminController extends Controller
     public function DeliveryManagement(Request $request): View
     {
         // Get filter values
-        $selectedStaff = $request->input('staff_id');
-        $selectedLocation = $request->input('location_id');
-        $selectedStatus = $request->input('status');
+        $selectedStaff         = $request->input('staff_id');
+        $selectedLocation      = $request->input('location_id');
+        $selectedStatus        = $request->input('status');
         $selectedPaymentStatus = $request->input('payment_status');
-        $selectedDeliveryType = $request->input('delivery_type');
-        $dateFrom = $request->input('date_from');
-        $dateTo = $request->input('date_to');
-        $searchQuery = $request->input('search');
+        $selectedDeliveryType  = $request->input('delivery_type');
+        $dateFrom              = $request->input('date_from');
+        $dateTo                = $request->input('date_to');
+        $searchQuery           = $request->input('search'); // This will now search order_code too!
 
         // Build query with relationships
         $ordersQuery = CustomerOrder::with([
@@ -108,7 +108,7 @@ class AdminController extends Controller
         }
 
         if ($selectedPaymentStatus !== null && $selectedPaymentStatus !== '') {
-            $ordersQuery->where('isPaid', $selectedPaymentStatus);
+            $ordersQuery->where('isPaid', (bool)$selectedPaymentStatus);
         }
 
         if ($selectedDeliveryType) {
@@ -123,46 +123,48 @@ class AdminController extends Controller
             $ordersQuery->whereDate('created_at', '<=', $dateTo);
         }
 
+        // SEARCH BY ORDER CODE (MDPHU-000123), CUSTOMER NAME, OR PHONE
         if ($searchQuery) {
+            $searchQuery = trim($searchQuery);
+
             $ordersQuery->where(function($query) use ($searchQuery) {
-                $query->where('id', 'like', '%' . $searchQuery . '%')
-                    ->orWhere('customer_contact', 'like', '%' . $searchQuery . '%')
+                // Search in order_code (main one now!
+                $query->where('order_code', 'LIKE', '%' . $searchQuery . '%')
+
+                    // Also search in customer contact (phone)
+                    ->orWhere('customer_contact', 'LIKE', '%' . $searchQuery . '%')
+
+                    // Search in customer name
                     ->orWhereHas('customer', function($q) use ($searchQuery) {
-                        $q->where('name', 'like', '%' . $searchQuery . '%');
+                        $q->where('name', 'LIKE', '%' . $searchQuery . '%')
+                            ->orWhere('mobile', 'LIKE', '%' . $searchQuery . '%');
                     });
             });
         }
 
-        // Get orders with pagination
-        $orders = $ordersQuery->orderBy('created_at', 'desc')->paginate(10);
+        // Final: order by latest first + paginate
+        $orders = $ordersQuery->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
 
-        // Get staff and locations for filter dropdowns
-        $staffList = User::where('role', 2)
-            ->orderBy('name')
-            ->get();
+        // Dropdown data
+        $staffList     = User::where('role', 2)->orderBy('name')->get();
+        $locationList  = Location::orderBy('location_name')->get();
+        $statusList    = OrderStatusEnum::cases();
+        $deliveryTypes = ['Pickup', 'Doorstep Delivery', 'Restaurant Dine-in']; // match your actual types
 
-        $locationList = Location::orderBy('location_name')->get();
-
-        // Get order statuses from enum
-        $statusList = OrderStatusEnum::cases();
-
-        // Delivery types
-        $deliveryTypes = ['Pickup', 'Delivery'];
-
-        return view('company.admin.delivery-management', [
-            'orders'                => $orders,
-            'staffList'             => $staffList,
-            'locationList'          => $locationList,
-            'statusList'            => $statusList,
-            'deliveryTypes'         => $deliveryTypes,
-            'selectedStaff'         => $selectedStaff,
-            'selectedLocation'      => $selectedLocation,
-            'selectedStatus'        => $selectedStatus,
-            'selectedPaymentStatus' => $selectedPaymentStatus,
-            'selectedDeliveryType'  => $selectedDeliveryType,
-            'dateFrom'              => $dateFrom,
-            'dateTo'                => $dateTo,
-            'searchQuery'           => $searchQuery,
-        ]);
+        return view('company.admin.delivery-management', compact(
+            'orders',
+            'staffList',
+            'locationList',
+            'statusList',
+            'deliveryTypes',
+            'selectedStaff',
+            'selectedLocation',
+            'selectedStatus',
+            'selectedPaymentStatus',
+            'selectedDeliveryType',
+            'dateFrom',
+            'dateTo',
+            'searchQuery'
+        ));
     }
 }

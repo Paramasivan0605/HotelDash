@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Location;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
@@ -83,43 +84,52 @@ class StaffAccountController extends Controller
     /*
     * Function to add new staff ID
     */
-    public function store(Request $request) : RedirectResponse
-    {
-        $validator = Validator::make($request->only('new_staff_id','location_id'), [
-            'new_staff_id' => 'required|min:10|max:12',
-            'location_id' => 'required'
-        ],[
-            'location_id.required' => 'Please select a location.',
-        ]);
+public function store(Request $request) : RedirectResponse
+{
+    $validator = Validator::make($request->all(), [
+        'staff_id'     => 'required|min:10|max:12|unique:staff_accounts,staff_account_id|unique:users,staff_id',
+        'location_id'  => 'required|exists:location,location_id',
+        'name'         => 'required|string|max:255',
+        'email'        => 'required|email|unique:users,email',
+        'phone'        => 'required|numeric|digits_between:10,15',
+        'gender'       => 'required|in:Male,Female',
+        'password'     => 'required|confirmed|min:6',
+        'position'     => 'nullable|string|max:100',
+        'address'      => 'nullable|string|max:500',
+    ], [
+        'location_id.required' => 'Please select a location.',
+        'staff_id.unique'      => 'This Staff ID is already taken.',
+        'email.unique'         => 'This email is already registered.',
+    ]);
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
-        // Retrieve a submitted input of staff id
-        $validated = $validator->safe()->only('new_staff_id');
-
-        // Check if id exists in staff account table
-        $staffCheck = StaffAccount::where('staff_account_id', $validated)->exists();
-
-        Log::info(['Input enter by user: ', $validated, 'Exists: ', $staffCheck]);
-
-        if ($staffCheck) {
-            return back()->withErrors([
-                'error-message' => 'Provided ID is already registered',
-            ]);
-        }
-        else {
-            $id = StaffAccount::create([
-                'staff_account_id' => $validated['new_staff_id'],
-                'location_id' => $request->location_id
-            ]);
-
-            Log::info([$id]);
-
-            return back()->with('success-message', 'Successfully added new ID');
-        }
+    if ($validator->fails()) {
+        return back()->withErrors($validator)->withInput();
     }
+
+    // Create StaffAccount entry
+    $staffAccount = StaffAccount::create([
+        'staff_account_id' => $request->staff_id,
+        'location_id'      => $request->location_id,
+    ]);
+
+    // Create User account (role = 2 for staff)
+    $user = User::create([
+        'name'         => $request->name,
+        'email'        => $request->email,
+        'phone'        => $request->phone,
+        'gender'       => $request->gender,
+        'staff_id'     => $request->staff_id,
+        'location_id'  => $request->location_id,
+        'position'      => $request->position,
+        'address'      => $request->address,
+        'password'     => Hash::make($request->password),
+        'role'         => 2, // Staff role
+    ]);
+
+    Log::info('New staff account created by admin', ['staff_id' => $request->staff_id, 'user_id' => $user->id]);
+
+    return back()->with('success-message', "Staff ID & Login Created Successfully!<br><strong>ID:</strong> {$request->staff_id}<br><strong>Email:</strong> {$request->email}");
+}
 
 
 
@@ -205,14 +215,23 @@ public function edit($id)
     /*
     *  Function to delete staff data
     */
-    public function destroy($id) : RedirectResponse
-    {
-        $staff = User::findOrFail($id);
-
-        $staff->delete();
-
-        Log::info([$staff]);
-
-        return redirect()->route('staff-account')->with('success-message', 'Staff is deleted successfully.');
+/**
+ * Delete a staff account ID record
+ */
+public function destroyStaffAccountId($staff_account_id) : RedirectResponse
+{
+    $staffAccount = StaffAccount::where('staff_account_id', $staff_account_id)->firstOrFail();
+    
+    // Optional: Also delete the associated User
+    $user = User::where('staff_id', $staff_account_id)->first();
+    if ($user) {
+        $user->delete();
     }
+    
+    $staffAccount->delete();
+    
+    Log::info('Staff Account ID deleted', ['staff_account_id' => $staff_account_id]);
+    
+    return back()->with('success-message', 'Staff ID deleted successfully.');
+}
 }

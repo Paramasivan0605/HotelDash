@@ -23,7 +23,7 @@
                 <!-- Order Header -->
                 <div class="order-header d-flex justify-content-between align-items-center p-3 border-bottom">
                     <div>
-                        <div class="fw-bold text-dark">Order #{{ $order->id }}</div>
+                        <div class="fw-bold text-dark">Order #{{ $order->order_code }}</div>
                         <small class="text-muted">{{ $order->created_at->format('M d, Y • h:i A') }}</small>
                     </div>
                     <div class="text-end">

@@ -23,7 +23,8 @@ class CustomerOrder extends Model
         'order_status',
         'customer_contact',
         'location_id',
-        'assigned_staff_id' // Add this
+        'assigned_staff_id', // Add this
+        'order_code'
     ];
 
     protected $casts = [
@@ -78,5 +79,42 @@ class CustomerOrder extends Model
     public function scopeUnassigned($query)
     {
         return $query->whereNull('assigned_staff_id');
+    }
+        public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($order) {
+            $order->order_code = $order->generateOrderCode();
+        });
+    }
+
+    public function generateOrderCode(): string
+    {
+        $prefixes = [
+            1 => 'MDPHU',  // Phuket
+            2 => 'MDBAN',  // Bangkok
+            3 => 'MDPAT',  // Pattaya
+            4 => 'MDCOL',  // Colombo
+        ];
+
+        $prefix = $prefixes[$this->location_id] ?? 'MDXXX';
+
+        // Daily sequential number (resets every day per location)
+        $today = now()->format('Y-m-d');
+
+        $count = CustomerOrder::where('location_id', $this->location_id)
+            ->whereDate('created_at', $today)
+            ->count();
+
+        $sequence = str_pad($count + 1, 6, '0', STR_PAD_LEFT); // 000001, 000002...
+
+        return $prefix . '-' . $sequence;
+    }
+
+    // Optional: Accessor so you can use $order->pretty_code
+    public function getPrettyCodeAttribute()
+    {
+        return $this->order_code;
     }
 }

@@ -43,24 +43,10 @@
 
                         <!-- Filter Row -->
                         <div class="filters-row">
-                            <!-- Staff Filter -->
-                            <div class="filter-group">
-                                <label><i class='bx bx-user'></i> Staff</label>
-                                <select name="staff_id" class="filter-select">
-                                    <option value="">All Staff</option>
-                                    @foreach($staffList as $staff)
-                                        <option value="{{ $staff->id }}" 
-                                            {{ $selectedStaff == $staff->id ? 'selected' : '' }}>
-                                            {{ $staff->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <!-- Location Filter -->
+<!-- Location Filter -->
                             <div class="filter-group">
                                 <label><i class='bx bx-map'></i> Location</label>
-                                <select name="location_id" class="filter-select">
+                                <select name="location_id" id="locationSelect" class="filter-select">
                                     <option value="">All Locations</option>
                                     @foreach($locationList as $location)
                                         <option value="{{ $location->location_id }}" 
@@ -70,6 +56,30 @@
                                     @endforeach
                                 </select>
                             </div>
+                                                        <!-- Staff Filter -->
+                           <!-- Staff Filter -->
+<div class="filter-group">
+    <label><i class='bx bx-user'></i> Staff</label>
+
+    <select name="staff_id" id="staffSelect" class="filter-select">
+        <option value="">All Staff</option>
+        @foreach($staffList as $staff)
+            <option value="{{ $staff->id }}"
+                data-location="{{ $staff->location_id }}"
+                {{ $selectedStaff == $staff->id ? 'selected' : '' }}>
+                {{ $staff->name }}
+            </option>
+        @endforeach
+    </select>
+
+    <!-- Much cleaner message -->
+    <div id="noStaffMsg"
+         style="display:none; font-size:13px; color:#6b7280; margin-top:4px;">
+        <i class='bx bx-info-circle' style="font-size:15px; margin-right:4px;"></i>
+        No staff available for this location
+    </div>
+</div>
+
 
                             <!-- Status Filter -->
                             <div class="filter-group">
@@ -155,138 +165,134 @@
                         <thead>
                             <tr>
                                 <th>Order ID</th>
-                                <th>Customer</th>
-                                <th>Contact</th>
-                                <th>Delivery Type</th>
-                                <th>Location</th>
-                                <th>Total Price</th>
-                                <th>Status</th>
-                                <th>Assigned Staff</th>
-                                <th>Payment</th>
-                                <th>Created At</th>
-                                <th>Actions</th>
+                                <th>Customer Name</th>
+                                <th>Phone Number</th>
+                                <th>Order Type</th>
+                                <th>Branch / Location</th>
+                                <th>Amount</th>
+                                <th>Order Status</th>
+                                <th>Assigned To</th>
+                                <th>Payment Status</th>
+                                <th>Order Date & Time</th>
+                                <th>Options</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @forelse($orders as $order)
-                                <tr class="order-row" data-order-id="{{ $order->id }}">
-                                    <td><span class="order-id-badge">#{{ Str::substr($order->id, 0, 8) }}</span></td>
-                                    <td>
-                                        <div class="customer-info">
-                                            <i class='bx bxs-user-circle'></i>
-                                            <span>{{ $order->customer->name ?? 'Guest' }}</span>
+<tbody>
+                        @forelse($orders as $order)
+                            <tr class="order-row" data-order-id="{{ $order->id }}">
+                                <td data-label="Order ID">
+                                    <span class="order-id-badge">#{{ $order->order_code }}</span>
+                                </td>
+                                <td data-label="Customer">
+                                    <div class="customer-info">
+                                        <span>{{ $order->customer->name ?? 'Guest' }}</span>
+                                    </div>
+                                </td>
+                                <td data-label="Phone">{{ $order->customer_contact }}</td>
+                                <td data-label="Type">
+                                    <span class="badge badge-{{ strtolower(str_replace(' ', '_', $order->delivery_type)) }}">
+                                        {{ $order->delivery_type }}
+                                    </span>
+                                </td>
+                                <td data-label="Location">{{ @$order->location->location_name }}</td>
+                                <td data-label="Amount">
+                                    <span class="price-badge">
+                                        {{ $order->location->currency ?? '₹' }}
+                                        {{ number_format($order->order_total_price, 2) }}
+                                    </span>
+                                </td>
+                                <td data-label="Status">
+                                    <span class="badge badge-{{ strtolower(str_replace(' ', '_', $order->order_status->value)) }}">
+                                        {{ $order->order_status->value }}
+                                    </span>
+                                </td>
+                                <td data-label="Assigned">
+                                    @if($order->assignedStaff)
+                                        <div class="staff-info">
+                                            <span>{{ $order->assignedStaff->name }}</span>
                                         </div>
-                                    </td>
-                                    <td>{{ $order->customer_contact }}</td>
-                                    <td>
-                                        <span class="badge badge-{{ strtolower($order->delivery_type) }}">
-                                            {{ $order->delivery_type }}
-                                        </span>
-                                    </td>
-                                    <td>{{ @$order->location->location_name }}</td>
-                                    <td>
-                                        <span class="price-badge">
-                                            {{ $order->location->currency ?? '₹' }}
-                                            {{ number_format($order->order_total_price, 2) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-status badge-{{ strtolower($order->order_status->value) }}">
-                                            {{ $order->order_status->value }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        @if($order->assignedStaff)
-                                            <div class="staff-info">
-                                                <i class='bx bxs-user-badge'></i>
-                                                <span>{{ $order->assignedStaff->name }}</span>
-                                            </div>
-                                        @else
-                                            <span class="unassigned">Unassigned</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($order->isPaid)
-                                            <span class="badge badge-success">
-                                                <i class='bx bx-check-circle'></i> Paid
-                                            </span>
-                                        @else
-                                            <span class="badge badge-pending">
-                                                <i class='bx bx-time'></i> Pending
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="date-info">
-                                            <span class="date">{{ $order->created_at->format('d M Y') }}</span>
-                                            <span class="time">{{ $order->created_at->format('h:i A') }}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <button class="btn-history" onclick="toggleHistory('{{ $order->id }}')">
-                                            <i class='bx bx-history'></i> History
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr class="history-row" id="history-{{ $order->id }}" style="display: none;">
-                                    <td colspan="11">
-                                        <div class="history-container">
-                                            <div class="history-header">
-                                                <h3><i class='bx bx-history'></i> Order History</h3>
-                                                <button class="btn-close" onclick="toggleHistory('{{ $order->id }}')">
-                                                    <i class='bx bx-x'></i>
-                                                </button>
-                                            </div>
-                                            <div class="history-content">
-                                                @if($order->histories->count() > 0)
-                                                    <div class="timeline">
-                                                        @foreach($order->histories->sortByDesc('created_at') as $history)
-                                                            <div class="timeline-item">
-                                                                <div class="timeline-marker"></div>
-                                                                <div class="timeline-content">
-                                                                    <div class="timeline-header">
-                                                                        <span class="timeline-action">{{ $history->action }}</span>
-                                                                        <span class="timeline-date">{{ $history->created_at->format('d M Y, h:i A') }}</span>
-                                                                    </div>
-                                                                    <div class="timeline-body">
-                                                                        <p><strong>Staff:</strong> {{ $history->staff->name ?? 'System' }}</p>
-                                                                        @if($history->old_status && $history->new_status)
-                                                                            <p>
-                                                                                <strong>Status Change:</strong> 
-                                                                                <span class="badge badge-{{ strtolower($history->old_status) }}">{{ $history->old_status }}</span>
-                                                                                <i class='bx bx-right-arrow-alt'></i>
-                                                                                <span class="badge badge-{{ strtolower($history->new_status) }}">{{ $history->new_status }}</span>
-                                                                            </p>
-                                                                        @endif
-                                                                        @if($history->notes)
-                                                                            <p><strong>Notes:</strong> {{ $history->notes }}</p>
-                                                                        @endif
-                                                                    </div>
-                                                                </div>
+                                    @else
+                                        <span class="unassigned">Unassigned</span>
+                                    @endif
+                                </td>
+                                <td data-label="Payment">
+                                    @if($order->isPaid)
+                                        <span class="badge badge-success">Paid</span>
+                                    @else
+                                        <span class="badge badge-pending">Pending</span>
+                                    @endif
+                                </td>
+                                <td data-label="Date">
+                                    <div class="date-info">
+                                        <div>{{ $order->created_at->format('d M Y') }}</div>
+                                        <div class="time">{{ $order->created_at->format('h:i A') }}</div>
+                                    </div>
+                                </td>
+                                <td data-label="Actions">
+                                    <button class="btn-history" onclick="openHistory('{{ $order->id }}')">
+                                        History
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- History Modal -->
+                            <div id="modal-history-{{ $order->id }}" class="history-modal">
+                                <div class="history-modal-content">
+                                    <button class="history-close" onclick="closeHistory('{{ $order->id }}')">
+                                        ×
+                                    </button>
+                                    <h3>Order History – #{{ $order->order_code }}</h3>
+                                    <div class="history-content">
+                                        @if($order->histories->count() > 0)
+                                            <div class="timeline">
+                                                @foreach($order->histories->sortByDesc('created_at') as $history)
+                                                    <div class="timeline-item">
+                                                        <div class="timeline-marker"></div>
+                                                        <div class="timeline-content">
+                                                            <div class="timeline-header">
+                                                                <strong>{{ $history->action }}</strong>
+                                                                <span>{{ $history->created_at->format('d M Y, h:i A') }}</span>
                                                             </div>
-                                                        @endforeach
+                                                            <div class="timeline-body">
+                                                                <p><strong>By:</strong> {{ $history->staff->name ?? 'System' }}</p>
+                                                                @if($history->old_status && $history->new_status)
+                                                                    <p>
+                                                                        <span class="badge badge-{{ strtolower(str_replace(' ', '_', $history->old_status)) }}">
+                                                                            {{ $history->old_status }}
+                                                                        </span>
+                                                                        →
+                                                                        <span class="badge badge-{{ strtolower(str_replace(' ', '_', $history->new_status)) }}">
+                                                                            {{ $history->new_status }}
+                                                                        </span>
+                                                                    </p>
+                                                                @endif
+                                                                @if($history->notes)
+                                                                    <p><strong>Note:</strong> {{ $history->notes }}</p>
+                                                                @endif
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                @else
-                                                    <p class="no-history">No history available for this order.</p>
-                                                @endif
+                                                @endforeach
                                             </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="11" class="no-data">
-                                        <div class="no-data-content">
-                                            <i class='bx bx-inbox'></i>
-                                            <p>No orders found</p>
-                                            @if($selectedStaff || $selectedLocation || $selectedStatus || $selectedPaymentStatus !== null || $selectedDeliveryType || $dateFrom || $dateTo || $searchQuery)
-                                                <a href="{{ route('delivery-management') }}" class="btn-link">Clear all filters</a>
-                                            @endif
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
+                                        @else
+                                            <p class="no-history">No history recorded yet.</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <tr>
+                                <td colspan="11" class="no-data">
+                                    <div class="no-data-content">
+                                        <p>No orders found</p>
+                                        @if(request()->hasAny(['search', 'location_id', 'staff_id', 'status', 'payment_status', 'delivery_type', 'date_from', 'date_to']))
+                                            <a href="{{ route('delivery-management') }}" class="btn-link">Clear filters</a>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
                     </table>
                 </div>
 
@@ -308,6 +314,41 @@
     </div>
 
     <style>
+        .history-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(2px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.history-modal-content {
+    background: white;
+    width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    animation: fadeIn 0.25s ease-in-out;
+}
+
+.history-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    border: none;
+    background: none;
+    font-size: 22px;
+    cursor: pointer;
+}
+
         .header {
             margin-bottom: 24px;
         }
@@ -889,5 +930,128 @@
             }
         });
     </script>
+<script>
+    // LIVE SEARCH FILTER
+    const liveSearchInput = document.querySelector(".search-input");
+
+    liveSearchInput.addEventListener("keyup", function () {
+        const keyword = this.value.toLowerCase().trim();
+
+        document.querySelectorAll(".orders-table tbody tr.order-row").forEach(row => {
+            const orderId = row.querySelector(".order-id-badge")?.innerText.toLowerCase() || "";
+            const customer = row.querySelector(".customer-info span")?.innerText.toLowerCase() || "";
+            const contact = row.children[2]?.innerText.toLowerCase() || "";
+
+            // Check if any field contains the search keyword
+            if (
+                orderId.includes(keyword) ||
+                customer.includes(keyword) ||
+                contact.includes(keyword)
+            ) {
+                row.style.display = "";
+                // show its history row also if it was open
+                const historyRow = row.nextElementSibling;
+                if (historyRow.classList.contains("history-row") && historyRow.style.display !== 'none') {
+                    historyRow.style.display = "";
+                }
+            } else {
+                row.style.display = "none";
+                // also hide history of filtered-out rows
+                const historyRow = row.nextElementSibling;
+                if (historyRow.classList.contains("history-row")) {
+                    historyRow.style.display = "none";
+                }
+            }
+        });
+    });
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const staffSelect = document.getElementById("staffSelect");
+        const locationSelect = document.getElementById("locationSelect");
+
+        function filterStaffByLocation() {
+            const selectedLocation = locationSelect.value;
+
+            Array.from(staffSelect.options).forEach(option => {
+                if (option.value === "") {
+                    option.style.display = "";
+                    return;
+                }
+
+                const staffLocation = option.getAttribute("data-location");
+
+                if (selectedLocation === "" || staffLocation === selectedLocation) {
+                    option.style.display = "";
+                } else {
+                    option.style.display = "none";
+                }
+            });
+        }
+
+        // Run on page load (when editing with selected filters)
+        filterStaffByLocation();
+
+        // Run whenever location changes
+        locationSelect.addEventListener("change", function () {
+            staffSelect.value = ""; // reset staff
+            filterStaffByLocation();
+        });
+    });
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const staffSelect = document.getElementById("staffSelect");
+    const locationSelect = document.getElementById("locationSelect");
+    const noStaffMsg = document.getElementById("noStaffMsg");
+
+    function filterStaffByLocation() {
+        const selectedLocation = locationSelect.value;
+        let visibleCount = 0;
+
+        Array.from(staffSelect.options).forEach(option => {
+            if (option.value === "") {
+                option.style.display = "";
+                return;
+            }
+
+            const staffLocation = option.getAttribute("data-location");
+
+            if (!selectedLocation || staffLocation === selectedLocation) {
+                option.style.display = "";
+                visibleCount++;
+            } else {
+                option.style.display = "none";
+            }
+        });
+
+        // If no staff for this location
+        if (selectedLocation && visibleCount === 0) {
+            staffSelect.disabled = true;
+            noStaffMsg.style.display = "block";
+        } else {
+            staffSelect.disabled = false;
+            noStaffMsg.style.display = "none";
+        }
+    }
+
+    filterStaffByLocation();
+
+    locationSelect.addEventListener("change", function () {
+        staffSelect.value = "";
+        filterStaffByLocation();
+    });
+});
+</script>
+
+<script>
+function openHistory(orderId) {
+    document.getElementById("modal-history-" + orderId).style.display = "flex";
+}
+
+function closeHistory(orderId) {
+    document.getElementById("modal-history-" + orderId).style.display = "none";
+}
+</script>
 
 @endsection

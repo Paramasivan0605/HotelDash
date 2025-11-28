@@ -13,6 +13,11 @@ class StaffAccount extends Model
 {
     use HasFactory, HasApiTokens, Notifiable;
 
+    // Add these two lines
+    protected $primaryKey = 'staff_account_id';
+    public $incrementing = false; // Set to true if it's an auto-incrementing integer
+    protected $keyType = 'string'; // Add this if staff_account_id is a string
+
     protected $fillable = [
         'staff_account_id',
         'location_id'

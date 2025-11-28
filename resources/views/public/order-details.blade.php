@@ -13,7 +13,7 @@
 
     <!-- Order Header -->
     <div class="order-header mb-4">
-        <h1 class="h5 fw-bold text-dark mb-2">Order #{{ $order->id }}</h1>
+        <h1 class="h5 fw-bold text-dark mb-2">Order #{{ $order->order_code }}</h1>
         <div class="d-flex justify-content-between align-items-center">
             <div>
                 <small class="text-dark d-block">{{ $order->created_at->format('M d, Y • h:i A') }}</small>
