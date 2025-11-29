@@ -3,91 +3,402 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hotel Food Order - Login</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>MadrasDarbar - Order</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                        url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1920') center/cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .order-container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .logo {
+            background: #8B0000;
+            color: white;
+            text-align: center;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 35px;
+        }
+
+        .logo-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .logo h1 {
+            font-size: 26px;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .logo p {
+            font-size: 11px;
+            letter-spacing: 3px;
+            opacity: 0.9;
+        }
+
+        .order-type {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .type-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            text-align: center;
+        }
+
+        .type-option:hover {
+            border-color: #8B0000;
+            transform: translateY(-2px);
+        }
+
+        .type-option.active {
+            border-color: #8B0000;
+            background: #fff5f5;
+        }
+
+        .type-option input[type="radio"] {
+            display: none;
+        }
+
+        .type-icon {
+            font-size: 32px;
+        }
+
+        .type-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .location-section {
+            margin-bottom: 25px;
+        }
+
+        .location-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .location-select {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+        }
+
+        .location-select:focus {
+            outline: none;
+            border-color: #8B0000;
+            box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+        }
+
+        .location-select:hover {
+            border-color: #8B0000;
+        }
+
+        .location-option {
+            padding: 12px 16px;
+            font-size: 15px;
+        }
+
+        .location-option:disabled {
+            color: #999;
+            font-style: italic;
+        }
+
+        .continue-button {
+            width: 100%;
+            padding: 18px;
+            background: #8B0000;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .continue-button:hover {
+            background: #6B0000;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 0, 0, 0.3);
+        }
+
+        .continue-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+            text-align: center;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.error {
+            background: #fee;
+            color: #c00;
+            border: 1px solid #fcc;
+        }
+
+        .message.success {
+            background: #efe;
+            color: #070;
+            border: 1px solid #cfc;
+        }
+
+        .location-info {
+            margin-top: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #495057;
+            display: none;
+            border-left: 4px solid #8B0000;
+        }
+
+        .location-info.show {
+            display: block;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #8B0000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .order-container {
+                padding: 25px;
+            }
+            
+            .logo {
+                padding: 20px;
+                margin-bottom: 25px;
+            }
+            
+            .logo h1 {
+                font-size: 22px;
+            }
+            
+            .order-type {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .type-option {
+                padding: 15px;
+            }
+        }
+    </style>
 </head>
-<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-700 via-red-800 to-maroon-900 p-4">
-
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <!-- Modern Header Bar -->
-        <div class="bg-gradient-to-r from-red-800 to-red-900 text-center text-white py-6 px-4">
-            <h2 class="text-3xl font-extrabold tracking-wide">Hotel Food Order</h2>
-            <p class="text-sm opacity-75 mt-1">Instant food delivery to your room</p>
+<body>
+    <div class="order-container">
+        <div class="logo">
+            <div class="logo-icon">🍽️</div>
+            <h1>MadrasDarbar</h1>
+            <p>HEARTY DINING</p>
         </div>
 
-        <div class="p-6 text-black">
-            @if(session('error'))
-                <div class="mb-4 bg-red-100 p-3 text-sm text-red-700 rounded-lg shadow-md">
-                    {{ session('error') }}
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('login.submit') }}" class="space-y-4">
-                @csrf
-
-                <!-- Name -->
-                <div>
-                    <label for="name" class="block text-sm font-medium text-black mb-1">
-                        Full Name
-                    </label>
-                    <input type="text" id="name" name="name"
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none text-black"
-                        placeholder="Enter your full name" value="{{ old('name') }}" required>
-                </div>
-
-                <!-- Mobile Number -->
-                <div>
-                    <label for="mobile" class="block text-sm font-medium text-black mb-1">
-                        Mobile Number
-                    </label>
-                    <input type="tel" id="mobile" name="mobile"
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none text-black"
-                        placeholder="Mobile Number" value="{{ old('mobile') }}" required>
-                </div>
-
-                <!-- Location Dropdown -->
-                <div>
-                    <label for="location" class="block text-sm font-medium text-black mb-1">
-                        Select Hotel Branch
-                    </label>
-                   <select id="location" name="location"
-    class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-red-500 focus:outline-none text-black"
-    required>
-    <option value="">Choose a location</option>
-    @foreach ($locations as $location)
-        <option value="{{ $location->location_id }}">{{ $location->location_name }}</option>
-    @endforeach
-</select>
-
-                </div>
-
-                <!-- Submit Button -->
-                <button type="submit"
-                    class="w-full py-3 text-white font-bold rounded-lg bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 shadow-lg transform hover:scale-[1.02] transition">
-                    Login / Sign Up
-                </button>
-            </form>
-
-            <div class="text-center mt-4">
-                <small class="text-black opacity-70">
-                    By continuing, you agree to our 
-                    <span class="text-red-600 underline cursor-pointer">Terms of Service</span>
-                </small>
+        <form id="orderForm">
+            @csrf
+            
+            <div class="order-type">
+                <label class="type-option active" for="delivery">
+                    <input type="radio" name="order_type" id="delivery" value="delivery" checked>
+                    <div class="type-icon">🚚</div>
+                    <div class="type-label">Delivery</div>
+                </label>
+                <label class="type-option" for="pickup">
+                    <input type="radio" name="order_type" id="pickup" value="pickup">
+                    <div class="type-icon">🏪</div>
+                    <div class="type-label">Pickup</div>
+                </label>
             </div>
-        </div>
+
+            <div class="location-section">
+                <h3>Select Your Location</h3>
+                <select name="location_id" id="locationSelect" class="location-select" required>
+                    <option value="" disabled selected>Choose a location...</option>
+                    @foreach($locations as $location)
+                        <option value="{{ $location->location_id }}" class="location-option">
+                            {{ $location->location_name }} 
+                        </option>
+                    @endforeach
+                </select>
+                <div class="location-info" id="locationInfo">
+                    <strong>Selected Location:</strong>
+                    <span id="selectedLocationText"></span>
+                </div>
+            </div>
+
+            <button type="submit" class="continue-button" id="continueBtn">
+                Continue
+            </button>
+            <div class="message" id="message"></div>
+        </form>
     </div>
 
     <script>
-        // Format mobile input to only allow 10 digits
-        // document.getElementById('mobile').addEventListener('input', function (e) {
-        //     let value = e.target.value.replace(/\D/g, '');
-        //     if (value.length > 10) {
-        //         value = value.substring(0, 10);
-        //     }
-        //     e.target.value = value;
-        // });
-    </script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const orderForm = document.getElementById('orderForm');
+            const locationSelect = document.getElementById('locationSelect');
+            const locationInfo = document.getElementById('locationInfo');
+            const selectedLocationText = document.getElementById('selectedLocationText');
+            const messageDiv = document.getElementById('message');
+            const continueBtn = document.getElementById('continueBtn');
 
+            // Order type selection
+            document.querySelectorAll('.type-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.type-option').forEach(opt => {
+                        opt.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    this.querySelector('input[type="radio"]').checked = true;
+                });
+            });
+
+            // Location selection change
+            locationSelect.addEventListener('change', function() {
+                if (this.value) {
+                    const selectedOption = this.options[this.selectedIndex];
+                    selectedLocationText.textContent = selectedOption.text;
+                    locationInfo.classList.add('show');
+                } else {
+                    locationInfo.classList.remove('show');
+                }
+            });
+
+            // Form submission
+            orderForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const orderType = document.querySelector('input[name="order_type"]:checked').value;
+                const locationId = locationSelect.value;
+
+                if (!locationId) {
+                    showMessage('Please select a location', 'error');
+                    return;
+                }
+
+                // Show loading state
+                continueBtn.disabled = true;
+                continueBtn.innerHTML = '<div class="loader"></div> Processing...';
+
+                try {
+                    const response = await fetch('/order/submit', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            order_type: orderType,
+                            location_id: locationId
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showMessage('Location saved successfully! Redirecting...', 'success');
+                        // Redirect to menu page
+                        setTimeout(() => {
+                            window.location.href = '/home';
+                        }, 1000);
+                    } else {
+                        showMessage(data.message || 'An error occurred', 'error');
+                    }
+                } catch (error) {
+                    showMessage('Network error. Please try again.', 'error');
+                    console.error('Submission error:', error);
+                } finally {
+                    continueBtn.disabled = false;
+                    continueBtn.innerHTML = 'Continue';
+                }
+            });
+
+            function showMessage(text, type) {
+                messageDiv.textContent = text;
+                messageDiv.className = `message ${type} show`;
+                
+                setTimeout(() => {
+                    messageDiv.classList.remove('show');
+                }, 5000);
+            }
+
+            // Auto-select first location if only one exists
+            if (locationSelect.options.length === 2) { // 1 option + default option
+                locationSelect.selectedIndex = 1;
+                locationSelect.dispatchEvent(new Event('change'));
+            }
+        });
+    </script>
 </body>
 </html>

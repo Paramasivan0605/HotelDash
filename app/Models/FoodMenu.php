@@ -14,17 +14,17 @@ class FoodMenu extends Model
     protected $fillable = [
         'name',
         'description',
-        'price',
+        'price', // This might be a base price, but location-specific prices are in food_price table
         'category_id',
         'image',
     ];
 
-    public function customerOrderDetail() : HasMany
+    public function customerOrderDetail(): HasMany
     {
         return $this->hasMany(CustomerOrderDetail::class, 'food_id');
     }
 
-    public function foodCategory() : BelongsTo
+    public function foodCategory(): BelongsTo
     {
         return $this->belongsTo(FoodCategory::class, 'category_id');
     }
@@ -33,7 +33,8 @@ class FoodMenu extends Model
     {
         return $this->hasMany(FoodLocation::class, 'food_id');
     }
-public function locations()
+
+    public function locations()
     {
         return $this->belongsToMany(Location::class, 'food_price', 'food_id', 'location_id')
                     ->withPivot('price')
@@ -43,9 +44,10 @@ public function locations()
     // Helper method to get price for a specific location
     public function getPriceForLocation($locationId)
     {
-$location = $this->locations()
-                ->where('food_price.location_id', $locationId)
-                ->first();
-        return $location ? $location->pivot->price : 0;
+        $foodLocation = $this->foodLocations()
+                            ->where('location_id', $locationId)
+                            ->first();
+        
+        return $foodLocation ? $foodLocation->price : $this->price;
     }
 }

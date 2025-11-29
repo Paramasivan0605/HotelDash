@@ -15,6 +15,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegistrationController;
 use App\Http\Controllers\Public\PublicController;
+use App\Http\Controllers\Public\LocationController;
 use App\Http\Controllers\Staff\Order\OrderControler;
 use App\Http\Controllers\Staff\Profile\StaffProfileController;
 use App\Http\Controllers\Staff\Reservation\ReservationController;
@@ -34,13 +35,17 @@ use Illuminate\Support\Facades\Route;
 
 
 // Public Routes
-Route::get('/', [PublicController::class, 'login'])->name('welcome');
-Route::post('/login/submit', [PublicController::class, 'submit'])->name('login.submit');
+// Route::get('/', [PublicController::class, 'login'])->name('welcome');
+// Route::post('/login/submit', [LocationController::class, 'submit'])->name('login.submit');
 
+Route::get('/', [LocationController::class, 'showOrderPage'])->name('public.login');
+Route::post('/order/submit', [LocationController::class, 'submit'])->name('order.submit');
+Route::get('/home', [LocationController::class, 'home'])->name('home');
+Route::post('/checkout', [LocationController::class, 'checkout'])->name('checkout');
 
 Route::middleware(['customer.auth'])->group(function () {
-    Route::get('/home', [PublicController::class, 'home'])->name('home');
     Route::get('/menu', [PublicController::class, 'menu'])->name('menu');
+    // Route::get('/home', [PublicController::class, 'home'])->name('home');
     Route::get('/about', [PublicController::class, 'about'])->name('about');
     Route::get('/promotion', [PublicController::class, 'promotion'])->name('promotion');
     Route::get('/reservation', [PublicController::class, 'reservation'])->name('reservation');
