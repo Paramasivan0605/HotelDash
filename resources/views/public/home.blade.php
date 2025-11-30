@@ -918,7 +918,7 @@
             </div>
             <div class="cart-total">
                 <span>Subtotal:</span>
-                <span>₹ <span id="cartTotal">0.00</span></span>
+                <span>{{ $location->currency }} <span id="cartTotal">0.00</span></span>
             </div>
             <small class="text-muted d-block mb-3">Extra charges may apply</small>
             <button class="btn-checkout" onclick="checkout()">
