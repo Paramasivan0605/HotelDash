@@ -76,11 +76,6 @@
                         <p class="restaurant-name mb-0">MadrasDarbar - {{ $location->location_name }}</p>
                     </div>
                 </div>
-                <div class="d-flex align-items-center gap-3">
-                    <button class="btn btn-outline-secondary d-none d-md-inline-flex" type="button" onclick="toggleSearch()">
-                        <i class="bi bi-search me-2"></i> Search
-                    </button>
-                </div>
             </div>
         </div>
     </nav>

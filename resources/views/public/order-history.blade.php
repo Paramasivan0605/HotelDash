@@ -76,11 +76,6 @@
                         <p class="restaurant-name mb-0">MadrasDarbar - {{ $location->location_name }}</p>
                     </div>
                 </div>
-                <div class="d-flex align-items-center gap-3">
-                    <button class="btn btn-outline-secondary d-none d-md-inline-flex" type="button" onclick="toggleSearch()">
-                        <i class="bi bi-search me-2"></i> Search
-                    </button>
-                </div>
             </div>
         </div>
     </nav>
@@ -159,7 +154,7 @@
             </div>
             <h3 class="h5 fw-bold text-dark mb-2">No orders yet</h3>
             <p class="text-muted mb-4">You haven't placed any orders yet</p>
-            <a href="{{ route('location.menu', ['id' => session('location_id')]) }}" class="btn btn-danger px-4">
+            <a href="{{ route('home') }}" class="btn btn-danger px-4">
                 Browse Menu
             </a>
         </div>

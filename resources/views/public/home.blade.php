@@ -775,7 +775,7 @@
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-3">
-                    <button class="btn btn-outline-secondary d-none d-md-inline-flex" type="button" onclick="toggleSearch()">
+                    <button class="btn btn-outline-secondary d-none d-md-inline-flex" type="button" onclick="toggleSearch()" style="color:white;">
                         <i class="bi bi-search me-2"></i> Search
                     </button>
                 </div>
