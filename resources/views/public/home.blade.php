@@ -303,6 +303,7 @@
             font-size: 16px;
             text-transform: uppercase;
             transition: all 0.3s;
+            margin-bottom:15%;
         }
 
         .btn-checkout:hover {

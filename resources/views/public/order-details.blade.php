@@ -79,7 +79,7 @@
             </div>
         </div>
     </nav>
-<div class="container-fluid px-3 py-3">
+<div class="container px-3 py-3">
     <!-- Back Button -->
     <div class="mb-3">
         <a href="{{ route('orders.history') }}" class="btn btn-outline-dark bg-danger btn-sm text-white" style="">
