@@ -32,25 +32,38 @@ class LocationController extends Controller
     {
         $request->validate([
             'order_type' => 'required|in:delivery,pickup',
-            'location_id' => 'required|exists:location,location_id'
+            'location_id' => 'required|exists:location,location_id',
+            'phone_number' => 'required|string|max:20|min:8'
         ]);
 
-        // Store order type and location in session
+        // Find or create customer by phone number
+        $customer = Customer::firstOrCreate(
+            ['mobile' => $request->input('phone_number')],
+            [
+                'mobile' => $request->input('phone_number'),
+                'created_at' => now(),
+                'updated_at' => now()
+            ]
+        );
+
+        // Store order type, location, and customer info in session
         session([
             'order_type' => $request->input('order_type'),
             'location_id' => $request->input('location_id'),
+            'customer_phone' => $request->input('phone_number'),
+            'customer_id' => $customer->id
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Location saved successfully',
+            'message' => 'Location and phone number saved successfully',
         ]);
     }
-
     public function home()
     {
         // Get location ID from session
         $locationId = session('location_id');
+        $customer_phone = session('customer_phone');
         
         if (!$locationId) {
             return redirect()->route('public.login')->with('error', 'Please select a location first');
@@ -108,7 +121,7 @@ class LocationController extends Controller
 
         // Validate request
         $validated = $request->validate([
-            'customer_contact' => 'required|string|max:20',
+            'customer_name' => 'required|string',
             'customer_address' => 'required|string|max:500',
             'payment_type' => 'required|in:cash,card',
             'total_amount' => 'required|numeric|min:0',
@@ -146,10 +159,11 @@ class LocationController extends Controller
         DB::beginTransaction();
 
         // Create or find customer
+        $customerContact = session('customer_phone');                      
         $customer = Customer::firstOrCreate(
-            ['mobile' => $validated['customer_contact']],
+            ['mobile' => $customerContact],
             [
-                'name' => 'Guest Customer',
+                'name' => $validated['customer_name'],
                 'address' => $validated['customer_address'],
             ]
         );
@@ -158,6 +172,10 @@ class LocationController extends Controller
         if ($customer->address !== $validated['customer_address']) {
             $customer->update(['address' => $validated['customer_address']]);
         }
+          // Update address if it changed
+        if ($customer->name !== $validated['customer_name']) {
+            $customer->update(['name' => $validated['customer_name']]);
+        }
 
         // Generate custom order ID based on location
         $orderId = $this->generateLocationBasedOrderId($location->location_name);
@@ -165,7 +183,6 @@ class LocationController extends Controller
 
         // Create order with custom ID
         $order = CustomerOrder::create([
-            'id' => $orderId,
             'order_code' => $orderCode,
             'customer_id' => $customer->id,
             'location_id' => $locationId,
@@ -175,7 +192,7 @@ class LocationController extends Controller
             'payment_type' => $validated['payment_type'],
             'isPaid' => $validated['payment_type'] === 'card',
             'order_status' => OrderStatusEnum::Ordered,
-            'customer_contact' => $validated['customer_contact'],
+            'customer_contact' => $customerContact,
             'customer_address' => $validated['customer_address'],
             'order_notes' => $validated['order_notes'] ?? null,
         ]);
@@ -229,7 +246,46 @@ class LocationController extends Controller
         ], 500);
     }
 }
+public function getCustomerData(Request $request): JsonResponse
+{
+    try {
+        $customerPhone = session('customer_phone');
+        
+        if (!$customerPhone) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer not found'
+            ]);
+        }
 
+        $customer = Customer::where('mobile', $customerPhone)->first();
+
+        if ($customer) {
+            return response()->json([
+                'success' => true,
+                'customer' => [
+                    'name' => $customer->name ?? '',
+                    'address' => $customer->address ?? ''
+                ]
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Customer not found'
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error fetching customer data', [
+            'error' => $e->getMessage()
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Error fetching customer data'
+        ]);
+    }
+}
 /**
  * Generate location-based order ID
  */

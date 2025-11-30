@@ -1,8 +1,89 @@
-@extends('main')
+<!DOCTYPE html>
+<html lang="en">
 
-@section('title', 'My Orders')
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'Home')</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800;900&family=Cinzel:wght@400;500;600;700;800;900&family=Great+Vibes&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <!-- Tailwind CSS v3.4+ CDN (with JIT, dark mode, and all plugins) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Optional: Tailwind Config (Recommended for better performance & custom colors) -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            500: '#dc2626',
+                            600: '#b91c1c',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
 
-@section('content')
+    <!-- Alpine.js v3 (Required for modals & reactivity) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Optional: Google Fonts - Inter (Modern & clean) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</head>     
+<body>
+     <div class="top-bar">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-telephone-fill me-2"></i>
+                    <span>{{ session('customer_phone') }} | {{ strtoupper(session('order_type', 'delivery')) }}</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-geo-alt-fill me-2"></i>
+                    <span>{{ $location->location_name }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="navbar sticky-top">
+        <div class="container">
+            <div class="d-flex align-items-center w-100 justify-content-between">
+                <div class="d-flex align-items-center">
+                    <div class="navbar-brand me-3">
+                        <img src="{{ asset('images/logo.jpeg') }}" alt="MadrasDarbar" style="height: 40px;">
+                    </div>
+                    <div>
+                        <p class="restaurant-name mb-0">MadrasDarbar - {{ $location->location_name }}</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-outline-secondary d-none d-md-inline-flex" type="button" onclick="toggleSearch()">
+                        <i class="bi bi-search me-2"></i> Search
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
 <div class="container-fluid px-3 py-4">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -10,7 +91,7 @@
             <h1 class="h4 fw-bold text-dark mb-1">My Orders</h1>
             <p class=" small mb-0" style="color:red;">{{ $orders->count() }} {{ $orders->count() == 1 ? 'order' : 'orders' }}</p>
         </div>
-        <a href="{{ route('location.menu', ['id' => session('location_id')]) }}" class="btn btn-outline-danger btn-sm">
+        <a href="{{ route('home') }}" class="btn btn-outline-danger btn-sm">
             <i class="bi bi-plus"></i> New Order
         </a>
     </div>
@@ -96,6 +177,27 @@
         min-height: 100vh;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
+
+       .top-bar {
+            background-color: #8B0000;
+            color: white;
+            padding: 10px 0;
+            font-size: 14px;
+        }
+
+        .navbar {
+            background-color: rgb(216 25 25);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 15px 0;
+            color: white;
+        }
+
+        .restaurant-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 0;
+        }
 
     /* Order Card */
     .order-card {
@@ -225,4 +327,5 @@
         box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25);
     }
 </style>
-@endsection
+</body>
+</html>

@@ -76,6 +76,7 @@ Route::middleware(['customer.auth'])->group(function () {
     // Search Routes
 Route::post('/menu/search', [PublicController::class, 'searchMenu'])->name('menu.search');
 Route::get('/location/categories', [PublicController::class, 'getLocationCategories'])->name('location.categories');
+Route::get('/customer/data', [LocationController::class, 'getCustomerData'])->name('customer.data');
 });
 
 

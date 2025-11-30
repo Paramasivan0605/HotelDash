@@ -59,13 +59,13 @@
         }
 
         .order-type {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
             gap: 15px;
             margin-bottom: 30px;
         }
 
         .type-option {
+            flex: 1;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             padding: 20px;
@@ -76,6 +76,8 @@
             align-items: center;
             gap: 8px;
             text-align: center;
+            min-height: 120px;
+            justify-content: center;
         }
 
         .type-option:hover {
@@ -100,6 +102,40 @@
             font-size: 16px;
             font-weight: 600;
             color: #333;
+        }
+
+        .phone-section {
+            margin-bottom: 25px;
+        }
+
+        .phone-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .phone-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            background-color: white;
+            transition: all 0.3s;
+        }
+
+        .phone-input:focus {
+            outline: none;
+            border-color: #8B0000;
+            box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+        }
+
+        .phone-input:hover {
+            border-color: #8B0000;
+        }
+
+        .phone-input::placeholder {
+            color: #999;
         }
 
         .location-section {
@@ -216,6 +252,19 @@
             display: block;
         }
 
+        .phone-info {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .phone-info i {
+            color: #8B0000;
+        }
+
         .loader {
             display: inline-block;
             width: 18px;
@@ -229,6 +278,11 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        /* Phone input specific styles */
+        .phone-input-container {
+            position: relative;
         }
 
         /* Responsive Design */
@@ -247,12 +301,41 @@
             }
             
             .order-type {
-                grid-template-columns: 1fr;
+                flex-direction: row;
                 gap: 10px;
             }
             
             .type-option {
                 padding: 15px;
+                min-height: 100px;
+            }
+            
+            .type-icon {
+                font-size: 28px;
+            }
+            
+            .type-label {
+                font-size: 14px;
+            }
+        }
+
+        /* For very small screens */
+        @media (max-width: 360px) {
+            .order-type {
+                gap: 8px;
+            }
+            
+            .type-option {
+                padding: 12px;
+                min-height: 90px;
+            }
+            
+            .type-icon {
+                font-size: 24px;
+            }
+            
+            .type-label {
+                font-size: 13px;
             }
         }
     </style>
@@ -281,6 +364,24 @@
                 </label>
             </div>
 
+            <div class="phone-section">
+                <h3>Enter Your Phone Number</h3>
+                <div class="phone-input-container">
+                    <input 
+                        type="tel" 
+                        name="phone_number" 
+                        id="phoneInput" 
+                        class="phone-input" 
+                        placeholder="Enter your mobile number"
+                        required
+                    >
+                </div>
+                <div class="phone-info">
+                    <i>📞</i>
+                    <span>We'll use this to contact you about your order</span>
+                </div>
+            </div>
+
             <div class="location-section">
                 <h3>Select Your Location</h3>
                 <select name="location_id" id="locationSelect" class="location-select" required>
@@ -298,7 +399,7 @@
             </div>
 
             <button type="submit" class="continue-button" id="continueBtn">
-                Continue
+                Continue to Menu
             </button>
             <div class="message" id="message"></div>
         </form>
@@ -307,6 +408,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const orderForm = document.getElementById('orderForm');
+            const phoneInput = document.getElementById('phoneInput');
             const locationSelect = document.getElementById('locationSelect');
             const locationInfo = document.getElementById('locationInfo');
             const selectedLocationText = document.getElementById('selectedLocationText');
@@ -333,14 +435,28 @@
                 } else {
                     locationInfo.classList.remove('show');
                 }
+                validateForm();
             });
+
+            // Form validation
+            function validateForm() {
+                const locationValid = locationSelect.value !== '';
+                
+                continueBtn.disabled = !(locationValid);
+            }
 
             // Form submission
             orderForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 const orderType = document.querySelector('input[name="order_type"]:checked').value;
+                const phoneNumber = phoneInput.value;
                 const locationId = locationSelect.value;
+
+                if (!phoneNumber) {
+                    showMessage('Please enter a phone number', 'error');
+                    return;
+                }
 
                 if (!locationId) {
                     showMessage('Please select a location', 'error');
@@ -360,14 +476,15 @@
                         },
                         body: JSON.stringify({
                             order_type: orderType,
-                            location_id: locationId
+                            location_id: locationId,
+                            phone_number: phoneNumber
                         })
                     });
 
                     const data = await response.json();
 
                     if (data.success) {
-                        showMessage('Location saved successfully! Redirecting...', 'success');
+                        showMessage('Phone number and location saved successfully! Redirecting...', 'success');
                         // Redirect to menu page
                         setTimeout(() => {
                             window.location.href = '/home';
@@ -380,7 +497,7 @@
                     console.error('Submission error:', error);
                 } finally {
                     continueBtn.disabled = false;
-                    continueBtn.innerHTML = 'Continue';
+                    continueBtn.innerHTML = 'Continue to Menu';
                 }
             });
 
@@ -398,6 +515,9 @@
                 locationSelect.selectedIndex = 1;
                 locationSelect.dispatchEvent(new Event('change'));
             }
+
+            // Initial form validation
+            validateForm();
         });
     </script>
 </body>

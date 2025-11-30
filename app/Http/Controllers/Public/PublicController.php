@@ -579,8 +579,8 @@ public function getLocationCategories(Request $request): JsonResponse
                 ->orderBy('created_at', 'desc')
                 ->get();
         }
-
-        return view('public.order-history', compact('orders'));
+        $location = Location::find(session('location_id'));
+        return view('public.order-history', compact('orders','location'));
     }
 
     public function orderDetails($orderId): View
@@ -589,8 +589,9 @@ public function getLocationCategories(Request $request): JsonResponse
             ->where('customer_id', session('customer_id'))
             ->where('id', $orderId)
             ->firstOrFail();
+        $location = Location::find(session('location_id'));
 
-        return view('public.order-details', compact('order'));
+        return view('public.order-details', compact('order', 'location'));
     }
 
     public static function getStatusClass($status)

@@ -24,8 +24,13 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-light);
+            background-image: url('{{ asset('images/bg-image.jpeg') }}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             color: var(--text-dark);
             padding-bottom: 80px;
         }
@@ -38,15 +43,16 @@
         }
 
         .navbar {
-            background-color: white;
+            background-color: rgb(216 25 25);
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             padding: 15px 0;
+            color: white;
         }
 
         .restaurant-name {
             font-size: 16px;
             font-weight: 600;
-            color: var(--text-dark);
+            color: white;
             margin-bottom: 0;
         }
 
@@ -494,6 +500,124 @@
             color: #ccc;
             font-style: italic;
         }
+
+        /* My Orders Page Styles */
+        .orders-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+        }
+
+        .order-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0;
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .order-card:hover {
+            box-shadow: 0 4px 16px rgba(139, 0, 0, 0.15);
+        }
+
+        .order-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .order-body {
+            padding: 20px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-ordered { background: #e3f2fd; color: #1976d2; }
+        .status-preparing { background: #fff3e0; color: #f57c00; }
+        .status-ready { background: #e8f5e8; color: #388e3c; }
+        .status-delivery { background: #fff8e1; color: #ffa000; }
+        .status-delivered { background: #f3e5f5; color: #7b1fa2; }
+        .status-completed { background: #e8f5e8; color: #388e3c; }
+        .status-cancelled { background: #ffebee; color: #d32f2f; }
+
+        .empty-state {
+            padding: 3rem 1rem;
+            text-align: center;
+        }
+
+        .empty-icon {
+            opacity: 0.5;
+        }
+
+        /* Mobile Search Bar */
+        .mobile-search-bar {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        @media (max-width: 991px) {
+            .mobile-search-bar {
+                display: block;
+            }
+        }
+
+        /* Orders Button */
+        .orders-float-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            width: 70px;
+            height: 70px;
+            background-color: var(--primary-red);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(139, 0, 0, 0.4);
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s;
+            border: 3px solid white;
+            text-decoration: none;
+        }
+
+        .orders-float-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(139, 0, 0, 0.5);
+            color: white;
+        }
+
+        @media (max-width: 991px) {
+            .orders-float-btn {
+                bottom: 20px;
+                left: 20px;
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .orders-float-btn {
+                width: 55px;
+                height: 55px;
+                bottom: 15px;
+                left: 15px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -503,7 +627,7 @@
             <div class="d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center">
                     <i class="bi bi-telephone-fill me-2"></i>
-                    <span>04448614871 | {{ strtoupper(session('order_type', 'delivery')) }}</span>
+                    <span>{{ session('customer_phone') }} | {{ strtoupper(session('order_type', 'delivery')) }}</span>
                 </div>
                 <div class="d-flex align-items-center">
                     <i class="bi bi-geo-alt-fill me-2"></i>
@@ -532,6 +656,18 @@
             </div>
         </div>
     </nav>
+
+    <!-- Mobile Search Bar -->
+    <div class="container">
+        <div class="mobile-search-bar" id="mobileSearchBar">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search for dishes..." id="mobileSearchInput">
+                <button class="btn btn-outline-secondary" type="button" onclick="performMobileSearch()">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <div class="container d-none" id="searchBar">
         <div class="search-bar">
@@ -595,7 +731,7 @@
                                                 @else
                                                     <p class="item-description description-fallback">Delicious {{ $item['name'] }} prepared with fresh ingredients</p>
                                                 @endif
-                                                <div class="item-price">₹ {{ number_format($item['price'], 2) }}</div>
+                                                <div class="item-price">{{ $location->currency }} {{ number_format($item['price'], 2) }}</div>
                                             </div>
                                             <div class="col-md-3 col-12 text-md-end text-center mt-3 mt-md-0">
                                                 <button class="btn-add" 
@@ -618,6 +754,11 @@
             </div>
         </div>
     </div>
+
+    <!-- Orders Float Button -->
+    <a href="{{ route('orders.history') }}" class="orders-float-btn" title="My Orders">
+        <i class="bi bi-bag-check" style="font-size: 24px;"></i>
+    </a>
 
     <!-- Cart Float Button - Fixed for mobile visibility -->
     <div class="cart-float-btn" onclick="toggleCart()">
@@ -667,9 +808,8 @@
                     
                     <form id="checkoutForm">
                         <div class="mb-3">
-                            <label for="customerContact" class="form-label fw-bold">Contact Number <span class="text-danger">*</span></label>
-                            <input type="tel" class="form-control" id="customerContact" placeholder="Enter your mobile number" required>
-                            <small class="text-muted">We'll use this to contact you about your order</small>
+                            <label for="customerName" class="form-label fw-bold">Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="customerName" placeholder="Enter your Name" required>
                         </div>
 
                         <div class="mb-3">
@@ -706,7 +846,7 @@
                         <div class="alert alert-info mb-0">
                             <div class="d-flex justify-content-between align-items-center">
                                 <strong>Order Total:</strong>
-                                <strong style="font-size: 22px; color: var(--primary-red);">₹ <span id="modalTotal">0.00</span></strong>
+                                <strong style="font-size: 22px; color: var(--primary-red);">{{ $location->currency }} <span id="modalTotal">0.00</span></strong>
                             </div>
                             <hr class="my-2">
                             <small class="text-muted">
@@ -749,269 +889,311 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        let cart = [];
+      let cart = [];
 
-        function showCategory(categoryId) {
-            document.querySelectorAll('.category-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            const selectedSection = document.getElementById('category-' + categoryId);
-            if (selectedSection) {
-                selectedSection.classList.add('active');
-            }
+function showCategory(categoryId) {
+    document.querySelectorAll('.category-section').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    const selectedSection = document.getElementById('category-' + categoryId);
+    if (selectedSection) {
+        selectedSection.classList.add('active');
+    }
 
-            document.querySelectorAll('.category-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.querySelector(`.category-item[data-category-id="${categoryId}"]`)?.classList.add('active');
-        }
+    document.querySelectorAll('.category-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    document.querySelector(`.category-item[data-category-id="${categoryId}"]`)?.classList.add('active');
+}
 
-        function addToCart(itemId, name, price) {
-            const existingItem = cart.find(item => item.id === itemId);
-            
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({
-                    id: itemId,
-                    name: name,
-                    price: price,
-                    quantity: 1
-                });
-            }
-            
-            updateCart();
-            showCartNotification();
-        }
+function addToCart(itemId, name, price) {
+    const existingItem = cart.find(item => item.id === itemId);
+    
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({
+            id: itemId,
+            name: name,
+            price: price,
+            quantity: 1
+        });
+    }
+    
+    updateCart();
+    showCartNotification();
+}
 
-        function updateCart() {
-            const cartBody = document.getElementById('cartBody');
-            const cartCount = document.getElementById('cartCount');
-            const cartTotal = document.getElementById('cartTotal');
-            const cartBtn = document.querySelector('.cart-float-btn');
-            
-            if (cart.length === 0) {
-                cartBody.innerHTML = `
-                    <div class="text-center text-muted py-5">
-                        <i class="bi bi-cart-x" style="font-size: 48px;"></i>
-                        <p class="mt-3">Your cart is empty</p>
+function updateCart() {
+    const cartBody = document.getElementById('cartBody');
+    const cartCount = document.getElementById('cartCount');
+    const cartTotal = document.getElementById('cartTotal');
+    const cartBtn = document.querySelector('.cart-float-btn');
+    
+    if (cart.length === 0) {
+        cartBody.innerHTML = `
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-cart-x" style="font-size: 48px;"></i>
+                <p class="mt-3">Your cart is empty</p>
+            </div>
+        `;
+        cartCount.textContent = '0';
+        cartTotal.textContent = '0.00';
+        return;
+    }
+    
+    let html = '';
+    let total = 0;
+    let totalItems = 0;
+    
+    cart.forEach((item, index) => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+        totalItems += item.quantity;
+        
+        html += `
+            <div class="cart-item">
+                <div class="flex-grow-1">
+                    <div class="cart-item-name">${item.name}</div>
+                    <div class="cart-item-price">{{ $location->currency }} ${item.price.toFixed(2)}</div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="quantity-control">
+                        <button type="button" onclick="decrementItem(${index})">
+                            <i class="bi bi-dash"></i>
+                        </button>
+                        <input type="text" value="${item.quantity}" readonly>
+                        <button type="button" onclick="incrementItem(${index})">
+                            <i class="bi bi-plus"></i>
+                        </button>
                     </div>
-                `;
-                cartCount.textContent = '0';
-                cartTotal.textContent = '0.00';
-                return;
-            }
-            
-            let html = '';
-            let total = 0;
-            let totalItems = 0;
-            
-            cart.forEach((item, index) => {
-                const itemTotal = item.price * item.quantity;
-                total += itemTotal;
-                totalItems += item.quantity;
-                
-                html += `
-                    <div class="cart-item">
-                        <div class="flex-grow-1">
-                            <div class="cart-item-name">${item.name}</div>
-                            <div class="cart-item-price">₹ ${item.price.toFixed(2)}</div>
-                        </div>
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="quantity-control">
-                                <button type="button" onclick="decrementItem(${index})">
-                                    <i class="bi bi-dash"></i>
-                                </button>
-                                <input type="text" value="${item.quantity}" readonly>
-                                <button type="button" onclick="incrementItem(${index})">
-                                    <i class="bi bi-plus"></i>
-                                </button>
-                            </div>
-                            <button type="button" class="btn btn-sm btn-link text-danger" onclick="removeItem(${index})">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            cartBody.innerHTML = html;
-            cartCount.textContent = totalItems;
-            cartTotal.textContent = total.toFixed(2);
-            
-            cartBtn.classList.add('cart-pulse');
-            setTimeout(() => cartBtn.classList.remove('cart-pulse'), 500);
-        }
+                    <button type="button" class="btn btn-sm btn-link text-danger" onclick="removeItem(${index})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    cartBody.innerHTML = html;
+    cartCount.textContent = totalItems;
+    cartTotal.textContent = total.toFixed(2);
+    
+    cartBtn.classList.add('cart-pulse');
+    setTimeout(() => cartBtn.classList.remove('cart-pulse'), 500);
+}
 
-        function incrementItem(index) {
-            cart[index].quantity += 1;
-            updateCart();
-        }
+function incrementItem(index) {
+    cart[index].quantity += 1;
+    updateCart();
+}
 
-        function decrementItem(index) {
-            if (cart[index].quantity > 1) {
-                cart[index].quantity -= 1;
-            } else {
-                cart.splice(index, 1);
-            }
-            updateCart();
-        }
+function decrementItem(index) {
+    if (cart[index].quantity > 1) {
+        cart[index].quantity -= 1;
+    } else {
+        cart.splice(index, 1);
+    }
+    updateCart();
+}
 
-        function removeItem(index) {
-            cart.splice(index, 1);
-            updateCart();
-        }
+function removeItem(index) {
+    cart.splice(index, 1);
+    updateCart();
+}
 
-        function toggleCart() {
-            const cartSidebar = document.getElementById('cartSidebar');
-            const overlay = document.getElementById('overlay');
-            
-            cartSidebar.classList.toggle('show');
-            overlay.classList.toggle('show');
-            document.body.style.overflow = cartSidebar.classList.contains('show') ? 'hidden' : '';
-        }
+function toggleCart() {
+    const cartSidebar = document.getElementById('cartSidebar');
+    const overlay = document.getElementById('overlay');
+    
+    cartSidebar.classList.toggle('show');
+    overlay.classList.toggle('show');
+    document.body.style.overflow = cartSidebar.classList.contains('show') ? 'hidden' : '';
+}
 
-        function showCartNotification() {
-            const btn = document.querySelector('.cart-float-btn');
-            btn.style.transform = 'scale(1.2)';
-            setTimeout(() => btn.style.transform = 'scale(1)', 200);
-        }
+function showCartNotification() {
+    const btn = document.querySelector('.cart-float-btn');
+    btn.style.transform = 'scale(1.2)';
+    setTimeout(() => btn.style.transform = 'scale(1)', 200);
+}
 
-        function toggleSearch() {
-            document.getElementById('searchBar').classList.toggle('d-none');
-        }
+function toggleSearch() {
+    document.getElementById('searchBar').classList.toggle('d-none');
+}
 
-        function performSearch() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            document.querySelectorAll('.menu-card').forEach(card => {
-                const itemName = card.getAttribute('data-item-name');
-                card.style.display = itemName.includes(searchTerm) ? 'block' : 'none';
-            });
-        }
+function performSearch() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('.menu-card').forEach(card => {
+        const itemName = card.getAttribute('data-item-name');
+        card.style.display = itemName.includes(searchTerm) ? 'block' : 'none';
+    });
+}
 
-        function checkout() {
-            if (cart.length === 0) {
-                alert('Your cart is empty!');
-                return;
-            }
+function performMobileSearch() {
+    const searchTerm = document.getElementById('mobileSearchInput').value.toLowerCase();
+    document.querySelectorAll('.menu-card').forEach(card => {
+        const itemName = card.getAttribute('data-item-name');
+        card.style.display = itemName.includes(searchTerm) ? 'block' : 'none';
+    });
+}
 
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            document.getElementById('modalTotal').textContent = total.toFixed(2);
-            
-            const checkoutModal = new bootstrap.Modal(document.getElementById('checkoutModal'));
-            checkoutModal.show();
-        }
+async function checkout() {
+    if (cart.length === 0) {
+        alert('Your cart is empty!');
+        return;
+    }
 
-        function confirmOrder() {
-            const contact = document.getElementById('customerContact').value.trim();
-            const address = document.getElementById('customerAddress').value.trim();
-            const paymentType = document.querySelector('input[name="paymentType"]:checked')?.value;
-            const errorDiv = document.getElementById('checkoutError');
-            
-            errorDiv.classList.add('d-none');
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    document.getElementById('modalTotal').textContent = total.toFixed(2);
+    
+    // Reset form first
+    document.getElementById('checkoutForm').reset();
+    
+    // Pre-fill customer data
+    await fillCustomerData();
+    
+    const checkoutModal = new bootstrap.Modal(document.getElementById('checkoutModal'));
+    checkoutModal.show();
+}
 
-            if (!contact) {
-                showError('Please enter your contact number');
-                return;
-            }
-
-            if (contact.length < 10) {
-                showError('Please enter a valid contact number');
-                return;
-            }
-
-            if (!address) {
-                showError('Please enter your delivery address');
-                return;
-            }
-
-            if (!paymentType) {
-                showError('Please select a payment method');
-                return;
-            }
-
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-            const orderData = {
-                items: cart.map(item => ({
-                    food_id: item.id,
-                    quantity: item.quantity,
-                    price: item.price
-                })),
-                customer_contact: contact,
-                customer_address: address,
-                payment_type: paymentType,
-                total_amount: total,
-                order_notes: document.getElementById('orderNotes').value,
-                _token: '{{ csrf_token() }}'
-            };
-
-            const confirmBtn = document.getElementById('confirmOrderBtn');
-            const originalBtnText = confirmBtn.innerHTML;
-            confirmBtn.disabled = true;
-            confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
-
-            fetch('{{ route("checkout") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(orderData)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(err => Promise.reject(err));
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data['success-message']) {
-                    bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
-                    showSuccessModal(data['success-message'], data.order_code || data.order_id);
-                    cart = [];
-                    updateCart();
-                    document.getElementById('checkoutForm').reset();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                if (error['validation-error-message']) {
-                    showError(error['validation-error-message']);
-                } else {
-                    showError('An error occurred while processing your order. Please try again.');
-                }
-            })
-            .finally(() => {
-                confirmBtn.disabled = false;
-                confirmBtn.innerHTML = originalBtnText;
-            });
-        }
-
-        function showError(message) {
-            const errorDiv = document.getElementById('checkoutError');
-            errorDiv.textContent = message;
-            errorDiv.classList.remove('d-none');
-            document.querySelector('#checkoutModal .modal-body').scrollTop = 0;
-        }
-
-        function showSuccessModal(message, orderId) {
-            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-            document.getElementById('successMessage').textContent = message;
-            document.getElementById('orderIdDisplay').textContent = '#' + orderId;
-            successModal.show();
-        }
-
-        // Initialize first category as active
-        document.addEventListener('DOMContentLoaded', function() {
-            const firstCategory = document.querySelector('.category-item');
-            if (firstCategory) {
-                const categoryId = firstCategory.getAttribute('data-category-id');
-                showCategory(categoryId);
+// Function to pre-fill customer data
+async function fillCustomerData() {
+    try {
+        const response = await fetch('/customer/data', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
             }
         });
+
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data.success && data.customer) {
+                const nameInput = document.getElementById('customerName');
+                const addressInput = document.getElementById('customerAddress');
+                
+                if (data.customer.name && data.customer.name.trim() !== '') {
+                    nameInput.value = data.customer.name;
+                }
+                
+                if (data.customer.address && data.customer.address.trim() !== '') {
+                    addressInput.value = data.customer.address;
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching customer data:', error);
+    }
+}
+
+function confirmOrder() {
+    const name = document.getElementById('customerName').value.trim();
+    const address = document.getElementById('customerAddress').value.trim();
+    const paymentType = document.querySelector('input[name="paymentType"]:checked')?.value;
+    const errorDiv = document.getElementById('checkoutError');
+    
+    errorDiv.classList.add('d-none');
+
+    if (!name) {
+        showError('Please enter your name');
+        return;
+    }
+
+    if (!address) {
+        showError('Please enter your delivery address');
+        return;
+    }
+
+    if (!paymentType) {
+        showError('Please select a payment method');
+        return;
+    }
+
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+    const orderData = {
+        items: cart.map(item => ({
+            food_id: item.id,
+            quantity: item.quantity,
+            price: item.price
+        })),
+        customer_name: name,
+        customer_address: address,
+        payment_type: paymentType,
+        total_amount: total,
+        order_notes: document.getElementById('orderNotes').value,
+        _token: '{{ csrf_token() }}'
+    };
+
+    const confirmBtn = document.getElementById('confirmOrderBtn');
+    const originalBtnText = confirmBtn.innerHTML;
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+
+    fetch('{{ route("checkout") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(orderData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => Promise.reject(err));
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data['success-message']) {
+            bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+            showSuccessModal(data['success-message'], data.order_code || data.order_id);
+            cart = [];
+            updateCart();
+            document.getElementById('checkoutForm').reset();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (error['validation-error-message']) {
+            showError(error['validation-error-message']);
+        } else {
+            showError('An error occurred while processing your order. Please try again.');
+        }
+    })
+    .finally(() => {
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalBtnText;
+    });
+}
+
+function showError(message) {
+    const errorDiv = document.getElementById('checkoutError');
+    errorDiv.textContent = message;
+    errorDiv.classList.remove('d-none');
+    document.querySelector('#checkoutModal .modal-body').scrollTop = 0;
+}
+
+function showSuccessModal(message, orderId) {
+    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+    document.getElementById('successMessage').textContent = message;
+    document.getElementById('orderIdDisplay').textContent = '#' + orderId;
+    successModal.show();
+}
+
+// Initialize first category as active
+document.addEventListener('DOMContentLoaded', function() {
+    const firstCategory = document.querySelector('.category-item');
+    if (firstCategory) {
+        const categoryId = firstCategory.getAttribute('data-category-id');
+        showCategory(categoryId);
+    }
+});
     </script>
 </body>
 </html>
